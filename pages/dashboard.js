@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import FactCheckToolWidget from '../components/dashboard/FactCheckTool';
 import SearchEngineWidget from '../components/dashboard/SearchEngine';
 import WikipediaWidget from '../components/dashboard/Wikipedia';
 
@@ -29,6 +30,7 @@ export default function Dashboard() {
         </button>
         <SearchEngineWidget query={searchQuery} />
         <WikipediaWidget query={searchQuery} />
+        <FactCheckToolWidget query={searchQuery} />
       </div>
     </main>
   );

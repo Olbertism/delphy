@@ -4,11 +4,11 @@ const limit = 'limit=5';
 
 export async function makeWikiSearchRequest(searchString) {
   const apiParams = 'list=search';
-  const query = `${apiBaseUrl}&origin=*&${apiActionMode}&${apiParams}&srsearch=${encodeURIComponent(
+  const requestUrl = `${apiBaseUrl}&origin=*&${apiActionMode}&${apiParams}&srsearch=${encodeURIComponent(
     searchString,
   )}&${limit}&format=json`;
 
-  const response = await fetch(query);
+  const response = await fetch(requestUrl);
   const results = await response.json();
 
   return results;
