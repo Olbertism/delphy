@@ -1,0 +1,24 @@
+{
+  "name": "give-me-context",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "axios": "^0.27.2",
+    "dotenv-safe": "^8.2.0",
+    "next": "12.1.6",
+    "node-duckduckgo": "^2.0.17",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "sharp": "^0.30.6"
+  },
+  "devDependencies": {
+    "eslint": "8.17.0",
+    "eslint-config-next": "12.1.6"
+  }
+}
