@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react';
-import { makeFactCheckToolRequest } from '../../util/fetchers/factCheckToolFetcher';
-import { getApiKey } from '../../util/fetchers/factCheckToolKeyHandler';
 
 export default function FactCheckToolWidget(props) {
   console.log('fact check tool props: ', props);
@@ -32,11 +30,16 @@ export default function FactCheckToolWidget(props) {
   return (
     <section>
       <hr></hr>
-      <div>Placeholder for Fact Check results</div>
+      <div>Google Fact Check Tool results:</div>
       <div>
         {receivedData ? (
           receivedData.map((entry) => {
-            return <div key={entry.text}>{entry.text}</div>;
+            return (
+              <div key={entry.text}>
+                Claim:
+                <div>{entry.text}</div>
+              </div>
+            );
           })
         ) : (
           <div></div>

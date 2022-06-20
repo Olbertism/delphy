@@ -18,7 +18,7 @@ export default function WikipediaWidget(props) {
   return (
     <section>
       <hr></hr>
-      <div>Placeholder for Wiki results</div>
+      <div>Search results from Wikipedia:</div>
       <div>
         {receivedData ? (
           receivedData.map((entry) => {
