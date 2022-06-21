@@ -4,7 +4,7 @@ import { makeWikiSearchRequest } from '../../util/fetchers/wikiFetcher';
 export default function WikipediaWidget(props) {
   const [receivedData, setReceivedData] = useState([]);
 
-  useEffect(() => {
+/*   useEffect(() => {
     async function getData() {
       const searchData = await makeWikiSearchRequest(props.query);
       console.log(searchData.query.search);
@@ -13,7 +13,7 @@ export default function WikipediaWidget(props) {
     if (props.query) {
       getData();
     }
-  }, [props.query]);
+  }, [props.query]); */
 
   return (
     <section>

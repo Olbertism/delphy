@@ -4,7 +4,7 @@ export default function SearchEngineWidget(props) {
   const [receivedData, setReceivedData] = useState([]);
   console.log('SE props: ', props);
 
-  useEffect(() => {
+/*   useEffect(() => {
     async function getData() {
 
       const params = {
@@ -22,7 +22,7 @@ export default function SearchEngineWidget(props) {
     if (props.query) {
       getData().catch(() => {});
     }
-  }, [props.query]);
+  }, [props.query]); */
 
   return (
     <section>

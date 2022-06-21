@@ -3,6 +3,8 @@ import FactCheckToolWidget from '../components/dashboard/FactCheckTool';
 import NewsWidget from '../components/dashboard/News';
 import SearchEngineWidget from '../components/dashboard/SearchEngine';
 import WikipediaWidget from '../components/dashboard/Wikipedia';
+import { fetchResources } from '../util/fetchers/mainFetcher';
+import generateRoBERTaPrompts from '../util/robertaPromptsProcessor';
 
 // heres the plan: I am going to fetch data centralized here, makes it easier to process it. Only then I send down the results to the child components
 
@@ -13,11 +15,19 @@ export default function Dashboard() {
   const [querySubmitted, setQuerySubmitted] = useState(false);
   const [robertaTest, setRobertaTest] = useState([]);
   const [predictions, setPredictions] = useState([]);
+  const [fetchedResources, setFetchedResources] = useState([]);
 
-  console.log('prompts: ', robertaTest);
-  console.log('predictions: ', predictions);
-
+  /* console.log('prompts: ', robertaTest);
+  console.log('predictions: ', predictions); */
+  console.log('fetchedResources: ', fetchedResources);
   const searchQueryInput = useRef(null);
+
+  async function handleFetchResources() {
+    const resources = await fetchResources(searchQuery).catch(() => {
+      console.log('One or more errors occured when trying to fetch data');
+    });
+    setFetchedResources(resources);
+  }
 
   async function fetchDataFromContentAPIs(query) {
     const params = {
@@ -40,8 +50,6 @@ export default function Dashboard() {
     const resultsFCT = await dataFCT.json();
     console.log(resultsFCT);
 
-    
-
     const titles = [];
     for (let result of resultsFCT.claims) {
       console.log(result.claimReview[0].title);
@@ -52,7 +60,7 @@ export default function Dashboard() {
     setRobertaTest(titles);
   }
 
-  useEffect(() => {
+  /*   useEffect(() => {
     async function makeTestRequest() {
       const requestBody = { prompts: robertaTest };
       // dev URL only!
@@ -71,27 +79,30 @@ export default function Dashboard() {
     if (robertaTest !== []) {
       makeTestRequest();
     }
-  }, [robertaTest]);
+  }, [robertaTest]); */
 
   return (
     <main>
       <div>
         <h1>Dashboard</h1>
         <input
-          defaultValue={searchQuery}
+          value={searchQuery}
           ref={searchQueryInput}
-          onChange={() => {}}
+          onChange={(event) => {
+            setSearchQuery(event.currentTarget.value);
+          }}
         />
         <button
           onClick={() => {
-            setSearchQuery(searchQueryInput.current.value);
-            fetchDataFromContentAPIs(searchQueryInput.current.value);
+            handleFetchResources().catch(() => {
+              console.log('One or more errors occured when trying to fetch data');
+            });
           }}
         >
           Submit
         </button>
         <div>Make RoBERTa mnli call:</div>
-        <button>Click me</button>
+        <button onClick={() => {generateRoBERTaPrompts(fetchedResources, searchQuery)}}>Click me</button>
         {/* {predictions.predictions !== [] ? (
           <div>
             {predictions.predictions.map((prediction) => {
@@ -101,7 +112,7 @@ export default function Dashboard() {
         ) : (
           <div />
         )} */}
-        <SearchEngineWidget query={searchQuery} />
+        <SearchEngineWidget query={searchQuery} contents={fetchedResources}/>
         <WikipediaWidget query={searchQuery} />
         <FactCheckToolWidget query={searchQuery} />
         <NewsWidget query={searchQuery} />

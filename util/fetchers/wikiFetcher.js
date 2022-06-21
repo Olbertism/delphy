@@ -1,4 +1,4 @@
-const apiBaseUrl = 'http://en.wikipedia.org/w/api.php?';
+/* const apiBaseUrl = 'http://en.wikipedia.org/w/api.php?';
 const apiActionMode = 'action=query';
 const limit = 'gpslimit=5';
 
@@ -13,3 +13,4 @@ export async function makeWikiSearchRequest(searchString) {
 
   return results;
 }
+ */
