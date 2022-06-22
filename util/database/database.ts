@@ -41,6 +41,11 @@ type UserWithPasswordHash = User & {
   passwordHash: string;
 };
 
+type Session = {
+  id: number;
+  token: string;
+};
+
 export async function createUser(username: string, passwordHash: string) {
   const [user] = await sql<[User]>`
   INSERT INTO users (username, password_hash) VALUES (${username}, ${passwordHash}) RETURNING id, username`;
@@ -65,7 +70,53 @@ export async function getUserByUsername(username: string) {
 
 export async function getUserWithHashByUsername(username: string) {
   if (!username) return undefined;
+
   const [user] = await sql<[UserWithPasswordHash | undefined]>`
   SELECT * FROM users WHERE username = ${username}`;
   return user && camelcaseKeys(user);
+}
+
+export async function createSession(token: string, userId: User['id']) {
+  const [session] = await sql<[Session]>`
+  INSERT INTO sessions (token, user_id) VALUES (${token}, ${userId}) RETURNING id, token`;
+
+  await deleteExpiredSessions();
+
+  return camelcaseKeys(session);
+}
+
+export async function getUserByValidSessionToken(token: string) {
+  if (!token) return undefined;
+  const [user] = await sql<[User | undefined]>`
+  SELECT
+  users.id, users.username
+  FROM
+    users, sessions
+  WHERE
+    sessions.token = ${token}
+  AND sessions.user_id = users.id
+  AND sessions.expiry_timestamp > now();
+  `;
+
+  // for a check...
+  console.log("Spam?", user);
+
+  await deleteExpiredSessions();
+
+  return user && camelcaseKeys(user);
+}
+
+export async function deleteSessionByToken(token: string) {
+  const [session] = await sql<[Session | undefined]>`
+  DELETE FROM sessions WHERE sessions.token = ${token} RETURNING *`;
+  return session && camelcaseKeys(session);
+}
+
+export async function deleteExpiredSessions() {
+  const sessions = await sql<[Session[]]>`
+  DELETE FROM sessions WHERE sessions.expiry_timestamp < now() RETURNING *`;
+  if (!sessions) {
+    console.log('Session ins deleteExpired undefined');
+  }
+  return sessions.map((session) => camelcaseKeys(session));
 }

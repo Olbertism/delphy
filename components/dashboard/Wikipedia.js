@@ -1,19 +1,9 @@
-import { useEffect, useState } from 'react';
-import { makeWikiSearchRequest } from '../../util/fetchers/wikiFetcher';
+import { useState } from 'react';
 
 export default function WikipediaWidget(props) {
   const [receivedData, setReceivedData] = useState([]);
 
-/*   useEffect(() => {
-    async function getData() {
-      const searchData = await makeWikiSearchRequest(props.query);
-      console.log(searchData.query.search);
-      setReceivedData(searchData.query.search);
-    }
-    if (props.query) {
-      getData();
-    }
-  }, [props.query]); */
+
 
   return (
     <section>

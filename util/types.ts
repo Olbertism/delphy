@@ -36,3 +36,5 @@ export type UserWithPasswordHash = User & {
 };
 
 export type RoBERTaPrompt = [string, string];
+
+export type RoBERTaPrediction = number[];

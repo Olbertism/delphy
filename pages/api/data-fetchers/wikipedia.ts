@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const data = await fetch(
     `${apiBaseUrl}&origin=*&${apiActionMode}&${apiParams}&srsearch=${encodeURIComponent(
       req.query.query,
-  )}&format=json`,
+  )}&format=json&prop=info&inprop=url`,
   ).then((response) => response.json());
 
   res.json(data); // Send the response

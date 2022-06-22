@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { RegisterError, RegisterResponseBody } from '../util/types';
 
-export default function Register() {
+export default function Register(props) {
   const [username, setUsername] = useState('');
   // const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,7 +28,7 @@ export default function Register() {
       setErrors(registerResponseBody.errors);
       return;
     }
-
+    await props.refreshUserProfile();
     await router.push('/');
   }
   return (

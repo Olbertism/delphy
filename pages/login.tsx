@@ -3,7 +3,11 @@ import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { LoginError, LoginResponseBody } from '../util/types';
 
-export default function Login() {
+type Props = {
+  refreshUserProfile: () => Promise<void>;
+};
+
+export default function Login(props: Props) {
   const [username, setUsername] = useState('');
   // const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,10 +39,12 @@ export default function Login() {
       !Array.isArray(returnTo) &&
       /^\/[a-zA-Z0-9-?=/]*$/.test(returnTo)
     ) {
+      await props.refreshUserProfile();
       await router.push(returnTo);
     } else {
       // for user page
       // await router.push(`/users/${loginResponseBody.user.id}`);
+      await props.refreshUserProfile();
       await router.push('/');
     }
   }

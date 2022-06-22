@@ -1,8 +1,13 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-
+import crypto from 'node:crypto';
 import bcrypt from 'bcrypt';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { createUser, getUserByUsername } from '../../util/database/database';
+import { createSerializedRegisterSessionTokenCookie } from '../../util/cookies';
+import {
+  createSession,
+  createUser,
+  getUserByUsername,
+} from '../../util/database/database';
 
 type RegisterResponseBody =
   | {
@@ -11,7 +16,7 @@ type RegisterResponseBody =
       }[];
     }
   | {
-      user: { id: number, username: string };
+      user: { id: number; username: string };
     };
 
 export default async function handler(
@@ -26,11 +31,9 @@ export default async function handler(
       !req.body.username ||
       !req.body.password
     ) {
-      res
-        .status(400)
-        .json({
-          errors: [{ message: 'Username and/or Password not provided' }],
-        });
+      res.status(400).json({
+        errors: [{ message: 'Username and/or Password not provided' }],
+      });
       return;
     }
 
@@ -41,12 +44,23 @@ export default async function handler(
       return;
     }
 
-    const passwordHash = await bcrypt.hash(req.body.password, 12)
-    console.log("hash created, call createUser...")
-    const newUser = await createUser(req.body.username, passwordHash)
+    const passwordHash = await bcrypt.hash(req.body.password, 12);
+    console.log('hash created, call createUser...');
+    const newUser = await createUser(req.body.username, passwordHash);
 
+    // Session creation to be appended
+    const token = crypto.randomBytes(80).toString('base64');
+    console.log('token created, call createSession...');
+    const session = await createSession(token, newUser.id);
+    console.log('session created, make serialzed cookie...');
+    const serializedCookie = await createSerializedRegisterSessionTokenCookie(
+      session.token,
+    );
 
-    res.status(200).json({ user: { id: newUser.id, username: newUser.username } });
+    res
+      .status(200)
+      .setHeader('set-Cookie', serializedCookie)
+      .json({ user: { id: newUser.id, username: newUser.username } });
   } else {
     res.status(405).json({ errors: [{ message: 'Method not allowed' }] });
   }
