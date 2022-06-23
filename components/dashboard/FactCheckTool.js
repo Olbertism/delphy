@@ -5,24 +5,6 @@ export default function FactCheckToolWidget(props) {
 
   const [receivedData, setReceivedData] = useState([]);
 
-/*   useEffect(() => {
-    async function getData() {
-      console.log('calling get Data with query props: ', props.query);
-      const params = {
-        query: props.query,
-      };
-
-      const data = await fetch(
-        '/api/factCheckTool?' + new URLSearchParams(params).toString(),
-      );
-      const results = await data.json();
-      console.log(results);
-      setReceivedData(results.claims);
-    }
-    if (props.query) {
-      getData().catch(() => {});
-    }
-  }, [props.query]); */
 
   return (
     <section>

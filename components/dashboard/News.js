@@ -2,27 +2,7 @@ import { useEffect, useState } from 'react';
 
 export default function NewsWidget(props) {
   const [receivedData, setReceivedData] = useState([]);
-  console.log('SE props: ', props);
-
-/*   useEffect(() => {
-    async function getData() {
-
-      const params = {
-        query: props.query,
-      };
-
-      const data = await fetch(
-        '/api/guardianSearch?' + new URLSearchParams(params).toString(),
-      );
-
-      const results = await data.json();
-      console.log(results);
-      setReceivedData(results.response.results);
-    }
-    if (props.query) {
-      getData().catch(() => {});
-    }
-  }, [props.query]); */
+  console.log('News props: ', props);
 
   return (
     <section>

@@ -15,8 +15,6 @@ export default async function handler(
   const apiBaseUrl =
     'https://api.nytimes.com/svc/search/v2/articlesearch.json?';
 
-  console.log(process.env.NYTAPI)
-
   console.log(
     `${apiBaseUrl}q=${encodeURIComponent(req.query.query)}&api-key=${
       process.env.NYTAPI

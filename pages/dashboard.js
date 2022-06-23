@@ -17,19 +17,15 @@ export default function Dashboard() {
   const [fetchedResources, setFetchedResources] = useState([]);
   const [formattedResources, setFormattedResources] = useState([]);
   const [displayedResources, setDisplayedResources] = useState([]);
+  const [loadingRoBERTa, setLoadingRoBERTa] = useState(false);
 
-  /*
-  console.log('predictions: ', predictions); */
   console.log('fetchedResources: ', fetchedResources);
   console.log('formattedResources: ', formattedResources);
-  // console.log('prompts: ', robertaPrompts);
+
   const searchQueryInput = useRef(null);
 
   async function handleFetchResources() {
     const [resources, shortedData] = await fetchResources(searchQuery);
-    //.catch(() => {
-    //  console.log('One or more errors occured when trying to fetch data');
-    //});
     setFetchedResources(resources);
     setFormattedResources(shortedData);
   }
@@ -47,10 +43,7 @@ export default function Dashboard() {
       }
     }
 
-    // const prompts = generateRoBERTaPrompts(fetchedResources, searchQuery);
-
     console.log('prompts handed over: ', prompts);
-    // setRobertaPrompts(prompts);
 
     // for tests
     const roBERTaRequestBody = {
@@ -85,6 +78,7 @@ export default function Dashboard() {
 
     console.log(combinedResources);
     setDisplayedResources(combinedResources);
+    setLoadingRoBERTa(false);
   }
 
   return (
@@ -100,11 +94,12 @@ export default function Dashboard() {
         />
         <button
           onClick={() => {
-            handleFetchResources(); //.catch(() => {
-            //console.log(
-            //</div>  'One or more errors occured when trying to fetch data',
-            //);
-            //});
+            handleFetchResources().catch((error) => {
+              console.log(
+                'An error occured with one or more fetched resources',
+                error,
+              );
+            });
           }}
         >
           Submit
@@ -112,47 +107,71 @@ export default function Dashboard() {
         <div>Make RoBERTa mnli call:</div>
         <button
           onClick={() => {
-            handleGenerateRoBERTaPrompts();
+            setLoadingRoBERTa(true);
+            handleGenerateRoBERTaPrompts().catch(() => {
+              console.log(
+                'An error occured when trying to generate RoBERTa results',
+              );
+            });
           }}
         >
           Click me
         </button>
         <div>
-          {displayedResources.map((resource) => {
-            return resource.map((source) => {
-              if (source.prediction === 0) {
-                return (
-                  <div>
-                    <div>{source.title}</div>
-                    <div>{source.url}</div>
-                    <div>Tagline contradicts claim</div>
-                  </div>
-                );
-              } else if (source.prediction === 2) {
-                return (
-                  <div>
-                    <div>{source.title}</div>
-                    <div>{source.url}</div>
-                    <div>Tagline entails claim</div>
-                  </div>
-                );
-              }
-            });
-          })}
+          {loadingRoBERTa ? (
+            <div>loading...</div>
+          ) : (
+            <div>
+              <div hidden={displayedResources.length === 0 ? true : false}>
+                Taglines that contradict claim:
+              </div>
+              <br />
+              {displayedResources.map((resource) => {
+                return resource.map((source) => {
+                  if (source.prediction === 0) {
+                    return (
+                      <div>
+                        <div>{source.title}</div>
+                        <div>{source.url}</div>
+                      </div>
+                    );
+                  }
+                });
+              })}
+              <br />
+              <br />
+              <div hidden={displayedResources.length === 0 ? true : false}>
+                Taglines that entail claim:
+              </div>
+              <br />
+              {displayedResources.map((resource) => {
+                return resource.map((source) => {
+                  if (source.prediction === 2) {
+                    return (
+                      <div>
+                        <div>{source.title}</div>
+                        <div>{source.url}</div>
+                      </div>
+                    );
+                  }
+                });
+              })}
+            </div>
+          )}
         </div>
-        {/* {predictions.predictions !== [] ? (
-          <div>
-            {predictions.predictions.map((prediction) => {
-              return <div key={prediction}>{prediction}</div>;
-            })}
-          </div>
-        ) : (
-          <div />
-        )} */}
-        <SearchEngineWidget query={searchQuery} contents={fetchedResources} />
-        <WikipediaWidget query={searchQuery} />
-        <FactCheckToolWidget query={searchQuery} />
-        <NewsWidget query={searchQuery} />
+        <SearchEngineWidget
+          query={searchQuery}
+          contents={formattedResources[1]}
+        />
+        <WikipediaWidget query={searchQuery} contents={formattedResources[2]} />
+        <FactCheckToolWidget
+          query={searchQuery}
+          contents={formattedResources[0]}
+        />
+        <NewsWidget
+          query={searchQuery}
+          contents={formattedResources.slice(3)}
+        />
       </div>
     </main>
   );
