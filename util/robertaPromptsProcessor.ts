@@ -132,12 +132,3 @@ export default function generateRoBERTaPrompts(
   console.log('PROMPTS: ', prompts);
   return prompts
 }
-
-
-export function combinePredictionsAndResources(predictions: RoBERTaPrediction, resources) {
-  const combinedResources = resources.slice()
-  combinedResources.forEach(resource => {
-
-  });
-
-}

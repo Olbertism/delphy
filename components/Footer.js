@@ -1,7 +1,5 @@
+import FooterBar from './layout/Footer';
+
 export default function Footer() {
-  return (
-    <header>
-      <div>A footer</div>
-    </header>
-  );
+  return <FooterBar />;
 }

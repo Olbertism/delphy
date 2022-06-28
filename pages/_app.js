@@ -1,15 +1,28 @@
-import '../styles/globals.css';
+// import '../styles/globals.css';
+import { CssBaseline, GlobalStyles, ThemeProvider } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import Layout from '../components/Layout';
+import { theme } from '../styles/theme';
+
+const inputGlobalStyles = (
+  <GlobalStyles
+    styles={{
+      main: { position: 'relative', minHeight: 'calc(100vh - 157px)' },
+    }}
+  />
+);
 
 function MyApp({ Component, pageProps }) {
   const [user, setUser] = useState();
+
+  console.log("user in _app is", user)
 
   // create this function only one time, and not everytime page rerenders
   // otherwise this can be a memory leak
   const refreshUserProfile = useCallback(async () => {
     const profileResponse = await fetch('/api/profile');
     const profileResponseBody = await profileResponse.json();
+    console.log('profileresponsebody:', profileResponseBody);
 
     if (!('errors' in profileResponseBody)) {
       setUser(profileResponseBody.user);
@@ -24,9 +37,15 @@ function MyApp({ Component, pageProps }) {
   }, [refreshUserProfile]);
 
   return (
-    <Layout user={user}>
-      <Component {...pageProps} refreshUserProfile={refreshUserProfile} />
-    </Layout>
+    <>
+      {inputGlobalStyles}
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Layout user={user}>
+          <Component {...pageProps} refreshUserProfile={refreshUserProfile} />
+        </Layout>
+      </ThemeProvider>
+    </>
   );
 }
 

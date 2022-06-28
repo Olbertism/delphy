@@ -1,4 +1,3 @@
-import { request } from 'http';
 import { useEffect, useRef, useState } from 'react';
 import FactCheckToolWidget from '../components/dashboard/FactCheckTool';
 import NewsWidget from '../components/dashboard/News';
@@ -83,8 +82,9 @@ export default function Dashboard() {
 
   return (
     <main>
+      <h1>Dashboard</h1>
       <div>
-        <h1>Dashboard</h1>
+        <section>
         <input
           value={searchQuery}
           ref={searchQueryInput}
@@ -158,15 +158,15 @@ export default function Dashboard() {
               })}
             </div>
           )}
-        </div>
+        </div></section>
         <SearchEngineWidget
           query={searchQuery}
-          contents={formattedResources[1]}
+          contents={formattedResources.slice(1,2)}
         />
-        <WikipediaWidget query={searchQuery} contents={formattedResources[2]} />
+        <WikipediaWidget query={searchQuery} contents={formattedResources.slice(2,3)} />
         <FactCheckToolWidget
           query={searchQuery}
-          contents={formattedResources[0]}
+          contents={formattedResources.slice(0,1)}
         />
         <NewsWidget
           query={searchQuery}

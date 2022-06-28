@@ -49,7 +49,6 @@ export default async function handler(
     const userId = userWithHash.id;
     const username = userWithHash.username;
 
-    // Session creation to be appended
     const token = crypto.randomBytes(80).toString('base64')
     const session = await createSession(token, userId)
 
