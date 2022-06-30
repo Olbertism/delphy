@@ -1,3 +1,4 @@
+import { Button, TextField } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 import FactCheckToolWidget from '../components/dashboard/FactCheckTool';
 import NewsWidget from '../components/dashboard/News';
@@ -85,88 +86,94 @@ export default function Dashboard() {
       <h1>Dashboard</h1>
       <div>
         <section>
-        <input
-          value={searchQuery}
-          ref={searchQueryInput}
-          onChange={(event) => {
-            setSearchQuery(event.currentTarget.value);
-          }}
-        />
-        <button
-          onClick={() => {
-            handleFetchResources().catch((error) => {
-              console.log(
-                'An error occured with one or more fetched resources',
-                error,
-              );
-            });
-          }}
-        >
-          Submit
-        </button>
-        <div>Make RoBERTa mnli call:</div>
-        <button
-          onClick={() => {
-            setLoadingRoBERTa(true);
-            handleGenerateRoBERTaPrompts().catch(() => {
-              console.log(
-                'An error occured when trying to generate RoBERTa results',
-              );
-            });
-          }}
-        >
-          Click me
-        </button>
-        <div>
-          {loadingRoBERTa ? (
-            <div>loading...</div>
-          ) : (
-            <div>
-              <div hidden={displayedResources.length === 0 ? true : false}>
-                Taglines that contradict claim:
+          <TextField
+            value={searchQuery}
+            ref={searchQueryInput}
+            onChange={(event) => {
+              setSearchQuery(event.currentTarget.value);
+            }}
+          />
+          <Button variant="contained" color="secondary"
+            onClick={() => {
+              handleFetchResources().catch((error) => {
+                console.log(
+                  'An error occured with one or more fetched resources',
+                  error,
+                );
+              });
+            }}
+          >
+            Search
+          </Button>
+
+          <div>Make RoBERTa mnli call:</div>
+          <Button variant="contained" color="secondary"
+            onClick={() => {
+              setLoadingRoBERTa(true);
+              handleGenerateRoBERTaPrompts().catch(() => {
+                console.log(
+                  'An error occured when trying to generate RoBERTa results',
+                );
+              });
+            }}
+          >
+            Run
+          </Button>
+
+          <div>
+            {loadingRoBERTa ? (
+              <div>loading...</div>
+            ) : (
+              <div>
+                <div hidden={displayedResources.length === 0 ? true : false}>
+                  Taglines that contradict claim:
+                </div>
+                <br />
+                {displayedResources.map((resource) => {
+                  return resource.map((source) => {
+                    if (source.prediction === 0) {
+                      return (
+                        <div>
+                          <div>{source.title}</div>
+                          <div>{source.url}</div>
+                        </div>
+                      );
+                    }
+                  });
+                })}
+                <br />
+                <br />
+                <div hidden={displayedResources.length === 0 ? true : false}>
+                  Taglines that entail claim:
+                </div>
+                <br />
+                {displayedResources.map((resource) => {
+                  return resource.map((source) => {
+                    if (source.prediction === 2) {
+                      return (
+                        <div>
+                          <div>{source.title}</div>
+                          <div>{source.url}</div>
+                        </div>
+                      );
+                    }
+                  });
+                })}
               </div>
-              <br />
-              {displayedResources.map((resource) => {
-                return resource.map((source) => {
-                  if (source.prediction === 0) {
-                    return (
-                      <div>
-                        <div>{source.title}</div>
-                        <div>{source.url}</div>
-                      </div>
-                    );
-                  }
-                });
-              })}
-              <br />
-              <br />
-              <div hidden={displayedResources.length === 0 ? true : false}>
-                Taglines that entail claim:
-              </div>
-              <br />
-              {displayedResources.map((resource) => {
-                return resource.map((source) => {
-                  if (source.prediction === 2) {
-                    return (
-                      <div>
-                        <div>{source.title}</div>
-                        <div>{source.url}</div>
-                      </div>
-                    );
-                  }
-                });
-              })}
-            </div>
-          )}
-        </div></section>
+            )}
+          </div>
+        </section>
         <SearchEngineWidget
           query={searchQuery}
-          contents={formattedResources.slice(1,2)}
+          contents={formattedResources.slice(1, 2)}
         />
-        <WikipediaWidget query={searchQuery} contents={formattedResources.slice(2,3)} />
+        <WikipediaWidget
+          query={searchQuery}
+          contents={formattedResources.slice(2, 3)}
+        />
         <FactCheckToolWidget
           query={searchQuery}
-          contents={formattedResources.slice(0,1)}
+          contents={formattedResources.slice(0, 1)}
         />
         <NewsWidget
           query={searchQuery}

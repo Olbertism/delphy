@@ -27,6 +27,18 @@ type ReviewRequestbody = {
   verdictId?: number;
 };
 
+type RatingRequestbody = {
+  claimId: number;
+  ratingValue: number;
+  authorId: number | undefined;
+};
+
+type SourceRequestbody = {
+  sourceTitle: string;
+  sourceUrl: string;
+  reviewId: number;
+};
+
 export default function Database(props: Props) {
   const [authorId, setAuthorId] = useState<number | undefined>(
     props.author === null ? undefined : props.author.id,
@@ -39,6 +51,12 @@ export default function Database(props: Props) {
 
   const [selectedClaim, setSelectedClaim] = useState(0);
   const [selectedVerdict, setSelectedVerdict] = useState(0);
+  const [selectedReview, setSelectedReview] = useState(0);
+
+  const [ratingValue, setRatingValue] = useState(0);
+
+  const [sourceTitle, setSourceTitle] = useState('');
+  const [sourceUrl, setSourceUrl] = useState('');
 
   console.log('author: ', authorId);
 
@@ -127,6 +145,57 @@ export default function Database(props: Props) {
     return review;
   };
 
+  const handleRatingCreation = async () => {
+    const requestbody: RatingRequestbody = {
+      claimId: selectedClaim,
+      ratingValue: ratingValue,
+      authorId: undefined, // value is inserted further below
+    };
+
+    if (!props.author) {
+      console.log('user not yet an author, let me handle that...');
+      const { author } = await handleAuthorCreation();
+
+      if (!author) {
+        console.log('An error ocurred while trying to create a new author');
+        return;
+      }
+
+      requestbody.authorId = author.id;
+      setAuthorId(author.id);
+    } else {
+      requestbody.authorId = authorId;
+    }
+
+    const response = await fetch('/api/createRating', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestbody),
+    });
+    const review = await response.json();
+    return review;
+  };
+
+  const handleSourceCreation = async () => {
+    const requestbody: SourceRequestbody = {
+      sourceTitle: sourceTitle,
+      sourceUrl: sourceUrl,
+      reviewId: selectedReview,
+    };
+
+    const response = await fetch('/api/createSource', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestbody),
+    });
+    const review = await response.json();
+    return review;
+  };
+
   return (
     <>
       <Head>
@@ -187,6 +256,56 @@ export default function Database(props: Props) {
             Create Review
           </Button>
         </section>
+        <section>
+          <h2>Rating</h2>
+          <TextField
+            value={selectedClaim}
+            onChange={(event) => {
+              setSelectedClaim(Number(event.currentTarget.value));
+            }}
+          />
+          <TextField
+            value={ratingValue}
+            onChange={(event) => {
+              setRatingValue(Number(event.currentTarget.value));
+            }}
+          />
+          <Button
+            onClick={() => {
+              handleRatingCreation();
+            }}
+          >
+            Add Rating
+          </Button>
+        </section>
+        <section>
+          <h2>Source</h2>
+          <TextField
+            value={selectedReview}
+            onChange={(event) => {
+              setSelectedReview(Number(event.currentTarget.value));
+            }}
+          />
+          <TextField
+            value={sourceTitle}
+            onChange={(event) => {
+              setSourceTitle(event.currentTarget.value);
+            }}
+          />
+          <TextField
+            value={sourceUrl}
+            onChange={(event) => {
+              setSourceUrl(event.currentTarget.value);
+            }}
+          />
+          <Button
+            onClick={() => {
+              handleSourceCreation();
+            }}
+          >
+            Add Source
+          </Button>
+        </section>
       </main>
     </>
   );
@@ -208,5 +327,5 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   console.log('no user logged in');
-  return { props: {} };
+  return { props: {author: null} };
 }

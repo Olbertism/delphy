@@ -60,3 +60,14 @@ export type Claim = {
   added: Date;
   username? : string
 };
+
+export type Review = {
+  id: number;
+  title: string;
+  description: string;
+  added: Date;
+  authorId: number;
+  claimId: number;
+  verdictId?: number;
+  username?: string;
+};

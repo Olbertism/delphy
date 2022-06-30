@@ -68,6 +68,20 @@ type Review = {
   authorId: number;
   claimId: number;
   verdictId?: number;
+  username?: string;
+};
+
+type Rating = {
+  id: number;
+  rating: number;
+  claimId: number;
+  authorId: number;
+};
+
+type Source = {
+  sourceTitle: string;
+  sourceUrl: string;
+  reviewId: number;
 };
 
 export async function createUser(username: string, passwordHash: string) {
@@ -191,6 +205,61 @@ export async function getClaimById(claimId: number) {
   return claim && camelcaseKeys(claim);
 }
 
+export async function getAllClaims() {
+  const claims = await sql<[Claim[]]>`
+  SELECT * FROM claims`;
+
+  return claims.map((claim) => camelcaseKeys(claim));
+}
+
+export async function getAllClaimsWithReviewIds() {
+  const claims = await sql<[Claim[]]>`
+
+SELECT claims.id AS claim_id,
+    claims.title AS claim_title,
+    claims.description AS claim_description,
+    claims.added AS claim_added,
+    claims.author_id AS author_id,
+    ARRAY_AGG (reviews.id) AS review_ids
+     FROM claims
+LEFT JOIN reviews
+       ON claims.id = reviews.claim_id
+GROUP BY claims.id;
+  `;
+
+  return claims.map((claim) => camelcaseKeys(claim));
+}
+
+export async function getAllClaimsWithUsernamesAndReviewIds() {
+  const claims = await sql<[Claim[]]>`
+    SELECT claims.id AS claim_id,
+    claims.title AS claim_title,
+    claims.description AS claim_description,
+    claims.added AS claim_added,
+    users.username AS username,
+    (
+       SELECT json_agg(reviews) FROM (
+         SELECT
+           reviews.id AS review_id,
+           reviews.title AS review_title
+         FROM
+           reviews
+         WHERE
+           reviews.claim_id = claims.id
+       ) AS reviews)
+       AS reviews
+FROM claims, users, authors
+WHERE
+         users.id = authors.user_id AND
+         authors.id = claims.author_id;
+  `;
+  return claims.map((claim) =>
+    camelcaseKeys(claim, {
+      deep: true,
+    }),
+  );
+}
+
 export async function createReview(
   title: string,
   description: string,
@@ -207,4 +276,70 @@ export async function createReview(
   INSERT INTO reviews (title, description, author_id, claim_id, verdict_id) VALUES (${title}, ${description}, ${authorId}, ${claimId}, ${verdictId}) RETURNING *`;
     return camelcaseKeys(review);
   }
+}
+
+export async function getAllReviews() {
+  const reviews = await sql<[Review[]]>`
+  SELECT * FROM reviews`;
+
+  return reviews.map((review) => camelcaseKeys(review));
+}
+
+export async function getReviewById(reviewId: number) {
+  const [review] = await sql<[Review | undefined]>`
+  SELECT * FROM reviews WHERE id = ${reviewId}`;
+
+  return review && camelcaseKeys(review);
+}
+
+export async function getAllReviewsWithUsernamesAndClaims() {
+  const reviews = await sql<[Review[]]>`
+
+SELECT reviews.id AS review_id,
+    reviews.title AS review_title,
+    reviews.description AS review_description,
+    reviews.added AS review_added,
+    users.username AS username,
+    (
+       SELECT json_build_object('claim_id', claim_id, 'claim_title', claim_title) FROM (
+         SELECT
+           claims.id AS claim_id,
+           claims.title AS claim_title
+         FROM
+           claims
+         WHERE
+           reviews.claim_id = claims.id
+       ) AS claim)
+       AS claim
+FROM users, authors, reviews
+WHERE
+         users.id = authors.user_id AND
+         authors.id = reviews.author_id;
+
+  `;
+  return reviews.map((review) =>
+    camelcaseKeys(review, {
+      deep: true,
+    }),
+  );
+}
+
+export async function createRating(
+  claimId: number,
+  ratingValue: string,
+  authorId: number,
+) {
+  const [rating] = await sql<[Rating]>`
+  INSERT INTO ratings (rating, claim_id, author_id) VALUES (${ratingValue}, ${claimId}, ${authorId}) RETURNING *`;
+  return camelcaseKeys(rating);
+}
+
+export async function createSource(
+  sourceTitle: string,
+  sourceUrl: string,
+  reviewId: number,
+) {
+  const [source] = await sql<[Source]>`
+  INSERT INTO sources (title, url, review_id) VALUES (${sourceTitle}, ${sourceUrl}, ${reviewId}) RETURNING *`;
+  return camelcaseKeys(source);
 }

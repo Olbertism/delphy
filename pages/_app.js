@@ -7,7 +7,7 @@ import { theme } from '../styles/theme';
 const inputGlobalStyles = (
   <GlobalStyles
     styles={{
-      main: { position: 'relative', minHeight: 'calc(100vh - 157px)' },
+      main: { position: 'relative', minHeight: 'calc(100vh - 157px)', width: "75%", marginLeft: "auto", marginRight: "auto" },
     }}
   />
 );
