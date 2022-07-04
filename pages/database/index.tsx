@@ -24,7 +24,11 @@ export default function Database(props: Props) {
       </Head>
 
       <main>
-        <h1>Database</h1>
+        <h1>Browse the database</h1>
+        <p>
+          Select between Claims and Reviews that were submitted to our Database.
+          Add your own claims or reviews.
+        </p>
         <div>
           <BasicTabs claims={props.claims} reviews={props.reviews} />
         </div>
@@ -34,13 +38,9 @@ export default function Database(props: Props) {
 }
 
 export async function getServerSideProps() {
-  // let claims = await getAllClaims();
   let claims = await getAllClaimsWithUsernamesAndReviewIds();
 
   let reviews = await getAllReviewsWithUsernamesAndClaims();
-  console.log('#####################');
-  console.log(reviews);
-  console.log('#####################');
 
   // to prevent serialization issue with date objects:
   claims = JSON.parse(JSON.stringify(claims));

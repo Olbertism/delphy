@@ -1,5 +1,6 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import { Button } from '@mui/material';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -323,18 +324,33 @@ export default function ClaimsTable(props) {
                       >
                         {claim.claimId}
                       </TableCell>
-                      <TableCell align="right"><Link href={`/database/claims/${claim.claimId}`}>{claim.claimTitle}</Link></TableCell>
-                      <TableCell align="right">{claim.claimAdded}</TableCell>
-                      <TableCell align="right"><Link href={`/users/${claim.username}`}>{claim.username}</Link></TableCell>
                       <TableCell align="right">
-                        {claim.reviews?
-
+                        <Link href={`/database/claims/${claim.claimId}`}>
+                          {claim.claimTitle}
+                        </Link>
+                      </TableCell>
+                      <TableCell align="right">{claim.claimAdded}</TableCell>
+                      <TableCell align="right">
+                        <Link href={`/users/${claim.username}`}>
+                          {claim.username}
+                        </Link>
+                      </TableCell>
+                      <TableCell align="right">
+                        {claim.reviews ? (
                           claim.reviews.map((review) => {
-                            return <span key={review.reviewId}><Link href={`/database/reviews/${review.reviewId}`}>{review.reviewTitle}</Link> </span>;
+                            return (
+                              <span key={review.reviewId}>
+                                <Link
+                                  href={`/database/reviews/${review.reviewId}`}
+                                >
+                                  {review.reviewTitle}
+                                </Link>{' '}
+                              </span>
+                            );
                           })
-
-                        : <span>Unreviewed</span>}
-
+                        ) : (
+                          <span>Unreviewed</span>
+                        )}
                       </TableCell>
                     </TableRow>
                   );
@@ -365,6 +381,9 @@ export default function ClaimsTable(props) {
         control={<Switch checked={dense} onChange={handleChangeDense} />}
         label="Dense padding"
       />
+      <Button variant="contained" color="secondary" href="/database/contribute">
+        Add a claim
+      </Button>
     </Box>
   );
 }

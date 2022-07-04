@@ -4,11 +4,12 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
-import { DashboardWidgetProps } from '../../util/types';
+import { DashboardWidgetDbSearchResults } from '../../util/types';
 
-export default function FactCheckToolWidget(props: DashboardWidgetProps) {
-  console.log('fact check tool props: ', props);
-
+type DashboardDbSearchProps = {
+  contents: DashboardWidgetDbSearchResults
+}
+export default function DatabaseWidget(props: DashboardDbSearchProps) {
   const [results, setResults] = useState(props.contents);
   const [expanded, setExpanded] = useState(true);
 
@@ -28,20 +29,21 @@ export default function FactCheckToolWidget(props: DashboardWidgetProps) {
           aria-controls="panel1a-content"
           id="panel1a-header"
         >
-          <Typography>Google Fact Check Tool results:</Typography>
+          <Typography>Search results from Database:</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography component='div'>
-            {results.map((result) => {
-              return result.map((entry) => {
-                return (
-                  <div key={entry.title}>
-                    <div>{entry.title}</div>
-                    <div>{entry.url}</div>
-                  </div>
-                );
-              });
-            })}
+          <Typography component="div">
+            {results.length > 0 && (
+              <ul className="list-group">
+                {results.map((result) => {
+                  return (
+                    <li key={result.item.id}>
+                      <a href={`/database/claims/${result.item.id}`}>{result.item.title} ({Math.round(result.score * 100)}%)</a>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </Typography>
         </AccordionDetails>
       </Accordion>

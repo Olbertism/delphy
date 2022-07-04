@@ -40,17 +40,29 @@ export type RoBERTaPrompt = [string, string];
 export type RoBERTaPrediction = number[];
 
 export type DashboardWidgetPropsContents = {
-    title: string;
-    url: string;
-    promptSource: string;
-    prediction: number;
-  }[];
-
+  title: string;
+  url: string;
+  promptSource: string;
+  prediction: number;
+}[];
 
 export type DashboardWidgetProps = {
   query: string;
-  contents: DashboardWidgetPropsContents[]
+  contents: DashboardWidgetPropsContents[];
 };
+
+export type DashboardWidgetDbSearchItem = {
+  id: number;
+  title: string;
+  description: string;
+};
+
+export type DashboardWidgetDbSearchResults = {
+  item: DashboardWidgetDbSearchItem
+  refIndex: number;
+  score: number
+}[];
+
 
 export type Claim = {
   id: number;
@@ -58,7 +70,7 @@ export type Claim = {
   authorId: number;
   description: string;
   added: Date;
-  username? : string
+  username?: string;
 };
 
 export type Review = {

@@ -212,6 +212,13 @@ export async function getAllClaims() {
   return claims.map((claim) => camelcaseKeys(claim));
 }
 
+export async function getAllClaimsForSearch() {
+  const claims = await sql<[Claim[]]>`
+  SELECT id, title, description FROM claims`;
+
+  return claims.map((claim) => camelcaseKeys(claim));
+}
+
 export async function getAllClaimsWithReviewIds() {
   const claims = await sql<[Claim[]]>`
 
@@ -268,6 +275,7 @@ SELECT claims.id AS claim_id,
     claims.description AS claim_description,
     claims.added AS claim_added,
     users.username AS username,
+    authors.id AS author_id,
 
 (SELECT json_agg(reviews) FROM (
          SELECT
@@ -371,7 +379,7 @@ WHERE
 }
 
 export async function getReviewWithAllRelationsById(reviewId: number) {
-  const review = await sql<[Review | undefined]>`
+  const [review] = await sql<[Review | undefined]>`
 
 SELECT reviews.id AS review_id,
     reviews.title AS review_title,
@@ -380,6 +388,7 @@ SELECT reviews.id AS review_id,
     users.username AS username,
     claims.id AS claimId,
     verdicts.verdict AS verdict,
+    authors.id AS author_id,
 
 (SELECT json_agg(sources) FROM (
          SELECT

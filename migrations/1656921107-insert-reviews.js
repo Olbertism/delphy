@@ -7,6 +7,7 @@ const defaultTestReviews = [
     added: new Date(),
     author_id: 1,
     claim_id: 1,
+    verdict_id: 1,
   },
   {
     title: '5G has no link to COVID-19 but false conspiracy theories persist',
@@ -16,6 +17,7 @@ const defaultTestReviews = [
     added: new Date(),
     author_id: 2,
     claim_id: 2,
+    verdict_id: 1,
   },
 ];
 
