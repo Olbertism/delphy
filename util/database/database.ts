@@ -260,6 +260,51 @@ WHERE
   );
 }
 
+export async function getClaimWithAllRelationsById(claimId: number) {
+  const [claim] = await sql<[Claim | undefined]>`
+
+SELECT claims.id AS claim_id,
+    claims.title AS claim_title,
+    claims.description AS claim_description,
+    claims.added AS claim_added,
+    users.username AS username,
+
+(SELECT json_agg(reviews) FROM (
+         SELECT
+           reviews.id AS review_id,
+           reviews.title AS review_title
+         FROM
+           reviews
+         WHERE
+           reviews.claim_id = claims.id)
+       AS reviews)
+       AS reviews,
+
+(SELECT array_agg(ratings.rating)
+  FROM ratings
+  WHERE ratings.claim_id = claims.id
+  ) AS ratings,
+
+(SELECT array_agg(labels.label)
+  FROM labels, claim_labels
+  WHERE
+    labels.id = claim_labels.label_id AND
+    claim_labels.claim_id = claims.id
+    ) AS labels
+
+FROM
+  claims, users, authors
+WHERE
+  claims.id = ${claimId} AND
+  users.id = authors.user_id AND
+  authors.id = claims.author_id;
+
+
+  `;
+
+  return claim && camelcaseKeys(claim);
+}
+
 export async function createReview(
   title: string,
   description: string,
@@ -316,12 +361,53 @@ WHERE
          users.id = authors.user_id AND
          authors.id = reviews.author_id;
 
+
   `;
   return reviews.map((review) =>
     camelcaseKeys(review, {
       deep: true,
     }),
   );
+}
+
+export async function getReviewWithAllRelationsById(reviewId: number) {
+  const review = await sql<[Review | undefined]>`
+
+SELECT reviews.id AS review_id,
+    reviews.title AS review_title,
+    reviews.description AS review_description,
+    reviews.added AS review_added,
+    users.username AS username,
+    claims.id AS claimId,
+    verdicts.verdict AS verdict,
+
+(SELECT json_agg(sources) FROM (
+         SELECT
+           sources.id AS source_id,
+           sources.title AS source_title,
+           sources.url AS source_url
+         FROM
+           sources
+         WHERE
+           sources.review_id = reviews.id)
+       AS sources)
+       AS sources
+
+FROM
+reviews
+LEFT JOIN verdicts
+  ON verdicts.id = reviews.verdict_id,
+  claims, users, authors
+
+WHERE
+  reviews.id = ${reviewId} AND
+  reviews.claim_id = claims.id AND
+  claims.author_id = authors.id AND
+  authors.user_id = users.id;
+
+
+  `;
+  return review && camelcaseKeys(review);
 }
 
 export async function createRating(

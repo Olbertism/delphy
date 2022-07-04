@@ -1,3 +1,4 @@
+import { ThemeContext } from '@emotion/react';
 import { Menu as MenuIcon } from '@mui/icons-material';
 import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
@@ -11,6 +12,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import * as React from 'react';
+import { theme } from '../../styles/theme';
 
 const pages = ['Dashboard', 'Database'];
 const settings = ['Profile', 'Logout'];
@@ -135,7 +137,7 @@ export default function ResponsiveAppBar(props) {
             {props.user ? <>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="Remy Sharp" />
+                <Avatar sx={{ bgcolor: theme.palette.secondary.main }} alt={props.user ? props.user.username : '' } >{props.user ? props.user.username.slice(0,1) : '' }</Avatar>
               </IconButton>
             </Tooltip>
             <Menu

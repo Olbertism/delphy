@@ -4,6 +4,7 @@ import FactCheckToolWidget from '../components/dashboard/FactCheckTool';
 import NewsWidget from '../components/dashboard/News';
 import SearchEngineWidget from '../components/dashboard/SearchEngine';
 import WikipediaWidget from '../components/dashboard/Wikipedia';
+import CircularIndeterminate from '../components/layout/ProgressCircle';
 import { fetchResources } from '../util/fetchers/mainFetcher';
 import generateRoBERTaPrompts from '../util/robertaPromptsProcessor';
 
@@ -112,7 +113,7 @@ export default function Dashboard() {
               setLoadingRoBERTa(true);
               handleGenerateRoBERTaPrompts().catch(() => {
                 console.log(
-                  'An error occured when trying to generate RoBERTa results',
+                  'An error occured trying to generate RoBERTa results',
                 );
               });
             }}
@@ -122,7 +123,7 @@ export default function Dashboard() {
 
           <div>
             {loadingRoBERTa ? (
-              <div>loading...</div>
+              <CircularIndeterminate />
             ) : (
               <div>
                 <div hidden={displayedResources.length === 0 ? true : false}>

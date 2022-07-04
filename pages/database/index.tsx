@@ -1,12 +1,8 @@
 import Head from 'next/head';
 import { useEffect, useState } from 'react';
-import BasicTable from '../../components/database/DatabaseClaimsTable';
 import BasicTabs from '../../components/database/DatabaseTabs';
 import {
-  getAllClaims,
-  getAllClaimsWithReviewIds,
   getAllClaimsWithUsernamesAndReviewIds,
-  getAllReviews,
   getAllReviewsWithUsernamesAndClaims,
 } from '../../util/database/database';
 
