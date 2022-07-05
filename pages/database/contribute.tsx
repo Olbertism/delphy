@@ -8,9 +8,13 @@ import {
 import {
   Button,
   Checkbox,
+  FormControl,
   IconButton,
   InputBase,
+  InputLabel,
+  MenuItem,
   Rating,
+  Select,
   TextField,
   Typography,
 } from '@mui/material';
@@ -18,8 +22,11 @@ import { Box } from '@mui/system';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import { useEffect, useState } from 'react';
+import { theme } from '../../styles/theme';
 import {
   checkIfAuthorExists,
+  getAllLabels,
+  getAllVerdicts,
   getUserByValidSessionToken,
 } from '../../util/database/database';
 
@@ -54,7 +61,16 @@ type SourceRequestbody = {
   reviewId: number;
 };
 
-export default function Database(props: Props) {
+type ClaimLabelRequestbody = {
+  claimId: number;
+  labelId: number;
+};
+
+type LabelRequestbody = {
+  newLabel: string;
+};
+
+export default function Contribute(props: Props) {
   const [authorId, setAuthorId] = useState<number | undefined>(
     props.author === null ? undefined : props.author.id,
   );
@@ -65,10 +81,13 @@ export default function Database(props: Props) {
   const [newReviewDescription, setNewReviewDescription] = useState('');
 
   const [selectedClaim, setSelectedClaim] = useState(0);
-  const [selectedVerdict, setSelectedVerdict] = useState(0);
+  const [selectedVerdict, setSelectedVerdict] = useState<number | string>('');
   const [selectedReview, setSelectedReview] = useState(0);
 
-  const [addReviewFields, setAddReviewFields] = useState(true);
+  const [selectedLabel, setSelectedLabel] = useState('');
+  const [savedLabels, setSavedLabels] = useState([]);
+
+  const [addReviewCheckbox, setAddReviewCheckbox] = useState(false);
 
   const [ratingValue, setRatingValue] = useState(0);
   const [ratingHover, setRatingHover] = useState(-1);
@@ -79,6 +98,9 @@ export default function Database(props: Props) {
   const [sourceUrl, setSourceUrl] = useState('');
   const [currentSourceList, setCurrentSourceList] = useState([]);
 
+  console.log('Rating value', ratingValue);
+  console.log('selected verdict', selectedVerdict);
+
   const ratingLabels: { [index: string]: string } = {
     1: 'Completly untrue',
     2: 'Low credibility',
@@ -87,7 +109,7 @@ export default function Database(props: Props) {
     5: 'Factual',
   };
 
-  function getLabelText(value: number) {
+  function getRatingLabelText(value: number) {
     return `${value} Star${value !== 1 ? 's' : ''}, ${ratingLabels[value]}`;
   }
 
@@ -140,7 +162,7 @@ export default function Database(props: Props) {
     return claim;
   };
 
-  const handleReviewCreation = async (claimId: number, verdictId: number) => {
+  const handleReviewCreation = async (claimId: number) => {
     const requestbody: ReviewRequestbody = {
       title: newReviewTitle,
       description: newReviewDescription,
@@ -163,8 +185,8 @@ export default function Database(props: Props) {
       requestbody.authorId = authorId;
     }
 
-    if (verdictId !== 0) {
-      requestbody.verdictId = verdictId;
+    if (selectedVerdict !== '') {
+      requestbody.verdictId = selectedVerdict;
     }
 
     const response = await fetch('/api/createReview', {
@@ -178,7 +200,7 @@ export default function Database(props: Props) {
     return review;
   };
 
-  const handleRatingCreation = async () => {
+  /*   const handleRatingCreation = async () => {
     const requestbody: RatingRequestbody = {
       claimId: selectedClaim,
       ratingValue: ratingValue,
@@ -209,6 +231,99 @@ export default function Database(props: Props) {
     });
     const review = await response.json();
     return review;
+  }; */
+
+  const handleRatingCreation = async (claimId) => {
+    const requestbody: RatingRequestbody = {
+      claimId: claimId,
+      ratingValue: ratingValue,
+      authorId: undefined, // value is inserted further below
+    };
+
+    if (!props.author) {
+      console.log('user not yet an author, let me handle that...');
+      const { author } = await handleAuthorCreation();
+
+      if (!author) {
+        console.log('An error ocurred while trying to create a new author');
+        return;
+      }
+
+      requestbody.authorId = author.id;
+      setAuthorId(author.id);
+    } else {
+      requestbody.authorId = authorId;
+    }
+
+    const response = await fetch('/api/createRating', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestbody),
+    });
+    const review = await response.json();
+    return review;
+  };
+
+  const handleSaveLabel = () => {
+    const updatedSavedLabels = [...savedLabels, selectedLabel];
+    setSavedLabels(updatedSavedLabels);
+    setSelectedLabel('');
+  };
+
+  const handleCreateLabel = async (claimId: number) => {
+    console.log('handleCreateLabel for claimid', claimId);
+
+    const currentLabels = props.labels;
+    const existingLabels = new Set();
+    for (let label of savedLabels) {
+      for (let currentLabel of currentLabels) {
+        if (label === currentLabel.label) {
+          // create only claim_labels entry
+          const requestbody: ClaimLabelRequestbody = {
+            claimId: claimId,
+            labelId: currentLabel.id,
+          };
+          const response = await fetch('/api/createClaimLabel', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestbody),
+          });
+          existingLabels.add(label);
+          break;
+        }
+      }
+      if (!existingLabels.has(label)) {
+        // create new label and claim_labels entry
+        const requestbodyNewLabel: LabelRequestbody = {
+          newLabel: label,
+        };
+        console.log(requestbodyNewLabel);
+        const responseNewLabel = await fetch('/api/createLabel', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestbodyNewLabel),
+        });
+        const newLabel = await responseNewLabel.json();
+        console.log(newLabel);
+        const requestbodyClaimLabel: ClaimLabelRequestbody = {
+          claimId: claimId,
+          labelId: newLabel.label.id,
+        };
+        const responseClaimLabel = await fetch('/api/createClaimLabel', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestbodyClaimLabel),
+        });
+      }
+    }
   };
 
   const handleSaveSource = () => {
@@ -222,11 +337,11 @@ export default function Database(props: Props) {
     setNewSourceInput(false);
   };
 
-  const handleSourceCreation = async () => {
+  const handleSourceCreation = async (reviewId: number) => {
     const requestbody: SourceRequestbody = {
       sourceTitle: sourceTitle,
       sourceUrl: sourceUrl,
-      reviewId: selectedReview,
+      reviewId: reviewId,
     };
 
     const response = await fetch('/api/createSource', {
@@ -236,8 +351,27 @@ export default function Database(props: Props) {
       },
       body: JSON.stringify(requestbody),
     });
-    const review = await response.json();
-    return review;
+    const source = await response.json();
+    return source;
+  };
+
+  const handleSourcesCreation = async (reviewId: number) => {
+    for (const source of currentSourceList) {
+      const requestbody: SourceRequestbody = {
+        sourceTitle: source.title,
+        sourceUrl: source.url,
+        reviewId: reviewId,
+      };
+
+      const response = await fetch('/api/createSource', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestbody),
+      });
+      // const source = await response.json();
+    }
   };
 
   return (
@@ -276,34 +410,73 @@ export default function Database(props: Props) {
               }}
             />
           </Box>
-          <Box sx={{ marginBottom: '30px' }}>
+          <Box
+            sx={{ marginBottom: '30px', display: 'flex', alignItems: 'center' }}
+          >
             <TextField
               label="Labels"
               size="small"
-              //value={newClaimTitle}
-              onChange={() => {}}
+              value={selectedLabel}
+              onChange={(event) => {
+                setSelectedLabel(event.currentTarget.value);
+              }}
             />
+            {selectedLabel === '' ? (
+              <div />
+            ) : (
+              <IconButton
+                aria-label="Save label entry"
+                onClick={() => handleSaveLabel()}
+              >
+                <Save />
+              </IconButton>
+            )}
+            {savedLabels.length === 0 ? (
+              <Typography sx={{ marginLeft: '10px', marginRight: '10px' }}>
+                No labels set
+              </Typography>
+            ) : (
+              savedLabels.map((savedLabel) => {
+                return (
+                  <Typography
+                    sx={{
+                      backgroundColor: theme.palette.primary.main,
+                      color: 'white',
+                      justifyItems: 'center',
+                      paddingLeft: "10px",
+                      paddingRight: '10px',
+                      borderRadius: '4px',
+                      marginLeft: '10px',
+                      marginRight: '10px',
+                    }}
+                    key={savedLabel}
+                  >
+                    {savedLabel}
+                  </Typography>
+                );
+              })
+            )}
           </Box>
-          <Box sx={{ marginBottom: '30px' }}>
+          <Box sx={{ marginBottom: '50px' }}>
             <Typography>Credibility rating for claim</Typography>
             <Rating
               name="Claim Rating"
               value={ratingValue}
               precision={1}
-              getLabelText={getLabelText}
-              onChange={(event, newRatingValue) => {
-                setRatingValue(newRatingValue);
+              getLabelText={getRatingLabelText}
+              onChange={(event) => {
+                setRatingValue(Number(event.currentTarget.value));
               }}
               onChangeActive={(event, newRatingHover) =>
                 setRatingHover(newRatingHover)
               }
               // emptyIcon={<StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />}
             />
-            {ratingValue !== null && (
-              <Box sx={{ ml: 2 }}>
+
+              <Box sx={{ position: "absolute"}}>
                 {ratingLabels[ratingHover !== -1 ? ratingHover : ratingValue]}
               </Box>
-            )}
+
           </Box>
 
           <h2>Review to claim</h2>
@@ -311,7 +484,7 @@ export default function Database(props: Props) {
             <p>Attach a review?</p>
             <Checkbox
               onChange={() => {
-                setAddReviewFields(!addReviewFields);
+                setAddReviewCheckbox(!addReviewCheckbox);
               }}
               inputProps={{ 'aria-label': 'controlled' }}
             />
@@ -321,7 +494,7 @@ export default function Database(props: Props) {
             <TextField
               label="Review title"
               size="small"
-              disabled={addReviewFields}
+              disabled={!addReviewCheckbox}
               required
               value={newReviewTitle}
               onChange={(event) => {
@@ -332,7 +505,7 @@ export default function Database(props: Props) {
           <Box sx={{ marginBottom: '30px' }}>
             <TextField
               label="Review description"
-              disabled={addReviewFields}
+              disabled={!addReviewCheckbox}
               required
               multiline
               rows={9}
@@ -343,40 +516,50 @@ export default function Database(props: Props) {
               }}
             />
           </Box>
-          <Box sx={{display: "flex"}}>
-          <p>Add source</p>
-          <IconButton aria-label="Add source" disabled={addReviewFields} onClick={() => setNewSourceInput(true)}>
-            <AddCircle  />
-          </IconButton></Box>
-          {newSourceInput ? (
-            <>
-              <TextField
-                label="Source title"
-                size="small"
-                required
-                value={sourceTitle}
-                onChange={(event) => {
-                  setSourceTitle(event.currentTarget.value);
-                }}
-              />
-              <TextField
-                label="Source URL"
-                size="small"
-                required
-                value={sourceUrl}
-                onChange={(event) => {
-                  setSourceUrl(event.currentTarget.value);
-                }}
-              />
-              <IconButton aria-label="Save source entry" onClick={() => handleSaveSource()}>
-                <Save  />
-              </IconButton>
-            </>
-          ) : (
-            <div />
-          )}
-          {currentSourceList.length === 0 ? (
-            <div>Currently no sources for review</div>
+          <Box sx={{ display: 'flex', alignItems: "center", mb: "20px" }}>
+            <p>Add source</p>
+            <IconButton
+              aria-label="Add source"
+              disabled={!addReviewCheckbox}
+              onClick={() => setNewSourceInput(true)}
+            >
+              <AddCircle />
+            </IconButton>
+
+          <Box >
+            {newSourceInput ? (
+              <>
+                <TextField
+                  label="Source title"
+                  size="small"
+                  required
+                  value={sourceTitle}
+                  onChange={(event) => {
+                    setSourceTitle(event.currentTarget.value);
+                  }}
+                />
+                <TextField
+                  label="Source URL"
+                  size="small"
+                  required
+                  value={sourceUrl}
+                  onChange={(event) => {
+                    setSourceUrl(event.currentTarget.value);
+                  }}
+                />
+                <IconButton
+                  disabled={sourceTitle === '' || sourceUrl === ''}
+                  aria-label="Save source entry"
+                  onClick={() => handleSaveSource()}
+                >
+                  <Save />
+                </IconButton>
+              </>
+            ) : (
+              <div />
+            )}{' '}
+              {currentSourceList.length === 0 ? (
+            <Typography>Currently no sources provided</Typography>
           ) : (
             <div>
               Sources:
@@ -391,12 +574,71 @@ export default function Database(props: Props) {
                 })}
               </div>
             </div>
-          )}
+          )}</Box>
+          </Box>
+            <Box sx={{ maxWidth: '320px', mb: "30px" }}>
+              <FormControl fullWidth>
+                <InputLabel id="verdict-select-label">Verdict</InputLabel>
+                <Select
+                  disabled={!addReviewCheckbox}
+                  labelId="verdict-select-label"
+                  id="verdict-select"
+                  value={selectedVerdict}
+                  label="Verdict"
+                  onChange={(event) => {
+                    setSelectedVerdict(Number(event.target.value));
+                  }}
+                >
+                  {props.verdicts.map(({ verdict, id }) => {
+                    return (
+                      <MenuItem key={verdict} value={id}>
+                        {verdict}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Box>
+
+
           <Button
+            disabled={
+              newClaimTitle === '' ||
+              newClaimDescription === '' ||
+              (addReviewCheckbox &&
+                (newReviewTitle === '' || newReviewDescription === ''))
+            }
             variant="contained"
             color="secondary"
-            onClick={() => {
-              handleClaimCreation();
+            onClick={async () => {
+              const { claim } = await handleClaimCreation().catch(() => {
+                console.log('Error when trying to create new claim');
+              });
+              console.log(claim);
+              if (savedLabels.length > 0) {
+                handleCreateLabel(claim.id).catch(() => {
+                  console.log('Error when trying to create new label');
+                });
+              }
+              if (ratingValue > 0) {
+                handleRatingCreation(claim.id).catch(() => {
+                  console.log('Error when trying to create new rating');
+                });
+              }
+              if (addReviewCheckbox) {
+                const { review } = await handleReviewCreation(claim.id).catch(
+                  () => {
+                    console.log('Error when trying to create new review');
+                  },
+                );
+                if (currentSourceList.length > 0) {
+                  handleSourcesCreation(review.id).catch(() => {
+                    console.log('Error when trying to create new sources');
+                  });
+                }
+              }
+
+              console.log('done');
             }}
           >
             Submit
@@ -491,16 +733,28 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     context.req.cookies.sessionToken,
   );
 
+  const verdicts = await getAllVerdicts();
+  const labels = await getAllLabels();
+
   if (user) {
     const author = await checkIfAuthorExists(user.id);
     if (author) {
       console.log('user logged in, is author');
-      return { props: { user: user, author: author } };
+      return {
+        props: {
+          user: user,
+          author: author,
+          verdicts: verdicts,
+          labels: labels,
+        },
+      };
     }
     console.log('user logged in, but not an author');
-    return { props: { user: user, author: null } };
+    return {
+      props: { user: user, author: null, verdicts: verdicts, labels: labels },
+    };
   }
 
   console.log('no user logged in');
-  return { props: { author: null } };
+  return { props: { author: null, verdicts: verdicts } };
 }

@@ -58,11 +58,10 @@ export type DashboardWidgetDbSearchItem = {
 };
 
 export type DashboardWidgetDbSearchResults = {
-  item: DashboardWidgetDbSearchItem
+  item: DashboardWidgetDbSearchItem;
   refIndex: number;
-  score: number
+  score: number;
 }[];
-
 
 export type Claim = {
   id: number;
@@ -82,4 +81,20 @@ export type Review = {
   claimId: number;
   verdictId?: number;
   username?: string;
+};
+
+export type Verdict = {
+  id: number;
+  verdict: string;
+};
+
+export type Label = {
+  id: number;
+  label: string;
+};
+
+export type ClaimLabel = {
+  id: number;
+  claim_id: number;
+  label_id: number;
 };

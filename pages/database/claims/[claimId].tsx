@@ -15,8 +15,13 @@ export default function ClaimPage(props: ClaimPageProps) {
   // const [avgRating, setAvgRating] = useState(0);
 
   function calculateRating() {
-    const averageRating = props.claim.ratings.reduce((a,b) => a + b, 0 ) / props.claim.ratings.length
-    return averageRating
+    if (!props.claim.ratings) {
+      return 0;
+    }
+    const averageRating =
+      props.claim.ratings.reduce((a, b) => a + b, 0) /
+      props.claim.ratings.length;
+    return averageRating;
   }
   console.log('claim page props', props);
   return (
@@ -36,27 +41,35 @@ export default function ClaimPage(props: ClaimPageProps) {
         <div>average rating value: {calculateRating()} </div>
         <div>
           labels:
-          <div>
-            {props.claim.labels.map((label) => {
-              return <div key={label}>{label}</div>;
-            })}
-          </div>
+          {props.claim.labels ? (
+            <div>
+              {props.claim.labels.map((label) => {
+                return <div key={label}>{label}</div>;
+              })}
+            </div>
+          ) : (
+            <p>No labels associated</p>
+          )}
         </div>
         <div>
           associated reviews:
-          <div>
-            {props.claim.reviews.map((review) => {
-              console.log(review);
-              return (
-                <Link
-                  key={review.review_title}
-                  href={`/database/reviews/${review.review_id}`}
-                >
-                  {review.review_title}
-                </Link>
-              );
-            })}
-          </div>
+          {props.claim.reviews ? (
+            <div>
+              {props.claim.reviews.map((review) => {
+                console.log(review);
+                return (
+                  <Link
+                    key={review.review_title}
+                    href={`/database/reviews/${review.review_id}`}
+                  >
+                    {review.review_title}
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <p>No reviews found</p>
+          )}
         </div>
       </main>
     </>

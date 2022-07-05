@@ -23,18 +23,25 @@ export default function ReviewPage(props: ReviewPageProps) {
         <div>added by: {props.review.username}</div>
         <div>
           sources:{' '}
-          <div>
-            {props.review.sources.map((source) => {
-              return (
-                <div key={source.source_title}>
-                  <ul>
-                    <li>{source.source_title}</li>
-                    <li>{source.source_url}</li>
-                  </ul>
-                </div>
-              );
-            })}
-          </div>
+          {props.review.sources ? (
+            <div>
+              {props.review.sources.map((source) => {
+                return (
+                  <div key={source.source_title}>
+                    <ul>
+                      <li>{source.source_title}</li>
+                      <li>{source.source_url}</li>
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div>No sources given</div>
+          )}
+        </div>
+        <div>
+          {props.review.verdict ? <div>{props.review.verdict}</div> : <div />}
         </div>
       </main>
     </>

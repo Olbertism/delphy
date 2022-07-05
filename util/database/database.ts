@@ -1,6 +1,7 @@
 import camelcaseKeys from 'camelcase-keys';
 import { config } from 'dotenv-safe';
 import postgres from 'postgres';
+import { ClaimLabel, Label, Verdict } from '../types';
 
 config();
 
@@ -437,4 +438,28 @@ export async function createSource(
   const [source] = await sql<[Source]>`
   INSERT INTO sources (title, url, review_id) VALUES (${sourceTitle}, ${sourceUrl}, ${reviewId}) RETURNING *`;
   return camelcaseKeys(source);
+}
+
+export async function getAllVerdicts() {
+  const verdicts = await sql<[Verdict[]]>`
+  SELECT * FROM verdicts`;
+  return verdicts.map((verdict) => camelcaseKeys(verdict));
+}
+
+export async function createLabel(newLabel: string) {
+  const [label] = await sql<[Label]>`
+  INSERT INTO labels (label) VALUES (${newLabel}) RETURNING *`;
+  return camelcaseKeys(label);
+}
+
+export async function createClaimLabelPair(claimId: number, labelId: number) {
+  const [claimLabel] = await sql<[ClaimLabel]>`
+  INSERT INTO claim_labels (claim_id, label_id) VALUES (${claimId}, ${labelId}) RETURNING *`;
+  return camelcaseKeys(claimLabel);
+}
+
+export async function getAllLabels() {
+  const labels = await sql<[Label[]]>`
+  SELECT * FROM labels`;
+  return labels.map((label) => camelcaseKeys(label));
 }
