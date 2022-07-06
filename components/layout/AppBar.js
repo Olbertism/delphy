@@ -46,7 +46,7 @@ export default function ResponsiveAppBar(props) {
   };
 
   return (
-    <AppBar position="static">
+    <AppBar position="static" sx={{mb:"30px"}}>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           <Typography

@@ -15,4 +15,16 @@ export const theme = createTheme({
   status: {
     danger: '#0052cc',
   },
+  typography : {
+    h1: {
+      fontSize: '2.8rem',
+      marginBottom: "50px"
+    },
+    h2: {
+      fontSize: '2.3rem',
+    },
+    h3: {
+      fontSize: '1.5rem',
+    }
+  }
 });

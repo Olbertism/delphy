@@ -4,6 +4,7 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
+import { accordionHeadlineStyles } from '../../styles/customStyles';
 import { DashboardWidgetProps } from '../../util/types';
 
 export default function SearchEngineWidget(props: DashboardWidgetProps) {
@@ -21,7 +22,8 @@ export default function SearchEngineWidget(props: DashboardWidgetProps) {
       {props.contents.length === 0 ? <div /> :
       <Accordion>
         <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
+        sx={accordionHeadlineStyles}
+          expandIcon={<ExpandMoreIcon color="secondary"/>}
           aria-controls="panel1a-content"
           id="panel1a-header"
         >

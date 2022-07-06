@@ -1,4 +1,18 @@
-import { Box, Button, Grid, TextField } from '@mui/material';
+import FeedIcon from '@mui/icons-material/Feed';
+import {
+  Box,
+  Button,
+  Grid,
+  Link,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Skeleton,
+  TextField,
+  Typography,
+} from '@mui/material';
+import { Container } from '@mui/system';
 import Fuse from 'fuse.js';
 import { useEffect, useRef, useState } from 'react';
 import DatabaseWidget from '../components/dashboard/DbSearchResults';
@@ -7,6 +21,7 @@ import NewsWidget from '../components/dashboard/News';
 import SearchEngineWidget from '../components/dashboard/SearchEngine';
 import WikipediaWidget from '../components/dashboard/Wikipedia';
 import CircularIndeterminate from '../components/layout/ProgressCircle';
+import { greenTextHighlight, redTextHighlight } from '../styles/customStyles';
 import { getAllClaimsForSearch } from '../util/database/database';
 import { fetchResources } from '../util/fetchers/mainFetcher';
 import generateRoBERTaPrompts from '../util/robertaPromptsProcessor';
@@ -27,9 +42,13 @@ export default function Dashboard(props: DashboardProps) {
   console.log('dashboard props', props);
 
   const [searchQuery, setSearchQuery] = useState('');
+
   const [querySubmitted, setQuerySubmitted] = useState(false);
   const [robertaPrompts, setRobertaPrompts] = useState([]);
   const [predictions, setPredictions] = useState([]);
+
+  const [loadingResources, setLoadingResources] = useState(false);
+
   const [fetchedResources, setFetchedResources] = useState([]);
   const [formattedResources, setFormattedResources] = useState([]);
   const [displayedResources, setDisplayedResources] = useState([]);
@@ -62,6 +81,7 @@ export default function Dashboard(props: DashboardProps) {
     const [resources, shortedData] = await fetchResources(searchQuery);
     setFetchedResources(resources);
     setFormattedResources(shortedData);
+    setLoadingResources(false);
   }
 
   async function handleGenerateRoBERTaPrompts() {
@@ -117,37 +137,46 @@ export default function Dashboard(props: DashboardProps) {
 
   return (
     <main>
-      <h1>Check Claim</h1>
+      <Typography variant="h1">Check Claim</Typography>
+
       <div>
         <section>
           <Grid container spacing={2} sx={{ marginBottom: '40px' }}>
             <Grid item md={6}>
-              <Box sx={{ display: 'flex', gap: '20px' }}>
-                <TextField
-                  label="Enter a claim"
-                  size="small"
-                  value={searchQuery}
-                  ref={searchQueryInput}
-                  onChange={(event) => {
-                    setSearchQuery(event.currentTarget.value);
-                  }}
-                />
-
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={() => {
-                    handleDBSearch();
-                    handleFetchResources().catch((error) => {
-                      console.log(
-                        'An error occured with one or more fetched resources',
-                        error,
-                      );
-                    });
-                  }}
-                >
-                  Search
-                </Button>
+              <Box >
+                <Grid container spacing={2}>
+                  <Grid item md={8}>
+                    <TextField
+                    fullWidth
+                      label="Enter a claim"
+                      size="small"
+                      value={searchQuery}
+                      ref={searchQueryInput}
+                      onChange={(event) => {
+                        setSearchQuery(event.currentTarget.value);
+                      }}
+                    />
+                  </Grid>
+                  <Grid item md={4}>
+                    <Button
+                    disabled={loadingResources}
+                      variant="contained"
+                      color="secondary"
+                      onClick={() => {
+                        setLoadingResources(true);
+                        handleDBSearch();
+                        handleFetchResources().catch((error) => {
+                          console.log(
+                            'An error occured with one or more fetched resources',
+                            error,
+                          );
+                        });
+                      }}
+                    >
+                      Search
+                    </Button>
+                  </Grid>
+                </Grid>
               </Box>
             </Grid>
 
@@ -155,9 +184,17 @@ export default function Dashboard(props: DashboardProps) {
           </Grid>
           <Grid container spacing={2}>
             <Grid item md={6}>
-              <Box sx={{ display: 'flex', gap: '20px',  alignItems: "center" }}>
-                <div>Check claim against search results</div>
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: '20px',
+                  alignItems: 'center',
+                  mb: '40px',
+                }}
+              >
+                <Typography>Check claim against search results</Typography>
                 <Button
+                disabled={(formattedResources.length === 0 ? true : false) || loadingRoBERTa}
                   variant="contained"
                   color="secondary"
                   onClick={() => {
@@ -175,54 +212,109 @@ export default function Dashboard(props: DashboardProps) {
             </Grid>
             <Grid item md={6} />
           </Grid>
-
-          <div>
-            {loadingRoBERTa ? (
-              <CircularIndeterminate />
-            ) : (
-              <div>
-                <div hidden={displayedResources.length === 0 ? true : false}>
-                  Taglines that contradict claim:
-                </div>
-                <br />
+          <Grid container spacing={2}>
+            <Grid item md={6}>
+              <Typography
+                variant="h3"
+                component="h3"
+                hidden={displayedResources.length === 0 ? true : false}
+              >
+                Taglines that{' '}
+                <Box component="span" sx={redTextHighlight}>
+                  contradict
+                </Box>{' '}
+                claim:
+              </Typography>
+              <List sx={{ width: '100%', maxWidth: 600 }}>
                 {displayedResources.map((resource) => {
                   return resource.map((source) => {
                     if (source.prediction === 0) {
                       return (
-                        <div>
-                          <div>{source.title}</div>
-                          <div>{source.url}</div>
-                        </div>
+                        <ListItem alignItems="flex-start">
+                          <ListItemIcon>
+                            <FeedIcon />
+                          </ListItemIcon>
+
+                          <ListItemText
+                            primary={source.title}
+                            secondary={
+                              <Link
+                                href={source.url}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {source.url}
+                              </Link>
+                            }
+                          />
+                        </ListItem>
                       );
                     }
                   });
                 })}
-                <br />
-                <br />
-                <div hidden={displayedResources.length === 0 ? true : false}>
-                  Taglines that entail claim:
-                </div>
-                <br />
+              </List>
+            </Grid>
+            <Grid item md={6}>
+              <Typography
+                variant="h3"
+                component="h3"
+                hidden={displayedResources.length === 0 ? true : false}
+              >
+                Taglines that <Box component="span" sx={greenTextHighlight}>agree</Box> with claim:
+              </Typography>
+              <List sx={{ width: '100%', maxWidth: 600 }}>
                 {displayedResources.map((resource) => {
                   return resource.map((source) => {
                     if (source.prediction === 2) {
                       return (
-                        <div>
-                          <div>{source.title}</div>
-                          <div>{source.url}</div>
-                        </div>
+                        <ListItem alignItems="flex-start">
+                          <ListItemIcon>
+                            <FeedIcon />
+                          </ListItemIcon>
+
+                          <ListItemText
+                            primary={source.title}
+                            secondary={
+                              <Link
+                                href={source.url}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {source.url}
+                              </Link>
+                            }
+                          />
+                        </ListItem>
                       );
                     }
                   });
                 })}
-              </div>
+              </List>
+            </Grid>
+          </Grid>
+          <div>
+            {loadingRoBERTa ? (
+              <><Box sx={{display: "flex", justifyContent: "space-around"}}><CircularIndeterminate /></Box>
+
+                <Grid container spacing={2} sx={{mb: "30px"}}>
+                  <Grid item md={6}>
+                    <Skeleton variant="text" />
+                  </Grid>
+                  <Grid item md={6}>
+                    <Skeleton variant="text" />
+                  </Grid>
+                </Grid>
+              </>
+            ) : (
+              <div />
             )}
           </div>
         </section>
+        {loadingResources ? <Box sx={{display: "flex", justifyContent: "space-around"}}><CircularIndeterminate /></Box> : null}
         {formattedResources.length === 0 ? (
           <div />
         ) : (
-          <Box sx={{ flexGrow: 1 }}>
+          <Box sx={{ flexGrow: 1, mb: "30px" }}>
             <Grid container spacing={2}>
               <Grid item sm={12} md={4}>
                 <DatabaseWidget contents={dbClaimsSearchResults} />
