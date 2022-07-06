@@ -52,7 +52,10 @@ export default function Dashboard(props: DashboardProps) {
   const [fetchedResources, setFetchedResources] = useState([]);
   const [formattedResources, setFormattedResources] = useState([]);
   const [displayedResources, setDisplayedResources] = useState([]);
+
   const [loadingRoBERTa, setLoadingRoBERTa] = useState(false);
+  const [roBERTaError, setRoBERTaError] = useState('');
+
   const [dbClaimsSearchResults, setDbClaimsSearchResults] =
     useState<FuseResult>([]);
 
@@ -119,7 +122,13 @@ export default function Dashboard(props: DashboardProps) {
       },
       body: JSON.stringify(roBERTaRequestBody),
     }).then((response) => response.json());
-    console.log(fetchedPredictions);
+    console.log('RoBERTa response', fetchedPredictions);
+
+    if (fetchedPredictions.status === 'error') {
+      setRoBERTaError(fetchedPredictions.message);
+      setLoadingRoBERTa(false);
+      return;
+    }
 
     // call function to combine fetched Resources with fetched Predictions
 
@@ -143,11 +152,11 @@ export default function Dashboard(props: DashboardProps) {
         <section>
           <Grid container spacing={2} sx={{ marginBottom: '40px' }}>
             <Grid item md={6}>
-              <Box >
+              <Box>
                 <Grid container spacing={2}>
                   <Grid item md={8}>
                     <TextField
-                    fullWidth
+                      fullWidth
                       label="Enter a claim"
                       size="small"
                       value={searchQuery}
@@ -159,7 +168,7 @@ export default function Dashboard(props: DashboardProps) {
                   </Grid>
                   <Grid item md={4}>
                     <Button
-                    disabled={loadingResources}
+                      disabled={loadingResources}
                       variant="contained"
                       color="secondary"
                       onClick={() => {
@@ -194,10 +203,14 @@ export default function Dashboard(props: DashboardProps) {
               >
                 <Typography>Check claim against search results</Typography>
                 <Button
-                disabled={(formattedResources.length === 0 ? true : false) || loadingRoBERTa}
+                  disabled={
+                    (formattedResources.length === 0 ? true : false) ||
+                    loadingRoBERTa
+                  }
                   variant="contained"
                   color="secondary"
                   onClick={() => {
+                    setRoBERTaError('');
                     setLoadingRoBERTa(true);
                     handleGenerateRoBERTaPrompts().catch(() => {
                       console.log(
@@ -260,7 +273,11 @@ export default function Dashboard(props: DashboardProps) {
                 component="h3"
                 hidden={displayedResources.length === 0 ? true : false}
               >
-                Taglines that <Box component="span" sx={greenTextHighlight}>agree</Box> with claim:
+                Taglines that{' '}
+                <Box component="span" sx={greenTextHighlight}>
+                  agree
+                </Box>{' '}
+                with claim:
               </Typography>
               <List sx={{ width: '100%', maxWidth: 600 }}>
                 {displayedResources.map((resource) => {
@@ -294,9 +311,12 @@ export default function Dashboard(props: DashboardProps) {
           </Grid>
           <div>
             {loadingRoBERTa ? (
-              <><Box sx={{display: "flex", justifyContent: "space-around"}}><CircularIndeterminate /></Box>
+              <>
+                <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
+                  <CircularIndeterminate />
+                </Box>
 
-                <Grid container spacing={2} sx={{mb: "30px"}}>
+                <Grid container spacing={2} sx={{ mb: '30px' }}>
                   <Grid item md={6}>
                     <Skeleton variant="text" />
                   </Grid>
@@ -309,12 +329,17 @@ export default function Dashboard(props: DashboardProps) {
               <div />
             )}
           </div>
+          {roBERTaError !== '' ? <p>{roBERTaError}</p> : null}
         </section>
-        {loadingResources ? <Box sx={{display: "flex", justifyContent: "space-around"}}><CircularIndeterminate /></Box> : null}
+        {loadingResources ? (
+          <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
+            <CircularIndeterminate />
+          </Box>
+        ) : null}
         {formattedResources.length === 0 ? (
           <div />
         ) : (
-          <Box sx={{ flexGrow: 1, mb: "30px" }}>
+          <Box sx={{ flexGrow: 1, mb: '30px' }}>
             <Grid container spacing={2}>
               <Grid item sm={12} md={4}>
                 <DatabaseWidget contents={dbClaimsSearchResults} />

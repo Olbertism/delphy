@@ -1,30 +1,30 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { RoBERTaPrompt } from '../../util/types';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  console.log(req.body)
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
+  console.log(req.body);
   if (req.method !== 'POST') {
-    res.status(405).send({ message: 'Only POST requests allowed' })
-    return
+    res.status(405).send({ message: 'Only POST requests allowed' });
+    return;
   }
 
   // dev URL
-  const apiBaseUrl = 'http://127.0.0.1:5000/predict';
+  const apiBaseUrl = `http://127.0.0.1:5000/predict?api-key=${process.env.ROBERTAKEY}`;
 
   // at some point I might introduce an API key here?
 
-  const data = await fetch(
-    apiBaseUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(req.body)}
-  )
-  .then((response) => response.json());
+  const data = await fetch(apiBaseUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(req.body),
+  }).then((response) => response.json());
 
-  console.log(data)
-  // const parsedData = await data.json()
-  console.log("sending response...")
+  console.log(data);
+
   res.json(data); // Send the response
 }
