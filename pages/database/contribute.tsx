@@ -98,8 +98,6 @@ export default function Contribute(props: Props) {
   const [sourceUrl, setSourceUrl] = useState('');
   const [currentSourceList, setCurrentSourceList] = useState([]);
 
-  console.log('Rating value', ratingValue);
-  console.log('selected verdict', selectedVerdict);
 
   const ratingLabels: { [index: string]: string } = {
     1: 'Completly untrue',
@@ -337,7 +335,7 @@ export default function Contribute(props: Props) {
     setNewSourceInput(false);
   };
 
-  const handleSourceCreation = async (reviewId: number) => {
+/*   const handleSourceCreation = async (reviewId: number) => {
     const requestbody: SourceRequestbody = {
       sourceTitle: sourceTitle,
       sourceUrl: sourceUrl,
@@ -353,7 +351,7 @@ export default function Contribute(props: Props) {
     });
     const source = await response.json();
     return source;
-  };
+  }; */
 
   const handleSourcesCreation = async (reviewId: number) => {
     for (const source of currentSourceList) {
@@ -517,8 +515,9 @@ export default function Contribute(props: Props) {
             />
           </Box>
           <Box sx={{ display: 'flex', alignItems: "center", mb: "20px" }}>
-            <p>Add source</p>
+            <Typography>Add source</Typography>
             <IconButton
+              sx={{mb: "5px"}}
               aria-label="Add source"
               disabled={!addReviewCheckbox}
               onClick={() => setNewSourceInput(true)}
@@ -644,7 +643,7 @@ export default function Contribute(props: Props) {
             Submit
           </Button>
         </section>
-        <section>
+       {/*  <section>
           <h2>review</h2>
           <TextField
             size="small"
@@ -694,8 +693,8 @@ export default function Contribute(props: Props) {
           >
             Add Rating
           </Button>
-        </section>
-        <section>
+        </section> */}
+        {/* <section>
           <h2>Source</h2>
           <TextField
             value={selectedReview}
@@ -722,7 +721,7 @@ export default function Contribute(props: Props) {
           >
             Add Source
           </Button>
-        </section>
+        </section> */}
       </main>
     </>
   );

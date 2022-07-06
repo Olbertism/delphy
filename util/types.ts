@@ -98,3 +98,38 @@ export type ClaimLabel = {
   claim_id: number;
   label_id: number;
 };
+
+export type ClaimRequestbody = {
+  title: string;
+  description: string;
+  authorId: number | undefined;
+};
+
+export type ReviewRequestbody = {
+  title: string;
+  description: string;
+  authorId: number | undefined;
+  claimId: number;
+  verdictId?: number;
+};
+
+export type RatingRequestbody = {
+  claimId: number;
+  ratingValue: number;
+  authorId: number | undefined;
+};
+
+export type SourceRequestbody = {
+  sourceTitle: string;
+  sourceUrl: string;
+  reviewId: number;
+};
+
+export type ClaimLabelRequestbody = {
+  claimId: number;
+  labelId: number;
+};
+
+export type LabelRequestbody = {
+  newLabel: string;
+};

@@ -25,6 +25,11 @@ export const theme = createTheme({
     },
     h3: {
       fontSize: '1.5rem',
+      marginTop: "20px",
+      marginBottom: "5px"
+    },
+    body1: {
+      marginBottom: "5px"
     }
   }
 });

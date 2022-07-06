@@ -18,3 +18,15 @@ export const accordionHeadlineStyles = css`
   color: white;
   border-radius: 4px;
 `;
+
+export const labelStyles = css`
+  background-color: ${theme.palette.primary.main};
+  color: white;
+  justify-items: center;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-radius: 4px;
+  margin-left: 10px;
+  margin-right: 10px;
+  display: inline-block;
+`

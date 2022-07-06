@@ -1,3 +1,4 @@
+import { Link, List, ListItem, ListItemText, Typography } from '@mui/material';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import { getReviewWithAllRelationsById } from '../../../util/database/database';
@@ -7,6 +8,7 @@ type ReviewPageProps = {
   review: Review;
 };
 export default function ReviewPage(props: ReviewPageProps) {
+  console.log(props)
   return (
     <>
       <Head>
@@ -15,31 +17,47 @@ export default function ReviewPage(props: ReviewPageProps) {
       </Head>
 
       <main>
-        <h1>
-          Review #{props.review.reviewId} (Title: {props.review.reviewTitle})
-        </h1>
+        <Typography variant="subtitle1">
+          Review #{props.review.reviewId}
+        </Typography>
+        <Typography variant="h1">{props.review.reviewTitle}</Typography>
+        <Typography variant="h3">Claim</Typography>
+        <Link href={`/database/claims/${props.review.claimId}`}>{props.review.claimTitle}</Link>
+        <Typography variant="h3">Description</Typography>
+        <Typography>{props.review.reviewDescription}</Typography>
+        <Typography variant="h3">Added by</Typography>
+        <Link href={`/users/${props.review.username}`}>{props.review.username}</Link>
 
-        <div>description: {props.review.reviewDescription}</div>
-        <div>added by: {props.review.username}</div>
-        <div>
-          sources:{' '}
+        <Typography variant="h3">Sources</Typography>
+
           {props.review.sources ? (
-            <div>
+            <List sx={{ width: '100%' }}>
               {props.review.sources.map((source) => {
                 return (
-                  <div key={source.source_title}>
-                    <ul>
-                      <li>{source.source_title}</li>
-                      <li>{source.source_url}</li>
-                    </ul>
-                  </div>
+                  <ListItem alignItems="flex-start" key={source.source_title} disablePadding>
+
+
+                          <ListItemText
+                            primary={source.source_title}
+                            secondary={
+                              <Link
+                                href={source.source_url}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {source.source_url}
+                              </Link>
+                            }
+                          />
+                        </ListItem>
+
                 );
               })}
-            </div>
+            </List>
           ) : (
             <div>No sources given</div>
           )}
-        </div>
+
         <div>
           {props.review.verdict ? <div>{props.review.verdict}</div> : <div />}
         </div>
