@@ -1,13 +1,10 @@
 import { AddCircle, Save } from '@mui/icons-material';
 import {
   Button,
-  Checkbox,
   FormControl,
   IconButton,
-  InputBase,
   InputLabel,
   MenuItem,
-  Rating,
   Select,
   TextField,
   Typography,
@@ -16,23 +13,19 @@ import { Box } from '@mui/system';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import { useEffect, useState } from 'react';
-import { theme } from '../../styles/theme';
 import {
   checkIfAuthorExists,
   getAllClaims,
   getAllVerdicts,
   getUserByValidSessionToken,
 } from '../../util/database/database';
+import { Claim, SourceEntry, Verdict } from '../../util/types';
 
 type Props = {
   refreshUserProfile: () => Promise<void>;
+  claims: Claim[];
+  verdicts: Verdict[];
   author?: any;
-};
-
-type ClaimRequestbody = {
-  title: string;
-  description: string;
-  authorId: number | undefined;
 };
 
 type ReviewRequestbody = {
@@ -43,53 +36,30 @@ type ReviewRequestbody = {
   verdictId?: number;
 };
 
-type RatingRequestbody = {
-  claimId: number;
-  ratingValue: number;
-  authorId: number | undefined;
-};
-
 type SourceRequestbody = {
   sourceTitle: string;
   sourceUrl: string;
   reviewId: number;
 };
 
-type ClaimLabelRequestbody = {
-  claimId: number;
-  labelId: number;
-};
-
-type LabelRequestbody = {
-  newLabel: string;
-};
-
 export default function ContributeReview(props: Props) {
   const [authorId, setAuthorId] = useState<number | undefined>(
     props.author === null ? undefined : props.author.id,
   );
-  const [newClaimTitle, setNewClaimTitle] = useState('');
-  const [newClaimDescription, setNewClaimDescription] = useState('');
 
-  const [newReviewTitle, setNewReviewTitle] = useState('');
-  const [newReviewDescription, setNewReviewDescription] = useState('');
+  const [newReviewTitle, setNewReviewTitle] = useState<string>('');
+  const [newReviewDescription, setNewReviewDescription] = useState<string>('');
 
-  const [selectedClaim, setSelectedClaim] = useState(0);
+  const [selectedClaim, setSelectedClaim] = useState<number | string>('');
   const [selectedVerdict, setSelectedVerdict] = useState<number | string>('');
-  const [selectedReview, setSelectedReview] = useState(0);
-
-  const [selectedLabel, setSelectedLabel] = useState('');
-  const [savedLabels, setSavedLabels] = useState([]);
-
-  const [ratingValue, setRatingValue] = useState(0);
-
 
   const [newSourceInput, setNewSourceInput] = useState(false);
 
   const [sourceTitle, setSourceTitle] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
-  const [currentSourceList, setCurrentSourceList] = useState([]);
+  const [currentSourceList, setCurrentSourceList] = useState<SourceEntry[]>([]);
 
+  const [errors, setErrors] = useState<Error[]>([]);
 
   console.log('author: ', authorId);
 
@@ -101,43 +71,24 @@ export default function ContributeReview(props: Props) {
     );
   }, [refreshUserProfile]);
 
+  const appendError = (error: Error) => {
+    const errorList = [...errors, error];
+    setErrors(errorList);
+  };
+
+  const clearInputs = () => {
+    setSelectedClaim('');
+    setNewReviewTitle('');
+    setNewReviewDescription('');
+    setSourceTitle('');
+    setSourceUrl('');
+    setCurrentSourceList([]);
+  };
+
   const handleAuthorCreation = async () => {
     const response = await fetch('/api/createAuthor');
     const author = await response.json();
     return author;
-  };
-
-  const handleClaimCreation = async () => {
-    const requestbody: ClaimRequestbody = {
-      title: newClaimTitle,
-      description: newClaimDescription,
-      authorId: undefined, // value is inserted further below
-    };
-
-    if (!props.author) {
-      console.log('user not yet an author, let me handle that...');
-      const { author } = await handleAuthorCreation();
-
-      if (!author) {
-        console.log('An error ocurred while trying to create a new author');
-        return;
-      }
-
-      requestbody.authorId = author.id;
-      setAuthorId(author.id);
-    } else {
-      requestbody.authorId = authorId;
-    }
-
-    const response = await fetch('/api/createClaim', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestbody),
-    });
-    const claim = await response.json();
-    return claim;
   };
 
   const handleReviewCreation = async (claimId: number) => {
@@ -164,7 +115,7 @@ export default function ContributeReview(props: Props) {
     }
 
     if (selectedVerdict !== '') {
-      requestbody.verdictId = selectedVerdict;
+      requestbody.verdictId = selectedVerdict as number;
     }
 
     const response = await fetch('/api/createReview', {
@@ -178,132 +129,6 @@ export default function ContributeReview(props: Props) {
     return review;
   };
 
-  /*   const handleRatingCreation = async () => {
-    const requestbody: RatingRequestbody = {
-      claimId: selectedClaim,
-      ratingValue: ratingValue,
-      authorId: undefined, // value is inserted further below
-    };
-
-    if (!props.author) {
-      console.log('user not yet an author, let me handle that...');
-      const { author } = await handleAuthorCreation();
-
-      if (!author) {
-        console.log('An error ocurred while trying to create a new author');
-        return;
-      }
-
-      requestbody.authorId = author.id;
-      setAuthorId(author.id);
-    } else {
-      requestbody.authorId = authorId;
-    }
-
-    const response = await fetch('/api/createRating', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestbody),
-    });
-    const review = await response.json();
-    return review;
-  }; */
-
-  const handleRatingCreation = async (claimId) => {
-    const requestbody: RatingRequestbody = {
-      claimId: claimId,
-      ratingValue: ratingValue,
-      authorId: undefined, // value is inserted further below
-    };
-
-    if (!props.author) {
-      console.log('user not yet an author, let me handle that...');
-      const { author } = await handleAuthorCreation();
-
-      if (!author) {
-        console.log('An error ocurred while trying to create a new author');
-        return;
-      }
-
-      requestbody.authorId = author.id;
-      setAuthorId(author.id);
-    } else {
-      requestbody.authorId = authorId;
-    }
-
-    const response = await fetch('/api/createRating', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestbody),
-    });
-    const review = await response.json();
-    return review;
-  };
-
-  const handleSaveLabel = () => {
-    const updatedSavedLabels = [...savedLabels, selectedLabel];
-    setSavedLabels(updatedSavedLabels);
-    setSelectedLabel('');
-  };
-
-  const handleCreateLabel = async (claimId: number) => {
-    console.log('handleCreateLabel for claimid', claimId);
-
-    const currentLabels = props.labels;
-    const existingLabels = new Set();
-    for (let label of savedLabels) {
-      for (let currentLabel of currentLabels) {
-        if (label === currentLabel.label) {
-          // create only claim_labels entry
-          const requestbody: ClaimLabelRequestbody = {
-            claimId: claimId,
-            labelId: currentLabel.id,
-          };
-          const response = await fetch('/api/createClaimLabel', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestbody),
-          });
-          existingLabels.add(label);
-          break;
-        }
-      }
-      if (!existingLabels.has(label)) {
-        // create new label and claim_labels entry
-        const requestbodyNewLabel: LabelRequestbody = {
-          newLabel: label,
-        };
-        console.log(requestbodyNewLabel);
-        const responseNewLabel = await fetch('/api/createLabel', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestbodyNewLabel),
-        });
-        const newLabel = await responseNewLabel.json();
-        console.log(newLabel);
-        const requestbodyClaimLabel: ClaimLabelRequestbody = {
-          claimId: claimId,
-          labelId: newLabel.label.id,
-        };
-        const responseClaimLabel = await fetch('/api/createClaimLabel', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestbodyClaimLabel),
-        });
-      }
-    }
-  };
-
   const handleSaveSource = () => {
     const updatedSourceList = [
       ...currentSourceList,
@@ -315,8 +140,6 @@ export default function ContributeReview(props: Props) {
     setNewSourceInput(false);
   };
 
-
-
   const handleSourcesCreation = async (reviewId: number) => {
     for (const source of currentSourceList) {
       const requestbody: SourceRequestbody = {
@@ -325,14 +148,13 @@ export default function ContributeReview(props: Props) {
         reviewId: reviewId,
       };
 
-      const response = await fetch('/api/createSource', {
+      await fetch('/api/createSource', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestbody),
       });
-      // const source = await response.json();
     }
   };
 
@@ -346,43 +168,36 @@ export default function ContributeReview(props: Props) {
       <main>
         <Typography variant="h1">Add a review to the database</Typography>
 
-        <Box sx={{ maxWidth: '320px', mb: "30px" }}>
-              <FormControl fullWidth>
-                <InputLabel id="claim-select-label">Claim</InputLabel>
-                <Select
-
-                  labelId="claim-select-label"
-                  id="claim-select"
-                  value={selectedClaim}
-                  label="Select a claim"
-                  onChange={(event) => {
-                    setSelectedClaim(Number(event.target.value));
-                  }}
-                >
-                  {props.claims.map((claim) => {
-                    return (
-                      <MenuItem key={claim.title} value={claim.id}>
-                        {claim.title}
-                      </MenuItem>
-                    );
-                  })}
-                </Select>
-              </FormControl>
-            </Box>
-
-
-
-
+        <Box sx={{ maxWidth: '320px', mb: '30px' }}>
+          <FormControl fullWidth>
+            <InputLabel id="claim-select-label">Claim</InputLabel>
+            <Select
+              labelId="claim-select-label"
+              id="claim-select"
+              value={selectedClaim}
+              label="Select a claim"
+              onChange={(event) => {
+                setSelectedClaim(Number(event.target.value));
+              }}
+            >
+              {props.claims.map((claim) => {
+                return (
+                  <MenuItem key={claim.title} value={claim.id}>
+                    {claim.title}
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          </FormControl>
+        </Box>
 
         <section>
           <Typography variant="h2">Review for claim</Typography>
-
 
           <Box sx={{ marginBottom: '30px' }}>
             <TextField
               label="Review title"
               size="small"
-
               required
               value={newReviewTitle}
               onChange={(event) => {
@@ -393,7 +208,6 @@ export default function ContributeReview(props: Props) {
           <Box sx={{ marginBottom: '30px' }}>
             <TextField
               label="Review description"
-
               required
               multiline
               rows={9}
@@ -404,127 +218,110 @@ export default function ContributeReview(props: Props) {
               }}
             />
           </Box>
-          <Box sx={{ display: 'flex', alignItems: "center", mb: "20px" }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: '20px' }}>
             <Typography>Add source</Typography>
             <IconButton
-              sx={{mb: "5px"}}
+              sx={{ mb: '5px' }}
               aria-label="Add source"
-
               onClick={() => setNewSourceInput(true)}
             >
               <AddCircle />
             </IconButton>
 
-          <Box >
-            {newSourceInput ? (
-              <>
-                <TextField
-                  label="Source title"
-                  size="small"
-                  required
-                  value={sourceTitle}
-                  onChange={(event) => {
-                    setSourceTitle(event.currentTarget.value);
-                  }}
-                />
-                <TextField
-                  label="Source URL"
-                  size="small"
-                  required
-                  value={sourceUrl}
-                  onChange={(event) => {
-                    setSourceUrl(event.currentTarget.value);
-                  }}
-                />
-                <IconButton
-                  disabled={sourceTitle === '' || sourceUrl === ''}
-                  aria-label="Save source entry"
-                  onClick={() => handleSaveSource()}
-                >
-                  <Save />
-                </IconButton>
-              </>
-            ) : (
-              <div />
-            )}{' '}
+            <Box>
+              {newSourceInput ? (
+                <>
+                  <TextField
+                    label="Source title"
+                    size="small"
+                    required
+                    value={sourceTitle}
+                    onChange={(event) => {
+                      setSourceTitle(event.currentTarget.value);
+                    }}
+                  />
+                  <TextField
+                    label="Source URL"
+                    size="small"
+                    required
+                    value={sourceUrl}
+                    onChange={(event) => {
+                      setSourceUrl(event.currentTarget.value);
+                    }}
+                  />
+                  <IconButton
+                    disabled={sourceTitle === '' || sourceUrl === ''}
+                    aria-label="Save source entry"
+                    onClick={() => handleSaveSource()}
+                  >
+                    <Save />
+                  </IconButton>
+                </>
+              ) : (
+                <div />
+              )}{' '}
               {currentSourceList.length === 0 ? (
-            <Typography>Currently no sources provided</Typography>
-          ) : (
-            <div>
-              Sources:
-              <div>
-                {currentSourceList.map((source) => {
+                <Typography>Currently no sources provided</Typography>
+              ) : (
+                <div>
+                  Sources:
+                  <div>
+                    {currentSourceList.map((source) => {
+                      return (
+                        <div key={source.title}>
+                          <div>{source.title}</div>
+                          <div>{source.url}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </Box>
+          </Box>
+          <Box sx={{ maxWidth: '320px', mb: '30px' }}>
+            <FormControl fullWidth>
+              <InputLabel id="verdict-select-label">Verdict</InputLabel>
+              <Select
+                labelId="verdict-select-label"
+                id="verdict-select"
+                value={selectedVerdict}
+                label="Verdict"
+                onChange={(event) => {
+                  setSelectedVerdict(Number(event.target.value));
+                }}
+              >
+                {props.verdicts.map(({ verdict, id }) => {
                   return (
-                    <div key={source.title}>
-                      <div>{source.title}</div>
-                      <div>{source.url}</div>
-                    </div>
+                    <MenuItem key={verdict} value={id}>
+                      {verdict}
+                    </MenuItem>
                   );
                 })}
-              </div>
-            </div>
-          )}</Box>
+              </Select>
+            </FormControl>
           </Box>
-            <Box sx={{ maxWidth: '320px', mb: "30px" }}>
-              <FormControl fullWidth>
-                <InputLabel id="verdict-select-label">Verdict</InputLabel>
-                <Select
-
-                  labelId="verdict-select-label"
-                  id="verdict-select"
-                  value={selectedVerdict}
-                  label="Verdict"
-                  onChange={(event) => {
-                    setSelectedVerdict(Number(event.target.value));
-                  }}
-                >
-                  {props.verdicts.map(({ verdict, id }) => {
-                    return (
-                      <MenuItem key={verdict} value={id}>
-                        {verdict}
-                      </MenuItem>
-                    );
-                  })}
-                </Select>
-              </FormControl>
-            </Box>
-
 
           <Button
-            sx={{mb: "30px"}}
-            disabled={
-
-
-                newReviewTitle === '' || newReviewDescription === ''
-            }
+            sx={{ mb: '30px' }}
+            disabled={newReviewTitle === '' || newReviewDescription === ''}
             variant="contained"
             color="secondary"
             onClick={async () => {
-              /* const { claim } = await handleClaimCreation().catch(() => {
-                console.log('Error when trying to create new claim');
+              const { review } = await handleReviewCreation(
+                selectedClaim as number,
+              ).catch((error) => {
+                console.log('Error when trying to create new review');
+                appendError(error);
               });
-              console.log(claim);
-              if (savedLabels.length > 0) {
-                handleCreateLabel(claim.id).catch(() => {
-                  console.log('Error when trying to create new label');
-                });
-              } */
-              if (ratingValue > 0) {
-                handleRatingCreation(claim.id).catch(() => {
-                  console.log('Error when trying to create new rating');
+              if (currentSourceList.length > 0) {
+                handleSourcesCreation(review.id).catch((error) => {
+                  console.log('Error when trying to create new sources');
+                  appendError(error);
                 });
               }
-              if (null) {
-                const { review } = await handleReviewCreation(claim.id).catch(
-                  () => {
-                    console.log('Error when trying to create new review');
-                  },
-                );
-                if (currentSourceList.length > 0) {
-                  handleSourcesCreation(review.id).catch(() => {
-                    console.log('Error when trying to create new sources');
-                  });
-                }
+              if (errors.length === 0) {
+                clearInputs();
               }
 
               console.log('done');

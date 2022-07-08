@@ -133,3 +133,5 @@ export type ClaimLabelRequestbody = {
 export type LabelRequestbody = {
   newLabel: string;
 };
+
+export type SourceEntry = { title: string; url: string };
