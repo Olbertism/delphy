@@ -83,6 +83,7 @@ export default function ContributeReview(props: Props) {
     setSourceTitle('');
     setSourceUrl('');
     setCurrentSourceList([]);
+    setSelectedVerdict('');
   };
 
   const handleAuthorCreation = async () => {

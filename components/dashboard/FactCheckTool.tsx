@@ -1,5 +1,5 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Link, List, ListItem, ListItemText } from '@mui/material';
+import { Link, List, ListItem, ListItemText, Pagination } from '@mui/material';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
@@ -7,11 +7,14 @@ import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import { accordionHeadlineStyles } from '../../styles/customStyles';
 import { DashboardWidgetProps } from '../../util/types';
+import usePagination from './Pagination';
 
 export default function FactCheckToolWidget(props: DashboardWidgetProps) {
   console.log('fact check tool props: ', props);
 
   const [results, setResults] = useState(props.contents);
+  const [paginationCount, setPaginationCount] = useState<number>(0);
+  const [page, setPage] = useState(1);
   const [expanded, setExpanded] = useState(true);
 
   const displayedContents = props.contents;
@@ -19,6 +22,22 @@ export default function FactCheckToolWidget(props: DashboardWidgetProps) {
   useEffect(() => {
     setResults(displayedContents);
   }, [displayedContents]);
+
+  const perPage = 5;
+
+  useEffect(() => {
+    setPaginationCount(Math.ceil(results.length / perPage));
+  }, [results]);
+
+  const paginatedData = usePagination(results, perPage);
+
+  const handlePageChange = (
+    event: React.ChangeEvent<unknown>,
+    value: number,
+  ) => {
+    setPage(value);
+    paginatedData.jump(value);
+  };
 
   const handleExpansion = () => setExpanded(!expanded);
 
@@ -36,23 +55,26 @@ export default function FactCheckToolWidget(props: DashboardWidgetProps) {
         </AccordionSummary>
         <AccordionDetails>
           <List sx={{ width: '100%' }}>
-            {results.map((result) => {
-              return result.map((entry) => {
-                return (
-                  <ListItem alignItems="flex-start" key={entry.title}>
-                    <ListItemText
-                      primary={entry.title}
-                      secondary={
-                        <Link href={entry.url} target="_blank" rel="noreferrer">
-                          {entry.url}
-                        </Link>
-                      }
-                    />
-                  </ListItem>
-                );
-              });
+            {paginatedData.currentData().map((result) => {
+              return (
+                <ListItem alignItems="flex-start" key={result.title}>
+                  <ListItemText
+                    primary={result.title}
+                    secondary={
+                      <Link href={result.url} target="_blank" rel="noreferrer">
+                        {result.url}
+                      </Link>
+                    }
+                  />
+                </ListItem>
+              );
             })}
           </List>
+          <Pagination
+            count={paginationCount}
+            page={page}
+            onChange={handlePageChange}
+          />
         </AccordionDetails>
       </Accordion>
     </section>

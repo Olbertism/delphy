@@ -26,8 +26,6 @@ import { getAllClaimsForSearch } from '../util/database/database';
 import { fetchResources } from '../util/fetchers/mainFetcher';
 import generateRoBERTaPrompts from '../util/robertaPromptsProcessor';
 
-// useContext
-
 type DbClaim = {
   id: number;
   title: string;
@@ -216,6 +214,8 @@ export default function Dashboard(props: DashboardProps) {
                       console.log(
                         'An error occured trying to generate RoBERTa results',
                       );
+                      setRoBERTaError("No valid response received")
+                      setLoadingRoBERTa(false);
                     });
                   }}
                 >
@@ -337,7 +337,7 @@ export default function Dashboard(props: DashboardProps) {
           </Box>
         ) : null}
         {formattedResources.length === 0 ? (
-          <div />
+          null
         ) : (
           <Box sx={{ flexGrow: 1, mb: '30px' }}>
             <Grid container spacing={2}>
@@ -347,7 +347,8 @@ export default function Dashboard(props: DashboardProps) {
               <Grid item sm={12} md={8}>
                 <FactCheckToolWidget
                   query={searchQuery}
-                  contents={formattedResources.slice(0, 1)}
+                  contents={formattedResources[0]}
+
                 />
               </Grid>
               <Grid item sm={12} md={8}>
@@ -359,7 +360,8 @@ export default function Dashboard(props: DashboardProps) {
               <Grid item sm={12} md={4}>
                 <WikipediaWidget
                   query={searchQuery}
-                  contents={formattedResources.slice(2, 3)}
+                  contents={formattedResources[2]}
+
                 />
               </Grid>
             </Grid>

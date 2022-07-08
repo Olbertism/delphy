@@ -38,7 +38,7 @@ export default function DatabaseWidget(props: DashboardDbSearchProps) {
         </AccordionSummary>
         <AccordionDetails>
           <Typography component="div">
-            {results.length > 0 && (
+            {results.length > 0 ? (
               <ul className="list-group">
                 {results.map((result) => {
                   return (
@@ -50,7 +50,7 @@ export default function DatabaseWidget(props: DashboardDbSearchProps) {
                   );
                 })}
               </ul>
-            )}
+            ): <Typography>No results from database</Typography>}
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
             <Button

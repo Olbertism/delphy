@@ -29,9 +29,12 @@ function formatGoogleFactCheckToolResults(rawResponse: {
         url: claim.claimReview[0].url,
         promptSource: strip(claim.claimReview[0].title),
       };
-      if (!Object.values(entry).includes(undefined)) {
+      if (!["", undefined].some((i) => Object.values(entry).includes(i))) {
         unifiedOutput.push(entry);
       }
+      /* if (!Object.values(entry).includes(undefined)) {
+        unifiedOutput.push(entry);
+      } */
     }
   } catch (error) {
     console.log('Error with processing of GoogleFactCheckToolResults');

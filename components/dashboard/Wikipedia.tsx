@@ -1,5 +1,5 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { List, ListItem, ListItemText } from '@mui/material';
+import { List, ListItem, ListItemText, Pagination } from '@mui/material';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
@@ -8,15 +8,34 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { accordionHeadlineStyles } from '../../styles/customStyles';
 import { DashboardWidgetProps } from '../../util/types';
+import usePagination from './Pagination';
 
 export default function WikipediaWidget(props: DashboardWidgetProps) {
   const [results, setResults] = useState(props.contents);
+  const [paginationCount, setPaginationCount] = useState<number>(0);
+  const [page, setPage] = useState(1);
 
   const displayedContents = props.contents;
 
   useEffect(() => {
     setResults(displayedContents);
   }, [displayedContents]);
+
+  const perPage = 5;
+
+  useEffect(() => {
+    setPaginationCount(Math.ceil(results.length / perPage));
+  }, [results]);
+
+  const paginatedData = usePagination(results, perPage);
+
+  const handlePageChange = (
+    event: React.ChangeEvent<unknown>,
+    value: number,
+  ) => {
+    setPage(value);
+    paginatedData.jump(value);
+  };
 
   return (
     <section>
@@ -31,23 +50,28 @@ export default function WikipediaWidget(props: DashboardWidgetProps) {
         </AccordionSummary>
         <AccordionDetails>
           <List sx={{ width: '100%' }}>
-            {results.map((result) => {
-              return result.map((entry) => {
+            {paginatedData.currentData().map((result) => {
+
                 return (
-                  <ListItem alignItems="flex-start" key={entry.title}>
+                  <ListItem alignItems="flex-start" key={result.title}>
                     <ListItemText
-                      primary={entry.title}
+                      primary={result.title}
                       secondary={
-                        <Link href={entry.url} target="_blank" rel="noreferrer">
-                          {entry.url}
+                        <Link href={result.url} target="_blank" rel="noreferrer">
+                          {result.url}
                         </Link>
                       }
                     />
                   </ListItem>
                 );
-              });
+
             })}
           </List>
+          <Pagination
+            count={paginationCount}
+            page={page}
+            onChange={handlePageChange}
+          />
         </AccordionDetails>
       </Accordion>
     </section>

@@ -27,10 +27,12 @@ export default async function handler(
   }).then((response) => response.json());
 
   console.log(data);
+  console.log("after data log")
 
   try {
     res.json(data); // Send the response
   } catch(error) {
+    console.log("IN CUSTOM ERROR HANDLING")
     console.log(error)
     res.json({status: "error", message: "No valid response received"})
   }
