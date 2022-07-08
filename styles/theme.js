@@ -29,6 +29,16 @@ export const theme = createTheme({
       marginTop: "20px",
       marginBottom: "5px"
     },
+    h4: {
+      fontSize: '1.3rem',
+      marginTop: "20px",
+      marginBottom: "5px"
+    },
+    h5: {
+      fontSize: '1.2rem',
+      marginTop: "10px",
+      marginBottom: "5px"
+    },
     body1: {
       marginBottom: "5px"
     }

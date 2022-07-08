@@ -16,8 +16,6 @@ const inputGlobalStyles = (
 function MyApp({ Component, pageProps }) {
   const [user, setUser] = useState();
 
-  console.log("user in _app is", user)
-
   // create this function only one time, and not everytime page rerenders
   // otherwise this can be a memory leak
   const refreshUserProfile = useCallback(async () => {

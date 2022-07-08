@@ -9,7 +9,6 @@ import { DashboardWidgetProps } from '../../util/types';
 
 export default function SearchEngineWidget(props: DashboardWidgetProps) {
   const [results, setResults] = useState(props.contents);
-  console.log('SE props: ', props);
 
   const displayedContents = props.contents
 

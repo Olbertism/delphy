@@ -16,11 +16,10 @@ import * as React from 'react';
 import { theme } from '../../styles/theme';
 
 const pages = ['Dashboard', 'Database'];
-const settings = ['Profile', 'Logout'];
 const authenticationControls = ['Register', 'Login'];
 
 export default function ResponsiveAppBar(props) {
-  console.log('appbar props', props);
+
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const [anchorElContribute, setAnchorElContribute] = React.useState(null);
@@ -64,7 +63,7 @@ export default function ResponsiveAppBar(props) {
               textDecoration: 'none',
             }}
           >
-            LOGO
+            Δelphi
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
@@ -106,6 +105,22 @@ export default function ResponsiveAppBar(props) {
                   <Typography textAlign="center">{page}</Typography>
                 </MenuItem>
               ))}
+              <MenuItem
+                  key="add-claim"
+                  onClick={handleCloseContributeMenu}
+                  component="a"
+                  href="/database/contribute"
+                >
+                  <Typography textAlign="center">Add a claim</Typography>
+                </MenuItem>
+                <MenuItem
+                  key="add-review"
+                  onClick={handleCloseContributeMenu}
+                  component="a"
+                  href="/database/contribute-review"
+                >
+                  <Typography textAlign="center">Add a review</Typography>
+                </MenuItem>
             </Menu>
           </Box>
           {/*  ------------------ */}
@@ -212,7 +227,7 @@ export default function ResponsiveAppBar(props) {
                       key='profile'
                       onClick={handleCloseUserMenu}
                       component="a"
-                      href={`/database/users/${props.user.username}`}
+                      href={`/users/${props.user.username}`}
                     >
                       <Typography textAlign="center">Profile</Typography>
                     </MenuItem>

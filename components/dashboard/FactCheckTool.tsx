@@ -10,8 +10,7 @@ import { DashboardWidgetProps } from '../../util/types';
 import usePagination from './Pagination';
 
 export default function FactCheckToolWidget(props: DashboardWidgetProps) {
-  console.log('fact check tool props: ', props);
-
+ 
   const [results, setResults] = useState(props.contents);
   const [paginationCount, setPaginationCount] = useState<number>(0);
   const [page, setPage] = useState(1);

@@ -14,10 +14,12 @@ import {
   getUserByUsername,
   getUserByValidSessionToken,
 } from '../../util/database/database';
-import { User } from '../../util/types';
+import { Claim, Review, User } from '../../util/types';
 
 type ProfilePageProps = {
   user: User;
+  reviews: Review[];
+  claims: Claim[];
   isPageOwner: boolean;
 };
 export default function PublicUserProfile(props: ProfilePageProps) {

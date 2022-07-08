@@ -27,12 +27,7 @@ export default function NewsWidget(props: DashboardWidgetProps) {
   const [paginationCount, setPaginationCount] = useState<number>(0);
   const [page, setPage] = useState(1);
 
-  console.log('News props: ', props);
-  console.log('results', results);
-
   const displayedContents = props.contents;
-
-  // const shuffledArray = collectAndShuffleResults(displayedContents)
 
   useEffect(() => {
     setResults(collectAndShuffleResults(displayedContents));

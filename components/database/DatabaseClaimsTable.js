@@ -96,6 +96,7 @@ function EnhancedTableHead(props) {
     rowCount,
     onRequestSort,
   } = props;
+  console.log("Enhanced head props", props)
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
   };
@@ -141,7 +142,7 @@ function EnhancedTableHead(props) {
 }
 
 EnhancedTableHead.propTypes = {
-  numSelected: PropTypes.number.isRequired,
+  // numSelected: PropTypes.number.isRequired,
   onRequestSort: PropTypes.func.isRequired,
   // onSelectAllClick: PropTypes.func.isRequired,
   order: PropTypes.oneOf(['asc', 'desc']).isRequired,
@@ -208,15 +209,21 @@ EnhancedTableToolbar.propTypes = {
 };
 
 export default function ClaimsTable(props) {
-  console.log('Table props', props);
+
   const [order, setOrder] = React.useState('asc');
-  const [orderBy, setOrderBy] = React.useState('calories');
+  const [orderBy, setOrderBy] = React.useState('id');
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
+  
+  console.log("state: order", order)
+  console.log("state: orderBy", orderBy)
+
   const handleRequestSort = (event, property) => {
+    console.log("SORT FUNC TRIGGERED")
+    console.log("property in handleRequestSort", property)
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);

@@ -4,6 +4,10 @@ import {
   FormControl,
   IconButton,
   InputLabel,
+  Link,
+  List,
+  ListItem,
+  ListItemText,
   MenuItem,
   Select,
   TextField,
@@ -231,7 +235,7 @@ export default function ContributeReview(props: Props) {
 
             <Box>
               {newSourceInput ? (
-                <>
+                <Box sx={{ display: 'flex', gap: '15px' }}>
                   <TextField
                     label="Source title"
                     size="small"
@@ -257,28 +261,41 @@ export default function ContributeReview(props: Props) {
                   >
                     <Save />
                   </IconButton>
-                </>
-              ) : (
-                <div />
-              )}{' '}
-              {currentSourceList.length === 0 ? (
-                <Typography>Currently no sources provided</Typography>
-              ) : (
-                <div>
-                  Sources:
-                  <div>
+                </Box>
+              ) : null}
+            </Box>
+          </Box>
+          <Box sx={{mb: "15px"}}>
+            {' '}
+            {currentSourceList.length === 0 ? (
+              <Typography>Currently no sources provided</Typography>
+            ) : (
+              <>
+                <Typography variant="h5">Sources:</Typography>
+
+                  <List sx={{ width: '100%' }}>
                     {currentSourceList.map((source) => {
                       return (
-                        <div key={source.title}>
-                          <div>{source.title}</div>
-                          <div>{source.url}</div>
-                        </div>
+                        <ListItem alignItems="flex-start" key={source.title}>
+                          <ListItemText
+                            primary={source.title}
+                            secondary={
+                              <Link
+                                href={source.url}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {source.url}
+                              </Link>
+                            }
+                          />
+                        </ListItem>
                       );
                     })}
-                  </div>
-                </div>
-              )}
-            </Box>
+                  </List>
+
+              </>
+            )}
           </Box>
           <Box sx={{ maxWidth: '320px', mb: '30px' }}>
             <FormControl fullWidth>

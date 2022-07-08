@@ -12,7 +12,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { Container } from '@mui/system';
+import arrayShuffle from 'array-shuffle';
 import Fuse from 'fuse.js';
 import { useEffect, useRef, useState } from 'react';
 import DatabaseWidget from '../components/dashboard/DbSearchResults';
@@ -36,20 +36,29 @@ type DashboardProps = {
   claims: DbClaim[];
 };
 
+type FormattedResource = {
+  title: any;
+  url: any;
+  promptSource: string;
+  prediction?: number;
+};
+
 export default function Dashboard(props: DashboardProps) {
   console.log('dashboard props', props);
 
   const [searchQuery, setSearchQuery] = useState('');
 
-  const [querySubmitted, setQuerySubmitted] = useState(false);
-  const [robertaPrompts, setRobertaPrompts] = useState([]);
-  const [predictions, setPredictions] = useState([]);
-
   const [loadingResources, setLoadingResources] = useState(false);
 
   const [fetchedResources, setFetchedResources] = useState([]);
-  const [formattedResources, setFormattedResources] = useState([]);
+  const [formattedResources, setFormattedResources] = useState<
+    FormattedResource[][]
+  >([]);
+  const [evaluation, setEvaluation] = useState('');
   const [displayedResources, setDisplayedResources] = useState([]);
+  const [modelContradictions, setModelContradictions] = useState([]);
+  const [modelAgreements, setModelAgreements] = useState([]);
+  const [displayPredictions, setDisplayPredictions] = useState(false);
 
   const [loadingRoBERTa, setLoadingRoBERTa] = useState(false);
   const [roBERTaError, setRoBERTaError] = useState('');
@@ -57,7 +66,7 @@ export default function Dashboard(props: DashboardProps) {
   const [dbClaimsSearchResults, setDbClaimsSearchResults] =
     useState<FuseResult>([]);
 
-  console.log('fetchedResources: ', fetchedResources);
+  // console.log('fetchedResources: ', fetchedResources);
   console.log('formattedResources: ', formattedResources);
 
   const searchQueryInput = useRef(null);
@@ -86,7 +95,7 @@ export default function Dashboard(props: DashboardProps) {
   }
 
   async function handleGenerateRoBERTaPrompts() {
-    if (fetchedResources.length === 0 || !searchQuery) {
+    if (formattedResources.length === 0 || !searchQuery) {
       console.log('Tried to generate prompts without query or resources');
       return;
     }
@@ -130,15 +139,51 @@ export default function Dashboard(props: DashboardProps) {
 
     // call function to combine fetched Resources with fetched Predictions
 
+    // improve handling and storage of prediction resource display!!
     const combinedResources = formattedResources.slice();
+    const conclusio = { contradict: 0, agree: 0 };
+
+    const contradictions = [];
+    const agreements = [];
+
     for (let sources of combinedResources) {
       for (let source of sources) {
         source.prediction = fetchedPredictions.predictions.shift();
+
+        if (source.prediction === 0) {
+          contradictions.push(source);
+          conclusio.contradict += 1;
+        } else if (source.prediction === 2) {
+          agreements.push(source);
+          conclusio.agree += 1;
+        }
       }
     }
 
-    console.log(combinedResources);
+    const shuffledContradictions = arrayShuffle(contradictions);
+    const shuffledAgreements = arrayShuffle(agreements);
+
+    console.log('combinedResources', combinedResources);
+    console.log('conclusio', conclusio);
+
+    const modelEvaluation = `The claim seems to ${
+      conclusio.contradict > conclusio.agree ? 'contradict' : 'agree'
+    } with the found sources (extent: ${
+      conclusio.contradict > conclusio.agree
+        ? (conclusio.contradict / (conclusio.contradict + conclusio.agree)) *
+          100
+        : (conclusio.agree / (conclusio.contradict + conclusio.agree)) * 100
+    }%)`;
+
+    setEvaluation(modelEvaluation);
+
+    // this needs to change
     setDisplayedResources(combinedResources);
+
+    setModelAgreements(shuffledAgreements);
+    setModelContradictions(shuffledContradictions);
+
+    setDisplayPredictions(true);
     setLoadingRoBERTa(false);
   }
 
@@ -170,6 +215,7 @@ export default function Dashboard(props: DashboardProps) {
                       variant="contained"
                       color="secondary"
                       onClick={() => {
+                        setDisplayPredictions(false);
                         setLoadingResources(true);
                         handleDBSearch();
                         handleFetchResources().catch((error) => {
@@ -209,12 +255,13 @@ export default function Dashboard(props: DashboardProps) {
                   color="secondary"
                   onClick={() => {
                     setRoBERTaError('');
+                    setDisplayPredictions(false);
                     setLoadingRoBERTa(true);
                     handleGenerateRoBERTaPrompts().catch(() => {
                       console.log(
                         'An error occured trying to generate RoBERTa results',
                       );
-                      setRoBERTaError("No valid response received")
+                      setRoBERTaError('No valid response received');
                       setLoadingRoBERTa(false);
                     });
                   }}
@@ -225,25 +272,32 @@ export default function Dashboard(props: DashboardProps) {
             </Grid>
             <Grid item md={6} />
           </Grid>
-          <Grid container spacing={2}>
-            <Grid item md={6}>
-              <Typography
-                variant="h3"
-                component="h3"
-                hidden={displayedResources.length === 0 ? true : false}
-              >
-                Taglines that{' '}
-                <Box component="span" sx={redTextHighlight}>
-                  contradict
-                </Box>{' '}
-                claim:
-              </Typography>
-              <List sx={{ width: '100%', maxWidth: 600 }}>
-                {displayedResources.map((resource) => {
-                  return resource.map((source) => {
-                    if (source.prediction === 0) {
+
+          {displayPredictions ? (
+            <>
+              <Typography>{evaluation}</Typography>
+              <Grid container spacing={2}>
+                <Grid item md={6}>
+                  <Typography
+                    variant="h3"
+                    component="h3"
+                    hidden={
+                      modelAgreements.length === 0 &&
+                      modelContradictions.length === 0
+                        ? true
+                        : false
+                    }
+                  >
+                    Taglines that{' '}
+                    <Box component="span" sx={redTextHighlight}>
+                      contradict
+                    </Box>{' '}
+                    claim:
+                  </Typography>
+                  <List sx={{ width: '100%', maxWidth: 600 }}>
+                    {modelContradictions.map((source) => {
                       return (
-                        <ListItem alignItems="flex-start">
+                        <ListItem alignItems="flex-start" key={source.title}>
                           <ListItemIcon>
                             <FeedIcon />
                           </ListItemIcon>
@@ -262,29 +316,30 @@ export default function Dashboard(props: DashboardProps) {
                           />
                         </ListItem>
                       );
+                    })}
+                  </List>
+                </Grid>
+                <Grid item md={6}>
+                  <Typography
+                    variant="h3"
+                    component="h3"
+                    hidden={
+                      modelAgreements.length === 0 &&
+                      modelContradictions.length === 0
+                        ? true
+                        : false
                     }
-                  });
-                })}
-              </List>
-            </Grid>
-            <Grid item md={6}>
-              <Typography
-                variant="h3"
-                component="h3"
-                hidden={displayedResources.length === 0 ? true : false}
-              >
-                Taglines that{' '}
-                <Box component="span" sx={greenTextHighlight}>
-                  agree
-                </Box>{' '}
-                with claim:
-              </Typography>
-              <List sx={{ width: '100%', maxWidth: 600 }}>
-                {displayedResources.map((resource) => {
-                  return resource.map((source) => {
-                    if (source.prediction === 2) {
+                  >
+                    Taglines that{' '}
+                    <Box component="span" sx={greenTextHighlight}>
+                      agree
+                    </Box>{' '}
+                    with claim:
+                  </Typography>
+                  <List sx={{ width: '100%', maxWidth: 600 }}>
+                    {modelAgreements.map((source) => {
                       return (
-                        <ListItem alignItems="flex-start">
+                        <ListItem alignItems="flex-start" key={source.title}>
                           <ListItemIcon>
                             <FeedIcon />
                           </ListItemIcon>
@@ -303,12 +358,13 @@ export default function Dashboard(props: DashboardProps) {
                           />
                         </ListItem>
                       );
-                    }
-                  });
-                })}
-              </List>
-            </Grid>
-          </Grid>
+                    })}
+                  </List>
+                </Grid>
+              </Grid>
+            </>
+          ) : null}
+
           <div>
             {loadingRoBERTa ? (
               <>
@@ -325,9 +381,7 @@ export default function Dashboard(props: DashboardProps) {
                   </Grid>
                 </Grid>
               </>
-            ) : (
-              <div />
-            )}
+            ) : null}
           </div>
           {roBERTaError !== '' ? <p>{roBERTaError}</p> : null}
         </section>
@@ -336,9 +390,7 @@ export default function Dashboard(props: DashboardProps) {
             <CircularIndeterminate />
           </Box>
         ) : null}
-        {formattedResources.length === 0 ? (
-          null
-        ) : (
+        {formattedResources.length === 0 ? null : (
           <Box sx={{ flexGrow: 1, mb: '30px' }}>
             <Grid container spacing={2}>
               <Grid item sm={12} md={4}>
@@ -348,7 +400,6 @@ export default function Dashboard(props: DashboardProps) {
                 <FactCheckToolWidget
                   query={searchQuery}
                   contents={formattedResources[0]}
-
                 />
               </Grid>
               <Grid item sm={12} md={8}>
@@ -361,17 +412,16 @@ export default function Dashboard(props: DashboardProps) {
                 <WikipediaWidget
                   query={searchQuery}
                   contents={formattedResources[2]}
-
                 />
               </Grid>
             </Grid>
           </Box>
         )}
 
-        <SearchEngineWidget
+        {/* <SearchEngineWidget
           query={searchQuery}
           contents={formattedResources.slice(1, 2)}
-        />
+        /> */}
       </div>
     </main>
   );
