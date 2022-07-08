@@ -1,3 +1,5 @@
+import { Button, TextField, Typography } from '@mui/material';
+import { Box } from '@mui/system';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
@@ -49,24 +51,24 @@ export default function Login(props: Props) {
     }
   }
   return (
-    <div>
+    <>
       <Head>
         <title>Login</title>
         <meta name="description" content="Login page" />
       </Head>
 
       <main>
-        <h1>Login</h1>
-        <div>
-          <label>
-            Username
-            <input
-              value={username}
-              onChange={(event) => {
-                setUsername(event.currentTarget.value);
-              }}
-            />
-          </label>
+        <Typography variant="h1">Login</Typography>
+        <Box sx={{display: "flex", gap: "30px", mb: "30px"}}>
+          <TextField
+            size="small"
+            value={username}
+            onChange={(event) => {
+              setUsername(event.currentTarget.value);
+            }}
+            label="Username"
+          />
+
           {/* <label>
             Email
             <input
@@ -76,6 +78,36 @@ export default function Login(props: Props) {
               }}
             />
           </label> */}
+          <TextField
+          size="small"
+            value={password}
+            onChange={(event) => {
+              setPassword(event.currentTarget.value);
+            }}
+            label="Password"
+            type="password"
+            autoComplete="current-password"
+          />
+        </Box>
+        <Box>
+          <Button
+            onClick={() => loginHandler()}
+            variant="contained"
+            color="secondary"
+          >
+            Login
+          </Button>
+        </Box>
+        {/* <div>
+          <label>
+            Username
+            <input
+              value={username}
+              onChange={(event) => {
+                setUsername(event.currentTarget.value);
+              }}
+            />
+          </label>
           <label>
             Password
             <input
@@ -86,8 +118,8 @@ export default function Login(props: Props) {
             />
           </label>
           <button onClick={() => loginHandler()}>Login</button>
-        </div>
+        </div> */}
       </main>
-    </div>
+    </>
   );
 }

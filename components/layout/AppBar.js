@@ -139,7 +139,7 @@ export default function ResponsiveAppBar(props) {
                 {page}
               </MenuItem>
             ))}
-            <MenuItem onClick={handleOpenContributeMenu}>
+            <MenuItem onClick={handleOpenContributeMenu} component="a" sx={{mb: 0}}>
               Contribute
               <KeyboardArrowDownIcon />
             </MenuItem>
@@ -171,7 +171,7 @@ export default function ResponsiveAppBar(props) {
                   key="add-review"
                   onClick={handleCloseContributeMenu}
                   component="a"
-                  href="/database/contribute"
+                  href="/database/contribute-review"
                 >
                   <Typography textAlign="center">Add a review</Typography>
                 </MenuItem>
@@ -208,7 +208,24 @@ export default function ResponsiveAppBar(props) {
                   open={Boolean(anchorElUser)}
                   onClose={handleCloseUserMenu}
                 >
-                  {settings.map((setting) => (
+                  <MenuItem
+                      key='profile'
+                      onClick={handleCloseUserMenu}
+                      component="a"
+                      href={`/database/users/${props.user.username}`}
+                    >
+                      <Typography textAlign="center">Profile</Typography>
+                    </MenuItem>
+                    <MenuItem
+                      key='logout'
+                      onClick={handleCloseUserMenu}
+                      component="a"
+                      href={`/logout`}
+                    >
+                      <Typography textAlign="center">Logout</Typography>
+                    </MenuItem>
+
+                  {/* {settings.map((setting) => (
                     <MenuItem
                       key={setting}
                       onClick={handleCloseUserMenu}
@@ -219,7 +236,7 @@ export default function ResponsiveAppBar(props) {
                     >
                       <Typography textAlign="center">{setting}</Typography>
                     </MenuItem>
-                  ))}
+                  ))} */}
                 </Menu>
               </>
             ) : (

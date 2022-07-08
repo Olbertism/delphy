@@ -21,7 +21,8 @@ export const theme = createTheme({
       marginBottom: "50px"
     },
     h2: {
-      fontSize: '2.3rem',
+      fontSize: '2.1rem',
+      marginBottom: "20px"
     },
     h3: {
       fontSize: '1.5rem',

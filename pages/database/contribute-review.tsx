@@ -1,10 +1,4 @@
-import {
-  AddCircle,
-  InputOutlined,
-  InputRounded,
-  PlusOne,
-  Save,
-} from '@mui/icons-material';
+import { AddCircle, Save } from '@mui/icons-material';
 import {
   Button,
   Checkbox,
@@ -25,7 +19,7 @@ import { useEffect, useState } from 'react';
 import { theme } from '../../styles/theme';
 import {
   checkIfAuthorExists,
-  getAllLabels,
+  getAllClaims,
   getAllVerdicts,
   getUserByValidSessionToken,
 } from '../../util/database/database';
@@ -70,7 +64,7 @@ type LabelRequestbody = {
   newLabel: string;
 };
 
-export default function Contribute(props: Props) {
+export default function ContributeReview(props: Props) {
   const [authorId, setAuthorId] = useState<number | undefined>(
     props.author === null ? undefined : props.author.id,
   );
@@ -87,10 +81,8 @@ export default function Contribute(props: Props) {
   const [selectedLabel, setSelectedLabel] = useState('');
   const [savedLabels, setSavedLabels] = useState([]);
 
-  const [addReviewCheckbox, setAddReviewCheckbox] = useState(false);
-
   const [ratingValue, setRatingValue] = useState(0);
-  const [ratingHover, setRatingHover] = useState(-1);
+
 
   const [newSourceInput, setNewSourceInput] = useState(false);
 
@@ -98,18 +90,6 @@ export default function Contribute(props: Props) {
   const [sourceUrl, setSourceUrl] = useState('');
   const [currentSourceList, setCurrentSourceList] = useState([]);
 
-
-  const ratingLabels: { [index: string]: string } = {
-    1: 'Completly untrue',
-    2: 'Low credibility',
-    3: 'Debatable',
-    4: 'Mostly factual',
-    5: 'Factual',
-  };
-
-  function getRatingLabelText(value: number) {
-    return `${value} Star${value !== 1 ? 's' : ''}, ${ratingLabels[value]}`;
-  }
 
   console.log('author: ', authorId);
 
@@ -335,23 +315,7 @@ export default function Contribute(props: Props) {
     setNewSourceInput(false);
   };
 
-/*   const handleSourceCreation = async (reviewId: number) => {
-    const requestbody: SourceRequestbody = {
-      sourceTitle: sourceTitle,
-      sourceUrl: sourceUrl,
-      reviewId: reviewId,
-    };
 
-    const response = await fetch('/api/createSource', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestbody),
-    });
-    const source = await response.json();
-    return source;
-  }; */
 
   const handleSourcesCreation = async (reviewId: number) => {
     for (const source of currentSourceList) {
@@ -380,119 +344,45 @@ export default function Contribute(props: Props) {
       </Head>
 
       <main>
-        <Typography variant="h1">Add a claim to the database</Typography>
+        <Typography variant="h1">Add a review to the database</Typography>
+
+        <Box sx={{ maxWidth: '320px', mb: "30px" }}>
+              <FormControl fullWidth>
+                <InputLabel id="claim-select-label">Claim</InputLabel>
+                <Select
+
+                  labelId="claim-select-label"
+                  id="claim-select"
+                  value={selectedClaim}
+                  label="Select a claim"
+                  onChange={(event) => {
+                    setSelectedClaim(Number(event.target.value));
+                  }}
+                >
+                  {props.claims.map((claim) => {
+                    return (
+                      <MenuItem key={claim.title} value={claim.id}>
+                        {claim.title}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Box>
+
+
+
+
 
         <section>
-          <Typography variant="h2">New claim</Typography>
-          <Box sx={{ marginBottom: '30px' }}>
-            <TextField
-              label="Claim title"
-              size="small"
-              required
-              value={newClaimTitle}
-              onChange={(event) => {
-                setNewClaimTitle(event.currentTarget.value);
-              }}
-            />
-          </Box>
-          <Box sx={{ marginBottom: '30px' }}>
-            <TextField
-              label="Description"
-              required
-              multiline
-              rows={9}
-              fullWidth
-              value={newClaimDescription}
-              onChange={(event) => {
-                setNewClaimDescription(event.currentTarget.value);
-              }}
-            />
-          </Box>
-          <Box
-            sx={{ marginBottom: '30px', display: 'flex', alignItems: 'center' }}
-          >
-            <TextField
-              label="Labels"
-              size="small"
-              value={selectedLabel}
-              onChange={(event) => {
-                setSelectedLabel(event.currentTarget.value);
-              }}
-            />
-            {selectedLabel === '' ? (
-              <div />
-            ) : (
-              <IconButton
-                aria-label="Save label entry"
-                onClick={() => handleSaveLabel()}
-              >
-                <Save />
-              </IconButton>
-            )}
-            {savedLabels.length === 0 ? (
-              <Typography sx={{ marginLeft: '10px', marginRight: '10px' }}>
-                No labels set
-              </Typography>
-            ) : (
-              savedLabels.map((savedLabel) => {
-                return (
-                  <Typography
-                    sx={{
-                      backgroundColor: theme.palette.primary.main,
-                      color: 'white',
-                      justifyItems: 'center',
-                      paddingLeft: "10px",
-                      paddingRight: '10px',
-                      borderRadius: '4px',
-                      marginLeft: '10px',
-                      marginRight: '10px',
-                    }}
-                    key={savedLabel}
-                  >
-                    {savedLabel}
-                  </Typography>
-                );
-              })
-            )}
-          </Box>
-          <Box sx={{ marginBottom: '50px' }}>
-            <Typography>Credibility rating for claim</Typography>
-            <Rating
-              name="Claim Rating"
-              value={ratingValue}
-              precision={1}
-              getLabelText={getRatingLabelText}
-              onChange={(event) => {
-                setRatingValue(Number(event.currentTarget.value));
-              }}
-              onChangeActive={(event, newRatingHover) =>
-                setRatingHover(newRatingHover)
-              }
-              // emptyIcon={<StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />}
-            />
-
-              <Box sx={{ position: "absolute"}}>
-                {ratingLabels[ratingHover !== -1 ? ratingHover : ratingValue]}
-              </Box>
-
-          </Box>
-
           <Typography variant="h2">Review for claim</Typography>
-          <Box sx={{ display: 'flex' }}>
-            <p>Attach a review?</p>
-            <Checkbox
-              onChange={() => {
-                setAddReviewCheckbox(!addReviewCheckbox);
-              }}
-              inputProps={{ 'aria-label': 'controlled' }}
-            />
-          </Box>
+
 
           <Box sx={{ marginBottom: '30px' }}>
             <TextField
               label="Review title"
               size="small"
-              disabled={!addReviewCheckbox}
+
               required
               value={newReviewTitle}
               onChange={(event) => {
@@ -503,7 +393,7 @@ export default function Contribute(props: Props) {
           <Box sx={{ marginBottom: '30px' }}>
             <TextField
               label="Review description"
-              disabled={!addReviewCheckbox}
+
               required
               multiline
               rows={9}
@@ -519,7 +409,7 @@ export default function Contribute(props: Props) {
             <IconButton
               sx={{mb: "5px"}}
               aria-label="Add source"
-              disabled={!addReviewCheckbox}
+
               onClick={() => setNewSourceInput(true)}
             >
               <AddCircle />
@@ -579,7 +469,7 @@ export default function Contribute(props: Props) {
               <FormControl fullWidth>
                 <InputLabel id="verdict-select-label">Verdict</InputLabel>
                 <Select
-                  disabled={!addReviewCheckbox}
+
                   labelId="verdict-select-label"
                   id="verdict-select"
                   value={selectedVerdict}
@@ -603,15 +493,14 @@ export default function Contribute(props: Props) {
           <Button
             sx={{mb: "30px"}}
             disabled={
-              newClaimTitle === '' ||
-              newClaimDescription === '' ||
-              (addReviewCheckbox &&
-                (newReviewTitle === '' || newReviewDescription === ''))
+
+
+                newReviewTitle === '' || newReviewDescription === ''
             }
             variant="contained"
             color="secondary"
             onClick={async () => {
-              const { claim } = await handleClaimCreation().catch(() => {
+              /* const { claim } = await handleClaimCreation().catch(() => {
                 console.log('Error when trying to create new claim');
               });
               console.log(claim);
@@ -619,13 +508,13 @@ export default function Contribute(props: Props) {
                 handleCreateLabel(claim.id).catch(() => {
                   console.log('Error when trying to create new label');
                 });
-              }
+              } */
               if (ratingValue > 0) {
                 handleRatingCreation(claim.id).catch(() => {
                   console.log('Error when trying to create new rating');
                 });
               }
-              if (addReviewCheckbox) {
+              if (null) {
                 const { review } = await handleReviewCreation(claim.id).catch(
                   () => {
                     console.log('Error when trying to create new review');
@@ -644,85 +533,6 @@ export default function Contribute(props: Props) {
             Submit
           </Button>
         </section>
-       {/*  <section>
-          <h2>review</h2>
-          <TextField
-            size="small"
-            value={selectedClaim}
-            onChange={(event) => {
-              setSelectedClaim(Number(event.currentTarget.value));
-            }}
-          />
-          <TextField
-            value={newReviewTitle}
-            onChange={(event) => {
-              setNewReviewTitle(event.currentTarget.value);
-            }}
-          />
-          <TextField
-            value={newReviewDescription}
-            onChange={(event) => {
-              setNewReviewDescription(event.currentTarget.value);
-            }}
-          />
-          <Button
-            onClick={() => {
-              handleReviewCreation(selectedClaim, selectedVerdict);
-            }}
-          >
-            Create Review
-          </Button>
-        </section>
-        <section>
-          <h2>Rating</h2>
-          <TextField
-            value={selectedClaim}
-            onChange={(event) => {
-              setSelectedClaim(Number(event.currentTarget.value));
-            }}
-          />
-          <TextField
-            value={ratingValue}
-            onChange={(event) => {
-              setRatingValue(Number(event.currentTarget.value));
-            }}
-          />
-          <Button
-            onClick={() => {
-              handleRatingCreation();
-            }}
-          >
-            Add Rating
-          </Button>
-        </section> */}
-        {/* <section>
-          <h2>Source</h2>
-          <TextField
-            value={selectedReview}
-            onChange={(event) => {
-              setSelectedReview(Number(event.currentTarget.value));
-            }}
-          />
-          <TextField
-            value={sourceTitle}
-            onChange={(event) => {
-              setSourceTitle(event.currentTarget.value);
-            }}
-          />
-          <TextField
-            value={sourceUrl}
-            onChange={(event) => {
-              setSourceUrl(event.currentTarget.value);
-            }}
-          />
-          <Button
-            onClick={() => {
-              handleSourceCreation();
-            }}
-          >
-            Add Source
-          </Button>
-        </section> */}
       </main>
     </>
   );
@@ -734,7 +544,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   );
 
   const verdicts = await getAllVerdicts();
-  const labels = await getAllLabels();
+  let claims = await getAllClaims();
+  // to prevent serialization issue with date objects:
+  claims = JSON.parse(JSON.stringify(claims));
 
   if (user) {
     const author = await checkIfAuthorExists(user.id);
@@ -745,13 +557,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           user: user,
           author: author,
           verdicts: verdicts,
-          labels: labels,
+          claims: claims,
         },
       };
     }
     console.log('user logged in, but not an author');
     return {
-      props: { user: user, author: null, verdicts: verdicts, labels: labels },
+      props: { user: user, author: null, verdicts: verdicts, claims: claims },
     };
   }
 

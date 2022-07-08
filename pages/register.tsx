@@ -1,9 +1,14 @@
+import { Box, Button, TextField, Typography } from '@mui/material';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { RegisterError, RegisterResponseBody } from '../util/types';
 
-export default function Register(props) {
+type Props = {
+  refreshUserProfile: () => Promise<void>;
+};
+
+export default function Register(props: Props) {
   const [username, setUsername] = useState('');
   // const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,24 +37,24 @@ export default function Register(props) {
     await router.push('/');
   }
   return (
-    <div>
+    <>
       <Head>
         <title>Register</title>
         <meta name="description" content="Dashboard for the application" />
       </Head>
 
       <main>
-        <h1>Register</h1>
-        <div>
-          <label>
-            Username
-            <input
-              value={username}
-              onChange={(event) => {
-                setUsername(event.currentTarget.value);
-              }}
-            />
-          </label>
+        <Typography variant="h1">Register</Typography>
+        <Box sx={{display: "flex", gap: "30px", mb: "30px"}}>
+          <TextField
+          size="small"
+            value={username}
+            onChange={(event) => {
+              setUsername(event.currentTarget.value);
+            }}
+            label="Username"
+          />
+
           {/* <label>
             Email
             <input
@@ -59,6 +64,36 @@ export default function Register(props) {
               }}
             />
           </label> */}
+          <TextField
+          size="small"
+            value={password}
+            onChange={(event) => {
+              setPassword(event.currentTarget.value);
+            }}
+            label="Password"
+            type="password"
+            autoComplete="current-password"
+          />
+        </Box>
+        <Box>
+          <Button
+            onClick={() => registerHandler()}
+            variant="contained"
+            color="secondary"
+          >
+            Sign up
+          </Button>
+        </Box>
+        {/* <div>
+          <label>
+            Username
+            <input
+              value={username}
+              onChange={(event) => {
+                setUsername(event.currentTarget.value);
+              }}
+            />
+          </label>
           <label>
             Password
             <input
@@ -69,8 +104,8 @@ export default function Register(props) {
             />
           </label>
           <button onClick={() => registerHandler()}>Sign up</button>
-        </div>
+        </div> */}
       </main>
-    </div>
+    </>
   );
 }

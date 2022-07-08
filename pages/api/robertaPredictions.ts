@@ -12,7 +12,9 @@ export default async function handler(
   }
 
   // dev URL
-  const apiBaseUrl = `http://127.0.0.1:5000/predict?api-key=${process.env.ROBERTAKEY}`;
+  /* const apiBaseUrl = `http://127.0.0.1:5000/predict?api-key=${process.env.ROBERTAKEY}`; */
+  //prod URL
+  const apiBaseUrl = `https://roberta-mnli.herokuapp.com/predict?api-key=${process.env.ROBERTAKEY}`;
 
   // at some point I might introduce an API key here?
 
@@ -26,5 +28,10 @@ export default async function handler(
 
   console.log(data);
 
-  res.json(data); // Send the response
+  try {
+    res.json(data); // Send the response
+  } catch(error) {
+    console.log(error)
+    res.json({status: "error", message: "No valid response received"})
+  }
 }

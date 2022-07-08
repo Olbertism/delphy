@@ -464,3 +464,33 @@ export async function getAllLabels() {
   SELECT * FROM labels`;
   return labels.map((label) => camelcaseKeys(label));
 }
+
+export async function getClaimsByUsername(username: string) {
+  const claims = await sql`
+  SELECT
+  claims.id AS claim_id,
+  claims.title AS claim_title,
+  claims.added AS claim_added
+
+  FROM claims, users, authors
+
+  WHERE users.username = ${username} AND users.id = authors.user_id AND authors.id = claims.author_id;`;
+
+  return claims.map((claim) => camelcaseKeys(claim));
+}
+
+export async function getReviewsByUsername(username: string) {
+  const reviews = await sql`
+  SELECT
+  reviews.id AS review_id,
+  reviews.title AS review_title,
+  reviews.added AS review_added,
+  claims.id AS claim_id,
+  claims.title AS claim_title
+
+  FROM claims, reviews, users, authors
+
+  WHERE users.username = ${username} AND users.id = authors.user_id AND authors.id = reviews.author_id AND reviews.claim_id = claims.id;`;
+
+  return reviews.map((review) => camelcaseKeys(review));
+}
