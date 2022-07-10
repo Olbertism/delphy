@@ -1,7 +1,9 @@
 import { AddCircle, FactCheck, Save } from '@mui/icons-material';
 import {
+  Alert,
   Box,
   Button,
+  Chip,
   Container,
   Dialog,
   DialogActions,
@@ -19,6 +21,7 @@ import {
   MenuItem,
   Rating,
   Select,
+  Snackbar,
   TextField,
   Typography,
 } from '@mui/material';
@@ -27,6 +30,7 @@ import Head from 'next/head';
 // import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { labelStyles, redTextHighlight } from '../../../styles/customStyles';
+import { theme } from '../../../styles/theme';
 import {
   checkIfAuthorExists,
   getAllVerdicts,
@@ -35,6 +39,7 @@ import {
   getUserThroughAuthorId,
 } from '../../../util/database/database';
 import {
+  Author,
   Claim,
   ReviewRequestbody,
   SourceRequestbody,
@@ -43,7 +48,7 @@ import {
 type ClaimPageProps = {
   refreshUserProfile: () => Promise<void>;
   claim: Claim;
-  author?: number;
+  author?: Author | null ;
 };
 export default function ClaimPage(props: ClaimPageProps) {
   console.log(props);
@@ -64,6 +69,10 @@ export default function ClaimPage(props: ClaimPageProps) {
 
   const [selectedVerdict, setSelectedVerdict] = useState<number | string>('');
 
+  const [displayAlert, setDisplayAlert] = useState(false);
+
+  const [errors, setErrors] = useState<Error[]>([]);
+
   const refreshUserProfile = props.refreshUserProfile;
 
   useEffect(() => {
@@ -71,6 +80,20 @@ export default function ClaimPage(props: ClaimPageProps) {
       console.log('refresh user profile failed'),
     );
   }, [refreshUserProfile]);
+
+  const appendError = (error: Error) => {
+    const errorList = [...errors, error];
+    setErrors(errorList);
+  };
+
+  const clearInputs = () => {
+    setNewReviewTitle('');
+    setNewReviewDescription('');
+    setSourceTitle('');
+    setSourceUrl('');
+    setCurrentSourceList([]);
+    setSelectedVerdict('');
+  };
 
   function calculateRating() {
     if (!props.claim.ratings) {
@@ -182,19 +205,20 @@ export default function ClaimPage(props: ClaimPageProps) {
 
         <Typography variant="h3">Labels</Typography>
         {props.claim.labels ? (
-          <div>
+          <Box sx={{ display: "flex", gap: "10px", flexWrap: "wrap"}}>
             {props.claim.labels.map((label) => {
               return (
-                <Typography sx={labelStyles} key={label}>
-                  {label}
-                </Typography>
+
+                <Chip label={label} key={label} sx={{ bgcolor: theme.palette.primary.light, color: 'white' }} />
+
+
               );
             })}
-          </div>
+          </Box>
         ) : (
           <Typography>No labels associated</Typography>
         )}
-
+        <Box sx={{mb: "30px"}}>
         <Typography variant="h3">Associated reviews</Typography>
         {props.claim.reviews ? (
           <List sx={{ width: '100%' }}>
@@ -223,7 +247,10 @@ export default function ClaimPage(props: ClaimPageProps) {
         ) : (
           <Typography>No reviews found</Typography>
         )}
+</Box>
         <Button
+        variant="contained"
+        color="secondary"
           onClick={() => {
             setAddReviewPopup(true);
           }}
@@ -309,22 +336,38 @@ export default function ClaimPage(props: ClaimPageProps) {
             ) : (
               null
             )}
-            <Box>
+            <Box sx={{mb: "15px"}}>
+            {' '}
             {currentSourceList.length === 0 ? (
-            <Typography>Currently no sources provided</Typography>
-          ) : (
+              <Typography>Currently no sources provided</Typography>
+            ) : (
+              <>
+                <Typography variant="h5">Sources:</Typography>
 
-              <div>
-                {currentSourceList.map((source) => {
-                  return (
-                    <div key={source.title}>
-                      <div>{source.title}</div>
-                      <div>{source.url}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}</Box>
+                  <List sx={{ width: '100%' }}>
+                    {currentSourceList.map((source) => {
+                      return (
+                        <ListItem alignItems="flex-start" key={source.title}>
+                          <ListItemText
+                            primary={source.title}
+                            secondary={
+                              <Link
+                                href={source.url}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {source.url}
+                              </Link>
+                            }
+                          />
+                        </ListItem>
+                      );
+                    })}
+                  </List>
+
+              </>
+            )}
+          </Box>
             <Box sx={{ maxWidth: '320px', mb: "30px" }}>
               <FormControl fullWidth>
                 <InputLabel id="verdict-select-label">Verdict</InputLabel>
@@ -357,6 +400,7 @@ export default function ClaimPage(props: ClaimPageProps) {
               Cancel
             </Button>
             <Button
+
               onClick={async () => {
                 const {review} = await handleReviewCreation().catch(
                   () => {
@@ -364,17 +408,53 @@ export default function ClaimPage(props: ClaimPageProps) {
                   })
                   console.log(review)
                   if (currentSourceList.length > 0) {
-                    handleSourcesCreation(review.id).catch(() => {
+                    handleSourcesCreation(review.id).catch((error) => {
                       console.log('Error when trying to create new sources');
+                      appendError(error);
                     });
                   }
-                setAddReviewPopup(false);
+                  if (errors.length === 0) {
+                    clearInputs();
+                    setDisplayAlert(true)
+                    setAddReviewPopup(false);
+                  }
+
               }}
             >
               Submit
             </Button>
+
           </DialogActions>
         </Dialog>
+        <Snackbar
+            open={displayAlert}
+            autoHideDuration={5000}
+            onClose={(
+              event?: React.SyntheticEvent | Event,
+              reason?: string,
+            ) => {
+              if (reason === 'clickaway') {
+                return;
+              }
+              setDisplayAlert(false);
+            }}
+          >
+            <Alert
+              onClose={(
+                event?: React.SyntheticEvent | Event,
+                reason?: string,
+              ) => {
+                if (reason === 'clickaway') {
+                  return;
+                }
+                setDisplayAlert(false);
+              }}
+              severity="success"
+              sx={{ width: '100%' }}
+            >
+              Review successfully added!
+            </Alert>
+          </Snackbar>
       </main>
     </>
   );
@@ -416,13 +496,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       props: { user: user, author: null, verdicts: verdicts, claim: claim },
     };
   }
-
-  // get user who wrote claim
-  /*  const author = await getUserThroughAuthorId(claim.authorId);
-  console.log(author);
-  if (author) {
-    claim.username = author.username;
-  } */
 
   return { props: { claim: claim, author: null, verdicts: verdicts } };
 }

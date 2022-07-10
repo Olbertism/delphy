@@ -20,7 +20,7 @@ export default async function handler(
       return;
     }
     // get user from the token
-    console.log('Calling getUserBy... from createRating api');
+    console.log('Calling getUserBy... from createSource api');
     const user = await getUserByValidSessionToken(token);
 
     if (!user) {

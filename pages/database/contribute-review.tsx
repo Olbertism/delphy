@@ -1,5 +1,6 @@
 import { AddCircle, Save } from '@mui/icons-material';
 import {
+  Alert,
   Button,
   FormControl,
   IconButton,
@@ -10,6 +11,7 @@ import {
   ListItemText,
   MenuItem,
   Select,
+  Snackbar,
   TextField,
   Typography,
 } from '@mui/material';
@@ -62,6 +64,8 @@ export default function ContributeReview(props: Props) {
   const [sourceTitle, setSourceTitle] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [currentSourceList, setCurrentSourceList] = useState<SourceEntry[]>([]);
+
+  const [displayAlert, setDisplayAlert] = useState(false);
 
   const [errors, setErrors] = useState<Error[]>([]);
 
@@ -340,6 +344,7 @@ export default function ContributeReview(props: Props) {
               }
               if (errors.length === 0) {
                 clearInputs();
+                setDisplayAlert(true)
               }
 
               console.log('done');
@@ -347,6 +352,35 @@ export default function ContributeReview(props: Props) {
           >
             Submit
           </Button>
+          <Snackbar
+            open={displayAlert}
+            autoHideDuration={5000}
+            onClose={(
+              event?: React.SyntheticEvent | Event,
+              reason?: string,
+            ) => {
+              if (reason === 'clickaway') {
+                return;
+              }
+              setDisplayAlert(false);
+            }}
+          >
+            <Alert
+              onClose={(
+                event?: React.SyntheticEvent | Event,
+                reason?: string,
+              ) => {
+                if (reason === 'clickaway') {
+                  return;
+                }
+                setDisplayAlert(false);
+              }}
+              severity="success"
+              sx={{ width: '100%' }}
+            >
+              Review successfully added!
+            </Alert>
+          </Snackbar>
         </section>
       </main>
     </>

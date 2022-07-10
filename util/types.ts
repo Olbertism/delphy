@@ -135,3 +135,8 @@ export type LabelRequestbody = {
 };
 
 export type SourceEntry = { title: string; url: string };
+
+export type Author = {
+  id: number;
+  userId: number;
+}

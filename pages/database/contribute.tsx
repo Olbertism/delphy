@@ -1,20 +1,21 @@
+import { AddCircle, Save } from '@mui/icons-material';
 import {
-  AddCircle,
-  InputOutlined,
-  InputRounded,
-  PlusOne,
-  Save,
-} from '@mui/icons-material';
-import {
+  Alert,
   Button,
   Checkbox,
+  Chip,
   FormControl,
   IconButton,
   InputBase,
   InputLabel,
+  Link,
+  List,
+  ListItem,
+  ListItemText,
   MenuItem,
   Rating,
   Select,
+  Snackbar,
   TextField,
   Typography,
 } from '@mui/material';
@@ -74,6 +75,7 @@ export default function Contribute(props: Props) {
   const [authorId, setAuthorId] = useState<number | undefined>(
     props.author === null ? undefined : props.author.id,
   );
+
   const [newClaimTitle, setNewClaimTitle] = useState('');
   const [newClaimDescription, setNewClaimDescription] = useState('');
 
@@ -98,6 +100,38 @@ export default function Contribute(props: Props) {
   const [sourceUrl, setSourceUrl] = useState('');
   const [currentSourceList, setCurrentSourceList] = useState([]);
 
+  const [displayAlert, setDisplayAlert] = useState(false);
+
+  const [errors, setErrors] = useState<Error[]>([]);
+
+  console.log('author: ', authorId);
+
+  const refreshUserProfile = props.refreshUserProfile;
+
+  useEffect(() => {
+    refreshUserProfile().catch(() =>
+      console.log('refresh user profile failed'),
+    );
+  }, [refreshUserProfile]);
+
+  const appendError = (error: Error) => {
+    const errorList = [...errors, error];
+    setErrors(errorList);
+  };
+
+  const clearInputs = () => {
+    setNewClaimTitle('');
+    setNewClaimDescription('');
+    setNewReviewTitle('');
+    setNewReviewDescription('');
+    setSourceTitle('');
+    setSourceUrl('');
+    setCurrentSourceList([]);
+    setSelectedVerdict('');
+    setRatingValue(0);
+    setSelectedLabel('');
+    setSavedLabels([]);
+  };
 
   const ratingLabels: { [index: string]: string } = {
     1: 'Completly untrue',
@@ -110,16 +144,6 @@ export default function Contribute(props: Props) {
   function getRatingLabelText(value: number) {
     return `${value} Star${value !== 1 ? 's' : ''}, ${ratingLabels[value]}`;
   }
-
-  console.log('author: ', authorId);
-
-  const refreshUserProfile = props.refreshUserProfile;
-
-  useEffect(() => {
-    refreshUserProfile().catch(() =>
-      console.log('refresh user profile failed'),
-    );
-  }, [refreshUserProfile]);
 
   const handleAuthorCreation = async () => {
     const response = await fetch('/api/createAuthor');
@@ -231,7 +255,7 @@ export default function Contribute(props: Props) {
     return review;
   }; */
 
-  const handleRatingCreation = async (claimId) => {
+  const handleRatingCreation = async (claimId: number) => {
     const requestbody: RatingRequestbody = {
       claimId: claimId,
       ratingValue: ratingValue,
@@ -335,7 +359,7 @@ export default function Contribute(props: Props) {
     setNewSourceInput(false);
   };
 
-/*   const handleSourceCreation = async (reviewId: number) => {
+  /*   const handleSourceCreation = async (reviewId: number) => {
     const requestbody: SourceRequestbody = {
       sourceTitle: sourceTitle,
       sourceUrl: sourceUrl,
@@ -409,7 +433,13 @@ export default function Contribute(props: Props) {
             />
           </Box>
           <Box
-            sx={{ marginBottom: '30px', display: 'flex', alignItems: 'center' }}
+            sx={{
+              marginBottom: '30px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '15px',
+              flexWrap: 'wrap',
+            }}
           >
             <TextField
               label="Labels"
@@ -434,25 +464,20 @@ export default function Contribute(props: Props) {
                 No labels set
               </Typography>
             ) : (
-              savedLabels.map((savedLabel) => {
-                return (
-                  <Typography
-                    sx={{
-                      backgroundColor: theme.palette.primary.main,
-                      color: 'white',
-                      justifyItems: 'center',
-                      paddingLeft: "10px",
-                      paddingRight: '10px',
-                      borderRadius: '4px',
-                      marginLeft: '10px',
-                      marginRight: '10px',
-                    }}
-                    key={savedLabel}
-                  >
-                    {savedLabel}
-                  </Typography>
-                );
-              })
+              <Box sx={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                {savedLabels.map((savedLabel) => {
+                  return (
+                    <Chip
+                      label={savedLabel}
+                      key={savedLabel}
+                      sx={{
+                        bgcolor: theme.palette.primary.light,
+                        color: 'white',
+                      }}
+                    />
+                  );
+                })}
+              </Box>
             )}
           </Box>
           <Box sx={{ marginBottom: '50px' }}>
@@ -471,10 +496,9 @@ export default function Contribute(props: Props) {
               // emptyIcon={<StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />}
             />
 
-              <Box sx={{ position: "absolute"}}>
-                {ratingLabels[ratingHover !== -1 ? ratingHover : ratingValue]}
-              </Box>
-
+            <Box sx={{ position: 'absolute' }}>
+              {ratingLabels[ratingHover !== -1 ? ratingHover : ratingValue]}
+            </Box>
           </Box>
 
           <Typography variant="h2">Review for claim</Typography>
@@ -514,94 +538,105 @@ export default function Contribute(props: Props) {
               }}
             />
           </Box>
-          <Box sx={{ display: 'flex', alignItems: "center", mb: "20px" }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: '20px' }}>
             <Typography>Add source</Typography>
             <IconButton
-              sx={{mb: "5px"}}
+              sx={{ mb: '5px' }}
               aria-label="Add source"
-              disabled={!addReviewCheckbox}
               onClick={() => setNewSourceInput(true)}
             >
               <AddCircle />
             </IconButton>
 
-          <Box >
-            {newSourceInput ? (
-              <>
-                <TextField
-                  label="Source title"
-                  size="small"
-                  required
-                  value={sourceTitle}
-                  onChange={(event) => {
-                    setSourceTitle(event.currentTarget.value);
-                  }}
-                />
-                <TextField
-                  label="Source URL"
-                  size="small"
-                  required
-                  value={sourceUrl}
-                  onChange={(event) => {
-                    setSourceUrl(event.currentTarget.value);
-                  }}
-                />
-                <IconButton
-                  disabled={sourceTitle === '' || sourceUrl === ''}
-                  aria-label="Save source entry"
-                  onClick={() => handleSaveSource()}
-                >
-                  <Save />
-                </IconButton>
-              </>
-            ) : (
-              <div />
-            )}{' '}
-              {currentSourceList.length === 0 ? (
-            <Typography>Currently no sources provided</Typography>
-          ) : (
-            <div>
-              Sources:
-              <div>
-                {currentSourceList.map((source) => {
-                  return (
-                    <div key={source.title}>
-                      <div>{source.title}</div>
-                      <div>{source.url}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}</Box>
+            <Box>
+              {newSourceInput ? (
+                <Box sx={{ display: 'flex', gap: '15px' }}>
+                  <TextField
+                    label="Source title"
+                    size="small"
+                    required
+                    value={sourceTitle}
+                    onChange={(event) => {
+                      setSourceTitle(event.currentTarget.value);
+                    }}
+                  />
+                  <TextField
+                    label="Source URL"
+                    size="small"
+                    required
+                    value={sourceUrl}
+                    onChange={(event) => {
+                      setSourceUrl(event.currentTarget.value);
+                    }}
+                  />
+                  <IconButton
+                    disabled={sourceTitle === '' || sourceUrl === ''}
+                    aria-label="Save source entry"
+                    onClick={() => handleSaveSource()}
+                  >
+                    <Save />
+                  </IconButton>
+                </Box>
+              ) : null}
+            </Box>
           </Box>
-            <Box sx={{ maxWidth: '320px', mb: "30px" }}>
-              <FormControl fullWidth>
-                <InputLabel id="verdict-select-label">Verdict</InputLabel>
-                <Select
-                  disabled={!addReviewCheckbox}
-                  labelId="verdict-select-label"
-                  id="verdict-select"
-                  value={selectedVerdict}
-                  label="Verdict"
-                  onChange={(event) => {
-                    setSelectedVerdict(Number(event.target.value));
-                  }}
-                >
-                  {props.verdicts.map(({ verdict, id }) => {
+          <Box sx={{ mb: '15px' }}>
+            {' '}
+            {currentSourceList.length === 0 ? (
+              <Typography>Currently no sources provided</Typography>
+            ) : (
+              <>
+                <Typography variant="h5">Sources:</Typography>
+
+                <List sx={{ width: '100%' }}>
+                  {currentSourceList.map((source) => {
                     return (
-                      <MenuItem key={verdict} value={id}>
-                        {verdict}
-                      </MenuItem>
+                      <ListItem alignItems="flex-start" key={source.title}>
+                        <ListItemText
+                          primary={source.title}
+                          secondary={
+                            <Link
+                              href={source.url}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {source.url}
+                            </Link>
+                          }
+                        />
+                      </ListItem>
                     );
                   })}
-                </Select>
-              </FormControl>
-            </Box>
-
+                </List>
+              </>
+            )}
+          </Box>
+          <Box sx={{ maxWidth: '320px', mb: '30px' }}>
+            <FormControl fullWidth>
+              <InputLabel id="verdict-select-label">Verdict</InputLabel>
+              <Select
+                disabled={!addReviewCheckbox}
+                labelId="verdict-select-label"
+                id="verdict-select"
+                value={selectedVerdict}
+                label="Verdict"
+                onChange={(event) => {
+                  setSelectedVerdict(Number(event.target.value));
+                }}
+              >
+                {props.verdicts.map(({ verdict, id }) => {
+                  return (
+                    <MenuItem key={verdict} value={id}>
+                      {verdict}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+          </Box>
 
           <Button
-            sx={{mb: "30px"}}
+            sx={{ mb: '30px' }}
             disabled={
               newClaimTitle === '' ||
               newClaimDescription === '' ||
@@ -611,118 +646,76 @@ export default function Contribute(props: Props) {
             variant="contained"
             color="secondary"
             onClick={async () => {
-              const { claim } = await handleClaimCreation().catch(() => {
+              const { claim } = await handleClaimCreation().catch((error) => {
                 console.log('Error when trying to create new claim');
+                appendError(error);
               });
               console.log(claim);
               if (savedLabels.length > 0) {
-                handleCreateLabel(claim.id).catch(() => {
+                handleCreateLabel(claim.id).catch((error) => {
                   console.log('Error when trying to create new label');
+                  appendError(error);
                 });
               }
               if (ratingValue > 0) {
-                handleRatingCreation(claim.id).catch(() => {
+                handleRatingCreation(claim.id).catch((error) => {
                   console.log('Error when trying to create new rating');
+                  appendError(error);
                 });
               }
               if (addReviewCheckbox) {
                 const { review } = await handleReviewCreation(claim.id).catch(
-                  () => {
+                  (error) => {
                     console.log('Error when trying to create new review');
+                    appendError(error);
                   },
                 );
                 if (currentSourceList.length > 0) {
-                  handleSourcesCreation(review.id).catch(() => {
+                  handleSourcesCreation(review.id).catch((error) => {
                     console.log('Error when trying to create new sources');
+                    appendError(error);
                   });
                 }
               }
-
-              console.log('done');
+              if (errors.length === 0) {
+                clearInputs();
+                setDisplayAlert(true);
+              }
             }}
           >
             Submit
           </Button>
+
+          <Snackbar
+            open={displayAlert}
+            autoHideDuration={5000}
+            onClose={(
+              event?: React.SyntheticEvent | Event,
+              reason?: string,
+            ) => {
+              if (reason === 'clickaway') {
+                return;
+              }
+              setDisplayAlert(false);
+            }}
+          >
+            <Alert
+              onClose={(
+                event?: React.SyntheticEvent | Event,
+                reason?: string,
+              ) => {
+                if (reason === 'clickaway') {
+                  return;
+                }
+                setDisplayAlert(false);
+              }}
+              severity="success"
+              sx={{ width: '100%' }}
+            >
+              Claim successfully added!
+            </Alert>
+          </Snackbar>
         </section>
-       {/*  <section>
-          <h2>review</h2>
-          <TextField
-            size="small"
-            value={selectedClaim}
-            onChange={(event) => {
-              setSelectedClaim(Number(event.currentTarget.value));
-            }}
-          />
-          <TextField
-            value={newReviewTitle}
-            onChange={(event) => {
-              setNewReviewTitle(event.currentTarget.value);
-            }}
-          />
-          <TextField
-            value={newReviewDescription}
-            onChange={(event) => {
-              setNewReviewDescription(event.currentTarget.value);
-            }}
-          />
-          <Button
-            onClick={() => {
-              handleReviewCreation(selectedClaim, selectedVerdict);
-            }}
-          >
-            Create Review
-          </Button>
-        </section>
-        <section>
-          <h2>Rating</h2>
-          <TextField
-            value={selectedClaim}
-            onChange={(event) => {
-              setSelectedClaim(Number(event.currentTarget.value));
-            }}
-          />
-          <TextField
-            value={ratingValue}
-            onChange={(event) => {
-              setRatingValue(Number(event.currentTarget.value));
-            }}
-          />
-          <Button
-            onClick={() => {
-              handleRatingCreation();
-            }}
-          >
-            Add Rating
-          </Button>
-        </section> */}
-        {/* <section>
-          <h2>Source</h2>
-          <TextField
-            value={selectedReview}
-            onChange={(event) => {
-              setSelectedReview(Number(event.currentTarget.value));
-            }}
-          />
-          <TextField
-            value={sourceTitle}
-            onChange={(event) => {
-              setSourceTitle(event.currentTarget.value);
-            }}
-          />
-          <TextField
-            value={sourceUrl}
-            onChange={(event) => {
-              setSourceUrl(event.currentTarget.value);
-            }}
-          />
-          <Button
-            onClick={() => {
-              handleSourceCreation();
-            }}
-          >
-            Add Source
-          </Button>
-        </section> */}
       </main>
     </>
   );
