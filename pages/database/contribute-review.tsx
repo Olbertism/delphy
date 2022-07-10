@@ -391,6 +391,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const user = await getUserByValidSessionToken(
     context.req.cookies.sessionToken,
   );
+  if (!user) {
+    return {
+      redirect: { destination: '/', permanent: false }, // a next js thing, adapt returnTo as needed
+    };
+  }
 
   const verdicts = await getAllVerdicts();
   let claims = await getAllClaims();

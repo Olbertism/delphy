@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import arrayShuffle from 'array-shuffle';
 import Fuse from 'fuse.js';
+import { GetServerSidePropsContext } from 'next';
 import { useEffect, useRef, useState } from 'react';
 import DatabaseWidget from '../components/dashboard/DbSearchResults';
 import FactCheckToolWidget from '../components/dashboard/FactCheckTool';
@@ -22,7 +23,10 @@ import SearchEngineWidget from '../components/dashboard/SearchEngine';
 import WikipediaWidget from '../components/dashboard/Wikipedia';
 import CircularIndeterminate from '../components/layout/ProgressCircle';
 import { greenTextHighlight, redTextHighlight } from '../styles/customStyles';
-import { getAllClaimsForSearch } from '../util/database/database';
+import {
+  getAllClaimsForSearch,
+  getUserByValidSessionToken,
+} from '../util/database/database';
 import { fetchResources } from '../util/fetchers/mainFetcher';
 import generateRoBERTaPrompts from '../util/robertaPromptsProcessor';
 
@@ -427,7 +431,17 @@ export default function Dashboard(props: DashboardProps) {
   );
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const currentUser = await getUserByValidSessionToken(
+    context.req.cookies.sessionToken,
+  );
+
+  if (!currentUser) {
+    return {
+      redirect: { destination: '/', permanent: false }, // a next js thing, adapt returnTo as needed
+    };
+  }
+
   const claims = await getAllClaimsForSearch();
 
   return { props: { claims: claims } };

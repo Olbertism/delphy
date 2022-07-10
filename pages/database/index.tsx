@@ -1,9 +1,12 @@
+import { Box, Typography } from '@mui/material';
+import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import { useEffect, useState } from 'react';
 import BasicTabs from '../../components/database/DatabaseTabs';
 import {
   getAllClaimsWithUsernamesAndReviewIds,
   getAllReviewsWithUsernamesAndClaims,
+  getUserByValidSessionToken,
 } from '../../util/database/database';
 
 type Props = {
@@ -24,20 +27,29 @@ export default function Database(props: Props) {
       </Head>
 
       <main>
-        <h1>Browse the database</h1>
-        <p>
+        <Typography variant="h1">Browse the database</Typography>
+        <Typography>
           Select between Claims and Reviews that were submitted to our Database.
           Add your own claims or reviews.
-        </p>
-        <div>
+        </Typography>
+        <Box>
           <BasicTabs claims={props.claims} reviews={props.reviews} />
-        </div>
+        </Box>
       </main>
     </>
   );
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const user = await getUserByValidSessionToken(
+    context.req.cookies.sessionToken,
+  );
+  if (!user) {
+    return {
+      redirect: { destination: '/', permanent: false }, // a next js thing, adapt returnTo as needed
+    };
+  }
+
   let claims = await getAllClaimsWithUsernamesAndReviewIds();
 
   let reviews = await getAllReviewsWithUsernamesAndClaims();

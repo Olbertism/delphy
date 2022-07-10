@@ -82,9 +82,7 @@ export default function Contribute(props: Props) {
   const [newReviewTitle, setNewReviewTitle] = useState('');
   const [newReviewDescription, setNewReviewDescription] = useState('');
 
-  const [selectedClaim, setSelectedClaim] = useState(0);
   const [selectedVerdict, setSelectedVerdict] = useState<number | string>('');
-  const [selectedReview, setSelectedReview] = useState(0);
 
   const [selectedLabel, setSelectedLabel] = useState('');
   const [savedLabels, setSavedLabels] = useState([]);
@@ -359,23 +357,6 @@ export default function Contribute(props: Props) {
     setNewSourceInput(false);
   };
 
-  /*   const handleSourceCreation = async (reviewId: number) => {
-    const requestbody: SourceRequestbody = {
-      sourceTitle: sourceTitle,
-      sourceUrl: sourceUrl,
-      reviewId: reviewId,
-    };
-
-    const response = await fetch('/api/createSource', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestbody),
-    });
-    const source = await response.json();
-    return source;
-  }; */
 
   const handleSourcesCreation = async (reviewId: number) => {
     for (const source of currentSourceList) {
@@ -725,6 +706,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const user = await getUserByValidSessionToken(
     context.req.cookies.sessionToken,
   );
+  if (!user) {
+    return {
+      redirect: { destination: '/', permanent: false }, // a next js thing, adapt returnTo as needed
+    };
+  }
 
   const verdicts = await getAllVerdicts();
   const labels = await getAllLabels();

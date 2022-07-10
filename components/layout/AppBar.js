@@ -140,10 +140,12 @@ export default function ResponsiveAppBar(props) {
               textDecoration: 'none',
             }}
           >
-            LOGO
+            Δelphi
           </Typography>
           {/*  Desktop Top Bar Menu Entries */}
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+
+            {props.user ? <>
             {pages.map((page) => (
               <MenuItem
                 key={page}
@@ -191,7 +193,9 @@ export default function ResponsiveAppBar(props) {
                   <Typography textAlign="center">Add a review</Typography>
                 </MenuItem>
 
-              </Menu>
+              </Menu></> : null }
+
+
           </Box>
 
           <Box sx={{ flexGrow: 0, display: { xs: 'flex', md: 'flex' } }}>

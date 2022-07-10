@@ -39,8 +39,9 @@ export const theme = createTheme({
       marginTop: "10px",
       marginBottom: "5px"
     },
-    body1: {
+    // for some weird reason these adds to body tag
+    /* body1: {
       marginBottom: "5px"
-    }
+    } */
   }
 });
