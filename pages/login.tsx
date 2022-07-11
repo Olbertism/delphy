@@ -59,7 +59,7 @@ export default function Login(props: Props) {
 
       <main>
         <Typography variant="h1">Login</Typography>
-        <Box sx={{display: "flex", gap: "30px", mb: "30px"}}>
+        <Box sx={{ display: 'flex', gap: '30px', mb: '30px' }}>
           <TextField
             size="small"
             value={username}
@@ -79,7 +79,7 @@ export default function Login(props: Props) {
             />
           </label> */}
           <TextField
-          size="small"
+            size="small"
             value={password}
             onChange={(event) => {
               setPassword(event.currentTarget.value);
@@ -98,27 +98,6 @@ export default function Login(props: Props) {
             Login
           </Button>
         </Box>
-        {/* <div>
-          <label>
-            Username
-            <input
-              value={username}
-              onChange={(event) => {
-                setUsername(event.currentTarget.value);
-              }}
-            />
-          </label>
-          <label>
-            Password
-            <input
-              value={password}
-              onChange={(event) => {
-                setPassword(event.currentTarget.value);
-              }}
-            />
-          </label>
-          <button onClick={() => loginHandler()}>Login</button>
-        </div> */}
       </main>
     </>
   );

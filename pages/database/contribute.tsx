@@ -6,7 +6,6 @@ import {
   Chip,
   FormControl,
   IconButton,
-  InputBase,
   InputLabel,
   Link,
   List,
@@ -30,10 +29,13 @@ import {
   getAllVerdicts,
   getUserByValidSessionToken,
 } from '../../util/database/database';
+import { Label, Verdict } from '../../util/types';
 
 type Props = {
   refreshUserProfile: () => Promise<void>;
   author?: any;
+  verdicts: Verdict[];
+  labels: Label[];
 };
 
 type ClaimRequestbody = {
@@ -52,7 +54,7 @@ type ReviewRequestbody = {
 
 type RatingRequestbody = {
   claimId: number;
-  ratingValue: number;
+  ratingValue: number | null;
   authorId: number | undefined;
 };
 
@@ -85,18 +87,20 @@ export default function Contribute(props: Props) {
   const [selectedVerdict, setSelectedVerdict] = useState<number | string>('');
 
   const [selectedLabel, setSelectedLabel] = useState('');
-  const [savedLabels, setSavedLabels] = useState([]);
+  const [savedLabels, setSavedLabels] = useState<string[]>([]);
 
   const [addReviewCheckbox, setAddReviewCheckbox] = useState(false);
 
-  const [ratingValue, setRatingValue] = useState(0);
+  const [ratingValue, setRatingValue] = useState<number | null>(0);
   const [ratingHover, setRatingHover] = useState(-1);
 
   const [newSourceInput, setNewSourceInput] = useState(false);
 
   const [sourceTitle, setSourceTitle] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
-  const [currentSourceList, setCurrentSourceList] = useState([]);
+  const [currentSourceList, setCurrentSourceList] = useState<
+    { title: string; url: string }[]
+  >([]);
 
   const [displayAlert, setDisplayAlert] = useState(false);
 
@@ -206,7 +210,7 @@ export default function Contribute(props: Props) {
     }
 
     if (selectedVerdict !== '') {
-      requestbody.verdictId = selectedVerdict;
+      requestbody.verdictId = Number(selectedVerdict);
     }
 
     const response = await fetch('/api/createReview', {
@@ -219,39 +223,6 @@ export default function Contribute(props: Props) {
     const review = await response.json();
     return review;
   };
-
-  /*   const handleRatingCreation = async () => {
-    const requestbody: RatingRequestbody = {
-      claimId: selectedClaim,
-      ratingValue: ratingValue,
-      authorId: undefined, // value is inserted further below
-    };
-
-    if (!props.author) {
-      console.log('user not yet an author, let me handle that...');
-      const { author } = await handleAuthorCreation();
-
-      if (!author) {
-        console.log('An error ocurred while trying to create a new author');
-        return;
-      }
-
-      requestbody.authorId = author.id;
-      setAuthorId(author.id);
-    } else {
-      requestbody.authorId = authorId;
-    }
-
-    const response = await fetch('/api/createRating', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestbody),
-    });
-    const review = await response.json();
-    return review;
-  }; */
 
   const handleRatingCreation = async (claimId: number) => {
     const requestbody: RatingRequestbody = {
@@ -356,7 +327,6 @@ export default function Contribute(props: Props) {
     setSourceUrl('');
     setNewSourceInput(false);
   };
-
 
   const handleSourcesCreation = async (reviewId: number) => {
     for (const source of currentSourceList) {
@@ -468,18 +438,19 @@ export default function Contribute(props: Props) {
               value={ratingValue}
               precision={1}
               getLabelText={getRatingLabelText}
-              onChange={(event) => {
-                setRatingValue(Number(event.currentTarget.value));
+              onChange={(event, newValue) => {
+                setRatingValue(newValue);
               }}
               onChangeActive={(event, newRatingHover) =>
                 setRatingHover(newRatingHover)
               }
               // emptyIcon={<StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />}
             />
-
-            <Box sx={{ position: 'absolute' }}>
-              {ratingLabels[ratingHover !== -1 ? ratingHover : ratingValue]}
-            </Box>
+            {ratingValue !== null && (
+              <Box sx={{ position: 'absolute' }}>
+                {ratingLabels[ratingHover !== -1 ? ratingHover : ratingValue]}
+              </Box>
+            )}
           </Box>
 
           <Typography variant="h2">Review for claim</Typography>
@@ -638,7 +609,7 @@ export default function Contribute(props: Props) {
                   appendError(error);
                 });
               }
-              if (ratingValue > 0) {
+              if (Number(ratingValue) > 0) {
                 handleRatingCreation(claim.id).catch((error) => {
                   console.log('Error when trying to create new rating');
                   appendError(error);
@@ -715,25 +686,20 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const verdicts = await getAllVerdicts();
   const labels = await getAllLabels();
 
-  if (user) {
-    const author = await checkIfAuthorExists(user.id);
-    if (author) {
-      console.log('user logged in, is author');
-      return {
-        props: {
-          user: user,
-          author: author,
-          verdicts: verdicts,
-          labels: labels,
-        },
-      };
-    }
-    console.log('user logged in, but not an author');
+  const author = await checkIfAuthorExists(user.id);
+  if (author) {
+    console.log('user logged in, is author');
     return {
-      props: { user: user, author: null, verdicts: verdicts, labels: labels },
+      props: {
+        user: user,
+        author: author,
+        verdicts: verdicts,
+        labels: labels,
+      },
     };
   }
-
-  console.log('no user logged in');
-  return { props: { author: null, verdicts: verdicts } };
+  console.log('user logged in, but not an author');
+  return {
+    props: { user: user, author: null, verdicts: verdicts, labels: labels },
+  };
 }

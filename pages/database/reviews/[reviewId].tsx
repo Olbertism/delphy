@@ -2,13 +2,13 @@ import { Link, List, ListItem, ListItemText, Typography } from '@mui/material';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import { getReviewWithAllRelationsById } from '../../../util/database/database';
-import { Review } from '../../../util/types';
+import { DatabaseReview } from '../../../util/types';
 
 type ReviewPageProps = {
-  review: Review;
+  review: DatabaseReview;
 };
 export default function ReviewPage(props: ReviewPageProps) {
-  console.log(props)
+  console.log(props);
   return (
     <>
       <Head>
@@ -22,41 +22,46 @@ export default function ReviewPage(props: ReviewPageProps) {
         </Typography>
         <Typography variant="h1">{props.review.reviewTitle}</Typography>
         <Typography variant="h3">Claim</Typography>
-        <Link href={`/database/claims/${props.review.claimId}`}>{props.review.claimTitle}</Link>
+        <Link href={`/database/claims/${props.review.claimId}`}>
+          {props.review.claimTitle}
+        </Link>
         <Typography variant="h3">Description</Typography>
         <Typography>{props.review.reviewDescription}</Typography>
         <Typography variant="h3">Added by</Typography>
-        <Link href={`/users/${props.review.username}`}>{props.review.username}</Link>
+        <Link href={`/users/${props.review.username}`}>
+          {props.review.username}
+        </Link>
 
         <Typography variant="h3">Sources</Typography>
 
-          {props.review.sources ? (
-            <List sx={{ width: '100%' }}>
-              {props.review.sources.map((source) => {
-                return (
-                  <ListItem alignItems="flex-start" key={source.source_title} disablePadding>
-
-
-                          <ListItemText
-                            primary={source.source_title}
-                            secondary={
-                              <Link
-                                href={source.source_url}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                {source.source_url}
-                              </Link>
-                            }
-                          />
-                        </ListItem>
-
-                );
-              })}
-            </List>
-          ) : (
-            <div>No sources given</div>
-          )}
+        {props.review.sources.length > 0 ? (
+          <List sx={{ width: '100%' }}>
+            {props.review.sources.map((source) => {
+              return (
+                <ListItem
+                  alignItems="flex-start"
+                  key={source.source_title}
+                  disablePadding
+                >
+                  <ListItemText
+                    primary={source.source_title}
+                    secondary={
+                      <Link
+                        href={source.source_url}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {source.source_url}
+                      </Link>
+                    }
+                  />
+                </ListItem>
+              );
+            })}
+          </List>
+        ) : (
+          <div>No sources given</div>
+        )}
 
         <div>
           {props.review.verdict ? <div>{props.review.verdict}</div> : <div />}

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { DashboardWidgetPropsContents } from '../../util/types';
 
-function usePagination(data: DashboardWidgetPropsContents, itemsPerPage: number) {
+function usePagination(data: DashboardWidgetPropsContents[], itemsPerPage: number) {
   const [currentPage, setCurrentPage] = useState(1);
   const maxPage = Math.ceil(data.length / itemsPerPage);
 

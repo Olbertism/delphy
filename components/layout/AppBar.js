@@ -19,7 +19,6 @@ const pages = ['Dashboard', 'Database'];
 const authenticationControls = ['Register', 'Login'];
 
 export default function ResponsiveAppBar(props) {
-
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const [anchorElContribute, setAnchorElContribute] = React.useState(null);
@@ -45,7 +44,11 @@ export default function ResponsiveAppBar(props) {
   };
 
   return (
-    <AppBar position="static" sx={{mb:"30px"}}>
+    <AppBar
+      position="static"
+      sx={props.landingPage ? { position: "fixed", zIndex: "99" } : { mb: '30px' }}
+
+    >
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           <Typography
@@ -66,46 +69,47 @@ export default function ResponsiveAppBar(props) {
             Δelphi
           </Typography>
 
-          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleOpenNavMenu}
-              color="inherit"
-            >
-              <MenuIcon />
-            </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
-              }}
-              open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
-              sx={{
-                display: { xs: 'block', md: 'none' },
-              }}
-            >
-              {pages.map((page) => (
+          {props.user ? (
+            <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+              <IconButton
+                size="large"
+                aria-label="account of current user"
+                aria-controls="menu-appbar"
+                aria-haspopup="true"
+                onClick={handleOpenNavMenu}
+                color="inherit"
+              >
+                <MenuIcon />
+              </IconButton>
+              <Menu
+                id="menu-appbar"
+                anchorEl={anchorElNav}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'left',
+                }}
+                keepMounted
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'left',
+                }}
+                open={Boolean(anchorElNav)}
+                onClose={handleCloseNavMenu}
+                sx={{
+                  display: { xs: 'block', md: 'none' },
+                }}
+              >
+                {pages.map((page) => (
+                  <MenuItem
+                    key={page}
+                    onClick={handleCloseNavMenu}
+                    component="a"
+                    href={`/${page.charAt(0).toLowerCase() + page.slice(1)}`}
+                  >
+                    <Typography textAlign="center">{page}</Typography>
+                  </MenuItem>
+                ))}
                 <MenuItem
-                  key={page}
-                  onClick={handleCloseNavMenu}
-                  component="a"
-                  href={`/${page.charAt(0).toLowerCase() + page.slice(1)}`}
-                >
-                  <Typography textAlign="center">{page}</Typography>
-                </MenuItem>
-              ))}
-              <MenuItem
                   key="add-claim"
                   onClick={handleCloseContributeMenu}
                   component="a"
@@ -121,8 +125,9 @@ export default function ResponsiveAppBar(props) {
                 >
                   <Typography textAlign="center">Add a review</Typography>
                 </MenuItem>
-            </Menu>
-          </Box>
+              </Menu>
+            </Box>
+          ) : null}
           {/*  ------------------ */}
           <Typography
             variant="h5"
@@ -144,58 +149,61 @@ export default function ResponsiveAppBar(props) {
           </Typography>
           {/*  Desktop Top Bar Menu Entries */}
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-
-            {props.user ? <>
-            {pages.map((page) => (
-              <MenuItem
-                key={page}
-                sx={{ my: 2, color: 'white', display: 'block' }}
-                component="a"
-                href={`/${page.charAt(0).toLowerCase() + page.slice(1)}`}
-              >
-                {page}
-              </MenuItem>
-            ))}
-            <MenuItem onClick={handleOpenContributeMenu} component="a" sx={{mb: 0}}>
-              Contribute
-              <KeyboardArrowDownIcon />
-            </MenuItem>
-            <Menu
-                sx={{ mt: '45px' }}
-                id="menu-appbar-contribute"
-                anchorEl={anchorElContribute}
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                open={Boolean(anchorElContribute)}
-                onClose={handleCloseContributeMenu}
-              >
+            {props.user ? (
+              <>
+                {pages.map((page) => (
+                  <MenuItem
+                    key={page}
+                    sx={{ my: 2, color: 'white', display: 'block' }}
+                    component="a"
+                    href={`/${page.charAt(0).toLowerCase() + page.slice(1)}`}
+                  >
+                    {page}
+                  </MenuItem>
+                ))}
                 <MenuItem
-                  key="add-claim"
-                  onClick={handleCloseContributeMenu}
+                  onClick={handleOpenContributeMenu}
                   component="a"
-                  href="/database/contribute"
+                  sx={{ mb: 0 }}
                 >
-                  <Typography textAlign="center">Add a claim</Typography>
+                  Contribute
+                  <KeyboardArrowDownIcon />
                 </MenuItem>
-                <MenuItem
-                  key="add-review"
-                  onClick={handleCloseContributeMenu}
-                  component="a"
-                  href="/database/contribute-review"
+                <Menu
+                  sx={{ mt: '45px' }}
+                  id="menu-appbar-contribute"
+                  anchorEl={anchorElContribute}
+                  anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  keepMounted
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  open={Boolean(anchorElContribute)}
+                  onClose={handleCloseContributeMenu}
                 >
-                  <Typography textAlign="center">Add a review</Typography>
-                </MenuItem>
-
-              </Menu></> : null }
-
-
+                  <MenuItem
+                    key="add-claim"
+                    onClick={handleCloseContributeMenu}
+                    component="a"
+                    href="/database/contribute"
+                  >
+                    <Typography textAlign="center">Add a claim</Typography>
+                  </MenuItem>
+                  <MenuItem
+                    key="add-review"
+                    onClick={handleCloseContributeMenu}
+                    component="a"
+                    href="/database/contribute-review"
+                  >
+                    <Typography textAlign="center">Add a review</Typography>
+                  </MenuItem>
+                </Menu>
+              </>
+            ) : null}
           </Box>
 
           <Box sx={{ flexGrow: 0, display: { xs: 'flex', md: 'flex' } }}>
@@ -228,21 +236,21 @@ export default function ResponsiveAppBar(props) {
                   onClose={handleCloseUserMenu}
                 >
                   <MenuItem
-                      key='profile'
-                      onClick={handleCloseUserMenu}
-                      component="a"
-                      href={`/users/${props.user.username}`}
-                    >
-                      <Typography textAlign="center">Profile</Typography>
-                    </MenuItem>
-                    <MenuItem
-                      key='logout'
-                      onClick={handleCloseUserMenu}
-                      component="a"
-                      href={`/logout`}
-                    >
-                      <Typography textAlign="center">Logout</Typography>
-                    </MenuItem>
+                    key="profile"
+                    onClick={handleCloseUserMenu}
+                    component="a"
+                    href={`/users/${props.user.username}`}
+                  >
+                    <Typography textAlign="center">Profile</Typography>
+                  </MenuItem>
+                  <MenuItem
+                    key="logout"
+                    onClick={handleCloseUserMenu}
+                    component="a"
+                    href={`/logout`}
+                  >
+                    <Typography textAlign="center">Logout</Typography>
+                  </MenuItem>
 
                   {/* {settings.map((setting) => (
                     <MenuItem

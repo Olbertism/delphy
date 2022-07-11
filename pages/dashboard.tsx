@@ -14,8 +14,9 @@ import {
 } from '@mui/material';
 import arrayShuffle from 'array-shuffle';
 import Fuse from 'fuse.js';
+import FuseResult from 'fuse.js';
 import { GetServerSidePropsContext } from 'next';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import DatabaseWidget from '../components/dashboard/DbSearchResults';
 import FactCheckToolWidget from '../components/dashboard/FactCheckTool';
 import NewsWidget from '../components/dashboard/News';
@@ -28,7 +29,6 @@ import {
   getUserByValidSessionToken,
 } from '../util/database/database';
 import { fetchResources } from '../util/fetchers/mainFetcher';
-import generateRoBERTaPrompts from '../util/robertaPromptsProcessor';
 
 type DbClaim = {
   id: number;
@@ -60,8 +60,10 @@ export default function Dashboard(props: DashboardProps) {
   >([]);
   const [evaluation, setEvaluation] = useState('');
   const [displayedResources, setDisplayedResources] = useState([]);
-  const [modelContradictions, setModelContradictions] = useState([]);
-  const [modelAgreements, setModelAgreements] = useState([]);
+  const [modelContradictions, setModelContradictions] = useState<
+  FormattedResource[]>([]);
+  const [modelAgreements, setModelAgreements] = useState<
+  FormattedResource[]>([]);
   const [displayPredictions, setDisplayPredictions] = useState(false);
 
   const [loadingRoBERTa, setLoadingRoBERTa] = useState(false);
@@ -182,7 +184,7 @@ export default function Dashboard(props: DashboardProps) {
     setEvaluation(modelEvaluation);
 
     // this needs to change
-    setDisplayedResources(combinedResources);
+    // setDisplayedResources(combinedResources);
 
     setModelAgreements(shuffledAgreements);
     setModelContradictions(shuffledContradictions);

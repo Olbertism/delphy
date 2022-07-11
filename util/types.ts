@@ -44,10 +44,9 @@ export type DashboardWidgetPropsContents = {
   url: string;
   promptSource: string;
   prediction: number;
-}[];
+};
 
 export type DashboardWidgetProps = {
-  query: string;
   contents: DashboardWidgetPropsContents[];
 };
 
@@ -139,4 +138,29 @@ export type SourceEntry = { title: string; url: string };
 export type Author = {
   id: number;
   userId: number;
-}
+};
+
+export type DatabaseClaim = {
+  claimId: number;
+  claimTitle: string;
+  authorId: number;
+  claimDescription: string;
+  added: Date;
+  username?: string | undefined;
+  ratings: number[];
+  labels: string[];
+  reviews: { review_id: number; review_title: string }[];
+};
+
+export type DatabaseReview = {
+  reviewId: number;
+  reviewTitle: string;
+  reviewDescription: string;
+  added: Date;
+  authorId: number;
+  claimId: number;
+  claimTitle: string;
+  verdict: string;
+  username?: string | undefined;
+  sources: { source_title: string; source_url: string }[];
+};

@@ -9,8 +9,18 @@ import { accordionHeadlineStyles } from '../../styles/customStyles';
 import { DashboardWidgetProps } from '../../util/types';
 import usePagination from './Pagination';
 
-export default function FactCheckToolWidget(props: DashboardWidgetProps) {
- 
+type Content = {
+  title: string;
+  url: string;
+  promptSource: string;
+  prediction: number;
+};
+
+type Props = {
+  contents: Content[];
+};
+
+export default function FactCheckToolWidget(props: Props) {
   const [results, setResults] = useState(props.contents);
   const [paginationCount, setPaginationCount] = useState<number>(0);
   const [page, setPage] = useState(1);

@@ -2,6 +2,8 @@
 import { CssBaseline, GlobalStyles, ThemeProvider } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import Layout from '../components/Layout';
+import ResponsiveAppBar from '../components/layout/AppBar';
+import FooterBar from '../components/layout/Footer';
 import { theme } from '../styles/theme';
 
 const inputGlobalStyles = (
@@ -18,7 +20,10 @@ const inputGlobalStyles = (
   />
 );
 
-function MyApp({ Component, pageProps }) {
+
+
+function MyApp({ Component, pageProps, router }) {
+  console.log(router.pathname);
   const [user, setUser] = useState();
 
   // create this function only one time, and not everytime page rerenders
@@ -39,6 +44,18 @@ function MyApp({ Component, pageProps }) {
   useEffect(() => {
     refreshUserProfile().catch(() => {});
   }, [refreshUserProfile]);
+
+  if (router.pathname === '/') {
+    const landingPage = true;
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <ResponsiveAppBar user={user} landingPage={landingPage} />
+        <Component {...pageProps} refreshUserProfile={refreshUserProfile} />
+        <FooterBar landingPage={landingPage} />
+      </ThemeProvider>
+    );
+  }
 
   return (
     <>

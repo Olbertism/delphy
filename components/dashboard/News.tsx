@@ -8,11 +8,14 @@ import arrayShuffle from 'array-shuffle';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { accordionHeadlineStyles } from '../../styles/customStyles';
-import { DashboardWidgetProps } from '../../util/types';
+import {
+  DashboardWidgetProps,
+  DashboardWidgetPropsContents,
+} from '../../util/types';
 import usePagination from './Pagination';
 
-const collectAndShuffleResults = (nestedArray) => {
-  const outputArray = [];
+const collectAndShuffleResults = (nestedArray: DashboardWidgetPropsContents[][]) => {
+  const outputArray = [] as DashboardWidgetPropsContents[];
   nestedArray.map((subarray) => {
     return subarray.map((entry) => {
       return outputArray.push(entry);
@@ -23,7 +26,7 @@ const collectAndShuffleResults = (nestedArray) => {
 };
 
 export default function NewsWidget(props: DashboardWidgetProps) {
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState<DashboardWidgetPropsContents[]>([]);
   const [paginationCount, setPaginationCount] = useState<number>(0);
   const [page, setPage] = useState(1);
 
