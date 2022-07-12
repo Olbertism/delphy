@@ -238,6 +238,31 @@ GROUP BY claims.id;
   return claims.map((claim) => camelcaseKeys(claim));
 }
 
+export async function getAllClaimsForSearchWithReviews() {
+  const claims = await sql<[Claim[]]>`
+    SELECT claims.id AS claim_id,
+    claims.title AS claim_title,
+    claims.description AS claim_description,
+    (
+       SELECT json_agg(reviews) FROM (
+         SELECT
+           reviews.id AS review_id,
+           reviews.title AS review_title
+         FROM
+           reviews
+         WHERE
+           reviews.claim_id = claims.id
+       ) AS reviews)
+       AS reviews
+FROM claims;
+  `;
+  return claims.map((claim) =>
+    camelcaseKeys(claim, {
+      deep: true,
+    }),
+  );
+}
+
 export async function getAllClaimsWithUsernamesAndReviewIds() {
   const claims = await sql<[Claim[]]>`
     SELECT claims.id AS claim_id,
@@ -413,7 +438,7 @@ LEFT JOIN verdicts
 WHERE
   reviews.id = ${reviewId} AND
   reviews.claim_id = claims.id AND
-  claims.author_id = authors.id AND
+  reviews.author_id = authors.id AND
   authors.user_id = users.id;
 
 

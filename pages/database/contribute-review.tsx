@@ -71,6 +71,8 @@ export default function ContributeReview(props: Props) {
 
   console.log('author: ', authorId);
 
+  console.log("source list", currentSourceList)
+
   const refreshUserProfile = props.refreshUserProfile;
 
   useEffect(() => {
@@ -150,7 +152,9 @@ export default function ContributeReview(props: Props) {
   };
 
   const handleSourcesCreation = async (reviewId: number) => {
+
     for (const source of currentSourceList) {
+      console.log("current source", source)
       const requestbody: SourceRequestbody = {
         sourceTitle: source.title,
         sourceUrl: source.url,

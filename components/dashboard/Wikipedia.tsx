@@ -18,6 +18,8 @@ export default function WikipediaWidget(props: DashboardWidgetProps) {
 
   const displayedContents = props.contents;
 
+  console.log("WIKI results state", results)
+
   useEffect(() => {
     setResults(displayedContents);
   }, [displayedContents]);

@@ -1,5 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import FeedIcon from '@mui/icons-material/Feed';
+import StorageIcon from '@mui/icons-material/Storage';
 import {
   Box,
   Button,
@@ -26,6 +27,7 @@ import CircularIndeterminate from '../components/layout/ProgressCircle';
 import { greenTextHighlight, redTextHighlight } from '../styles/customStyles';
 import {
   getAllClaimsForSearch,
+  getAllClaimsForSearchWithReviews,
   getUserByValidSessionToken,
 } from '../util/database/database';
 import { fetchResources } from '../util/fetchers/mainFetcher';
@@ -36,12 +38,6 @@ import {
   DbClaim,
   NestedDashboardWidgetProps,
 } from '../util/types';
-
-/* type DbClaim = {
-  id: number;
-  title: string;
-  description: string;
-}; */
 
 type DashboardProps = {
   claims: DbClaim[];
@@ -89,14 +85,14 @@ export default function Dashboard(props: DashboardProps) {
 
   const dbClaimsSearchIndex = new Fuse<DbClaim>(props.claims, {
     includeScore: true,
-    threshold: 0.4,
-    keys: ['title', 'description'],
+    threshold: 0.6,
+    keys: ['claimTitle', 'claimDescription'],
   });
 
   function handleDBSearch() {
     const results = dbClaimsSearchIndex.search(searchQuery);
     console.log('fuse results', results);
-    if (results.length > 0) {
+    if (results.length > 1) {
       const sorteddbClaimsSearchResults = results.sort((resultA, resultB) => {
         if (resultA.score && resultB.score) {
           return resultA.score - resultB.score;
@@ -105,17 +101,22 @@ export default function Dashboard(props: DashboardProps) {
       }) as any;
       console.log('sorted Fuse results', sorteddbClaimsSearchResults);
       setDbClaimsSearchResults(sorteddbClaimsSearchResults);
+      return sorteddbClaimsSearchResults;
     }
 
     setDbClaimsSearchResults(results);
+    return results;
   }
 
-  // TODO review type here
   async function handleFetchResources() {
-    // const [resources, shortedData] = (await fetchResources(searchQuery)) as any;
-    const shortedData = (await fetchResources(searchQuery)) as any;
-    // setFetchedResources(resources);
-    setFormattedResources(shortedData);
+    const dbResults = handleDBSearch();
+    console.log('dbResults', dbResults);
+    const webAPIResults = await fetchResources(searchQuery);
+    console.log('webAPIResults', webAPIResults);
+    console.log('search results state', dbClaimsSearchResults);
+    webAPIResults.push(dbResults);
+
+    setFormattedResources(webAPIResults);
     setLoadingResources(false);
   }
 
@@ -128,7 +129,19 @@ export default function Dashboard(props: DashboardProps) {
     const prompts = [];
     for (let resource of formattedResources) {
       for (let entry of resource) {
-        prompts.push([searchQuery, entry.promptSource]);
+        if (typeof entry.promptSource === 'string') {
+          prompts.push([searchQuery, entry.promptSource]);
+        }
+      }
+    }
+
+    for (const searchResult of dbClaimsSearchResults) {
+      if (searchResult.item.reviews) {
+        searchResult.item.reviews.forEach(
+          (review: { reviewId: number; reviewTitle: string }) => {
+            prompts.push([searchQuery, review.reviewTitle]);
+          },
+        );
       }
     }
 
@@ -165,13 +178,16 @@ export default function Dashboard(props: DashboardProps) {
     // call function to combine fetched Resources with fetched Predictions
 
     // improve handling and storage of prediction resource display!!
-    const combinedResources = formattedResources.slice();
+    const webResources = formattedResources.slice(0, -2);
+    console.log('webResources', webResources);
+    const dbResources = formattedResources.slice(-1);
+    console.log('dbResources', dbResources);
     const conclusio = { contradict: 0, agree: 0 };
 
     const contradictions = [];
     const agreements = [];
 
-    for (let sources of combinedResources) {
+    for (let sources of webResources) {
       for (let source of sources) {
         source.prediction = fetchedPredictions.predictions.shift();
 
@@ -185,10 +201,58 @@ export default function Dashboard(props: DashboardProps) {
       }
     }
 
-    const shuffledContradictions = arrayShuffle(contradictions);
-    const shuffledAgreements = arrayShuffle(agreements);
+    for (const resources of dbResources) {
+      for (const resource of resources) {
+        if (resource.item.reviews) {
+          resource.item.reviews.forEach((review) => {
+            review.prediction = fetchedPredictions.predictions.shift();
+            let entry = {
+              title: review.reviewTitle,
+              url: `/database/reviews/${review.reviewId}`,
+              fromDB: true,
+            };
 
-    console.log('combinedResources', combinedResources);
+            if (review.prediction === 0) {
+              contradictions.push(entry);
+              conclusio.contradict += 1;
+            } else if (review.prediction === 2) {
+              agreements.push(entry);
+              conclusio.agree += 1;
+            }
+          });
+        }
+      }
+    }
+
+    console.log('contra', contradictions);
+    console.log('agree', agreements);
+
+    // TODO add types
+    const contradictionsSearchIndex = new Fuse(contradictions, {
+      includeScore: true,
+      threshold: 0.7,
+      keys: ['title', 'promptSource'],
+    });
+
+    const contradictionsSearchResults =
+      contradictionsSearchIndex.search(searchQuery);
+
+    const shuffledContradictions = arrayShuffle(contradictionsSearchResults);
+
+    const agreementsSearchIndex = new Fuse(agreements, {
+      includeScore: true,
+      threshold: 0.7,
+      keys: ['title', 'promptSource'],
+    });
+
+    const agreementsSearchResults = agreementsSearchIndex.search(searchQuery);
+
+    const shuffledAgreements = arrayShuffle(agreementsSearchResults);
+
+    console.log('shuffled contra', shuffledContradictions);
+    console.log('shuffled agrees', shuffledAgreements);
+
+    // console.log('combinedResources', combinedResources);
     console.log('conclusio', conclusio);
 
     const modelEvaluation = `The claim seems to ${
@@ -242,7 +306,7 @@ export default function Dashboard(props: DashboardProps) {
                       onClick={() => {
                         setDisplayPredictions(false);
                         setLoadingResources(true);
-                        handleDBSearch();
+                        // handleDBSearch();
                         handleFetchResources().catch((error) => {
                           console.log(
                             'An error occured with one or more fetched resources',
@@ -282,13 +346,14 @@ export default function Dashboard(props: DashboardProps) {
                     setRoBERTaError('');
                     setDisplayPredictions(false);
                     setLoadingRoBERTa(true);
-                    handleGenerateRoBERTaPrompts().catch(() => {
+                    handleGenerateRoBERTaPrompts();
+                    /* .catch(() => {
                       console.log(
                         'An error occured trying to generate RoBERTa results',
                       );
                       setRoBERTaError('No valid response received');
                       setLoadingRoBERTa(false);
-                    });
+                    }); */
                   }}
                 >
                   Run
@@ -322,20 +387,27 @@ export default function Dashboard(props: DashboardProps) {
                   <List sx={{ width: '100%', maxWidth: 600 }}>
                     {modelContradictions.map((source) => {
                       return (
-                        <ListItem alignItems="flex-start" key={source.title}>
+                        <ListItem
+                          alignItems="flex-start"
+                          key={source.item.title}
+                        >
                           <ListItemIcon>
-                            <FeedIcon />
+                            {source.item.fromDB ? (
+                              <StorageIcon />
+                            ) : (
+                              <FeedIcon />
+                            )}
                           </ListItemIcon>
 
                           <ListItemText
-                            primary={source.title}
+                            primary={source.item.title}
                             secondary={
                               <Link
-                                href={source.url}
+                                href={source.item.url}
                                 target="_blank"
                                 rel="noreferrer"
                               >
-                                {source.url}
+                                {source.item.url}
                               </Link>
                             }
                           />
@@ -364,20 +436,23 @@ export default function Dashboard(props: DashboardProps) {
                   <List sx={{ width: '100%', maxWidth: 600 }}>
                     {modelAgreements.map((source) => {
                       return (
-                        <ListItem alignItems="flex-start" key={source.title}>
+                        <ListItem
+                          alignItems="flex-start"
+                          key={source.item.title}
+                        >
                           <ListItemIcon>
                             <FeedIcon />
                           </ListItemIcon>
 
                           <ListItemText
-                            primary={source.title}
+                            primary={source.item.title}
                             secondary={
                               <Link
-                                href={source.url}
+                                href={source.item.url}
                                 target="_blank"
                                 rel="noreferrer"
                               >
-                                {source.url}
+                                {source.item.url}
                               </Link>
                             }
                           />
@@ -393,11 +468,17 @@ export default function Dashboard(props: DashboardProps) {
           <div>
             {loadingRoBERTa ? (
               <>
-                <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-around',
+                    mb: '30px',
+                  }}
+                >
                   <CircularIndeterminate />
                 </Box>
 
-                <Grid container spacing={2} sx={{ mb: '30px' }}>
+                <Grid container spacing={2} sx={{ mb: '40px' }}>
                   <Grid item md={6}>
                     <Skeleton variant="text" />
                   </Grid>
@@ -411,7 +492,9 @@ export default function Dashboard(props: DashboardProps) {
           {roBERTaError !== '' ? <p>{roBERTaError}</p> : null}
         </section>
         {loadingResources ? (
-          <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
+          <Box
+            sx={{ display: 'flex', justifyContent: 'space-around', mb: '20px' }}
+          >
             <CircularIndeterminate />
           </Box>
         ) : null}
@@ -425,7 +508,7 @@ export default function Dashboard(props: DashboardProps) {
                 <FactCheckToolWidget contents={formattedResources[0]} />
               </Grid>
               <Grid item sm={12} md={8}>
-                <NewsWidget contents={formattedResources.slice(3)} />
+                <NewsWidget contents={formattedResources.slice(3, 6)} />
               </Grid>
               <Grid item sm={12} md={4}>
                 <WikipediaWidget contents={formattedResources[2]} />
@@ -454,7 +537,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  const claims = await getAllClaimsForSearch();
+  const claims = await getAllClaimsForSearchWithReviews();
 
   return { props: { claims: claims } };
 }

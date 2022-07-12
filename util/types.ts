@@ -169,7 +169,8 @@ export type DatabaseReview = {
 };
 
 export type DbClaim = {
-  id: number;
-  title: string;
-  description: string;
+  claimId: number;
+  claimTitle: string;
+  claimDescription: string;
+  reviews: { reviewId: number; reviewTitle: string }[] | null;
 };

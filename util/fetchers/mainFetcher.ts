@@ -34,15 +34,18 @@ function formatGoogleFactCheckToolResults(rawResponse: {
       if (!['', undefined].some((i) => Object.values(entry).includes(i))) {
         unifiedOutput.push(entry);
       }
-      /* if (!Object.values(entry).includes(undefined)) {
-        unifiedOutput.push(entry);
-      } */
     }
   } catch (error) {
     console.log('Error with processing of GoogleFactCheckToolResults');
     console.log(error);
   }
-  return unifiedOutput;
+
+  const uniqueOutput = [
+    ...unifiedOutput
+      .reduce((map, obj) => map.set(obj.title, obj), new Map())
+      .values(),
+  ];
+  return uniqueOutput;
 }
 
 function formatDuckDuckGoResults(rawResponse: { RelatedTopics: any }) {
@@ -76,12 +79,19 @@ function formatWikipediaResults(rawResponse: {
     return [];
   }
   const unifiedOutput = [];
+  let count = 0;
   for (let result of rawResponse.query.search) {
-    unifiedOutput.push({
-      title: result.title,
-      url: `http://en.wikipedia.org/?curid=${result.pageid}`,
-      promptSource: strip(result.snippet),
-    });
+    if (count > 7) {
+      return unifiedOutput;
+    }
+    if (typeof result.snippet === 'string') {
+      unifiedOutput.push({
+        title: result.title,
+        url: `http://en.wikipedia.org/?curid=${result.pageid}`,
+        promptSource: strip(result.snippet),
+      });
+      count++;
+    }
   }
   return unifiedOutput;
 }
@@ -90,13 +100,20 @@ function formatGuardianSearchResults(rawResponse: {
   response: { results: any };
 }) {
   const unifiedOutput = [];
+  let count = 0;
   try {
     for (let result of rawResponse.response.results) {
-      unifiedOutput.push({
-        title: result.webTitle,
-        url: result.webUrl,
-        promptSource: strip(result.webTitle),
-      });
+      if (count > 4) {
+        return unifiedOutput;
+      }
+      if (typeof result.webTitle === 'string') {
+        unifiedOutput.push({
+          title: result.webTitle,
+          url: result.webUrl,
+          promptSource: strip(result.webTitle),
+        });
+        count++;
+      }
     }
   } catch (error) {
     console.log('Guardian API response could not be processed');
@@ -119,12 +136,19 @@ function formatNytResults(rawResponse: {
     return [];
   }
   const unifiedOutput = [];
+  let count = 0;
   for (let doc of rawResponse.response.docs) {
-    unifiedOutput.push({
-      title: doc.abstract,
-      url: doc.web_url,
-      promptSource: strip(doc.abstract),
-    });
+    if (count > 4) {
+      return unifiedOutput;
+    }
+    if (typeof doc.abstract === 'string') {
+      unifiedOutput.push({
+        title: doc.abstract,
+        url: doc.web_url,
+        promptSource: strip(doc.abstract),
+      });
+      count++;
+    }
   }
   return unifiedOutput;
 }
@@ -146,15 +170,17 @@ function formatNewsapiResults(rawResponse: {
   const unifiedOutput = [];
   let count = 0;
   for (let article of rawResponse.articles) {
-    if (count > 10) {
+    if (count > 9) {
       return unifiedOutput;
     }
-    unifiedOutput.push({
-      title: article.title,
-      url: article.url,
-      promptSource: strip(article.description),
-    });
-    count++;
+    if (typeof article.description === 'string') {
+      unifiedOutput.push({
+        title: article.title,
+        url: article.url,
+        promptSource: strip(article.description),
+      });
+      count++;
+    }
   }
   return unifiedOutput;
 }
@@ -236,5 +262,6 @@ export async function fetchResources(
   shortedData.push(formatNewsapiResults(responses[5].newsapi));
 
   console.log(shortedData);
-  return [responses, shortedData];
+  return shortedData;
+  // return [responses, shortedData];
 }
