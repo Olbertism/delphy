@@ -7,7 +7,6 @@ import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import { accordionHeadlineStyles } from '../../styles/customStyles';
 import {
-  DashboardWidgetProps,
   DashboardWidgetPropsContents,
   NestedDashboardWidgetProps,
 } from '../../util/types';

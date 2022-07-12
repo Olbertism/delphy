@@ -33,14 +33,15 @@ import {
   DashboardWidgetDbSearchItem,
   DashboardWidgetDbSearchResults,
   DashboardWidgetPropsContents,
+  DbClaim,
   NestedDashboardWidgetProps,
 } from '../util/types';
 
-type DbClaim = {
+/* type DbClaim = {
   id: number;
   title: string;
   description: string;
-};
+}; */
 
 type DashboardProps = {
   claims: DbClaim[];
@@ -60,12 +61,12 @@ export default function Dashboard(props: DashboardProps) {
 
   const [loadingResources, setLoadingResources] = useState(false);
 
-  const [fetchedResources, setFetchedResources] = useState([]);
+  // const [fetchedResources, setFetchedResources] = useState([]);
   const [formattedResources, setFormattedResources] = useState<
     DashboardWidgetPropsContents[][]
   >([]);
   const [evaluation, setEvaluation] = useState('');
-  const [displayedResources, setDisplayedResources] = useState([]);
+  // const [displayedResources, setDisplayedResources] = useState([]);
   const [modelContradictions, setModelContradictions] = useState<
     FormattedResource[]
   >([]);
@@ -77,8 +78,9 @@ export default function Dashboard(props: DashboardProps) {
   const [loadingRoBERTa, setLoadingRoBERTa] = useState(false);
   const [roBERTaError, setRoBERTaError] = useState('');
 
-  const [dbClaimsSearchResults, setDbClaimsSearchResults] =
-    useState<DashboardWidgetDbSearchResults>([]);
+  const [dbClaimsSearchResults, setDbClaimsSearchResults] = useState<
+    DashboardWidgetDbSearchResults | Fuse.FuseResult<DbClaim>[]
+  >([]);
 
   // console.log('fetchedResources: ', fetchedResources);
   console.log('formattedResources: ', formattedResources);
@@ -100,7 +102,7 @@ export default function Dashboard(props: DashboardProps) {
           return resultA.score - resultB.score;
         }
         return 0;
-      });
+      }) as any;
       console.log('sorted Fuse results', sorteddbClaimsSearchResults);
       setDbClaimsSearchResults(sorteddbClaimsSearchResults);
     }
@@ -110,8 +112,9 @@ export default function Dashboard(props: DashboardProps) {
 
   // TODO review type here
   async function handleFetchResources() {
-    const [resources, shortedData] = (await fetchResources(searchQuery)) as any;
-    setFetchedResources(resources);
+    // const [resources, shortedData] = (await fetchResources(searchQuery)) as any;
+    const shortedData = (await fetchResources(searchQuery)) as any;
+    // setFetchedResources(resources);
     setFormattedResources(shortedData);
     setLoadingResources(false);
   }

@@ -167,3 +167,9 @@ export type DatabaseReview = {
   username?: string | undefined;
   sources: { source_title: string; source_url: string }[];
 };
+
+export type DbClaim = {
+  id: number;
+  title: string;
+  description: string;
+};

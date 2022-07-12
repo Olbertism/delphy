@@ -6,12 +6,13 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import Typography from '@mui/material/Typography';
 import { Box } from '@mui/system';
+import Fuse from 'fuse.js';
 import { useEffect, useState } from 'react';
 import { accordionHeadlineStyles } from '../../styles/customStyles';
-import { DashboardWidgetDbSearchResults } from '../../util/types';
+import { DashboardWidgetDbSearchResults, DbClaim } from '../../util/types';
 
 type DashboardDbSearchProps = {
-  contents: DashboardWidgetDbSearchResults;
+  contents: DashboardWidgetDbSearchResults | Fuse.FuseResult<DbClaim>[];
 };
 export default function DatabaseWidget(props: DashboardDbSearchProps) {
   const [results, setResults] = useState(props.contents);
@@ -45,7 +46,7 @@ export default function DatabaseWidget(props: DashboardDbSearchProps) {
                   return (
                     <li key={result.item.id}>
                       <a href={`/database/claims/${result.item.id}`}>
-                        {result.item.title} ({Math.round(result.score * 100)}%)
+                        {result.item.title} ({result.score ? Math.round(result.score * 100) + '%' : null})
                       </a>
                     </li>
                   );
