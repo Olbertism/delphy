@@ -1,3 +1,4 @@
+/** @jsxImportSource @emotion/react */
 import FeedIcon from '@mui/icons-material/Feed';
 import {
   Box,
@@ -14,7 +15,6 @@ import {
 } from '@mui/material';
 import arrayShuffle from 'array-shuffle';
 import Fuse from 'fuse.js';
-import FuseResult from 'fuse.js';
 import { GetServerSidePropsContext } from 'next';
 import { useRef, useState } from 'react';
 import DatabaseWidget from '../components/dashboard/DbSearchResults';
@@ -29,6 +29,12 @@ import {
   getUserByValidSessionToken,
 } from '../util/database/database';
 import { fetchResources } from '../util/fetchers/mainFetcher';
+import {
+  DashboardWidgetDbSearchItem,
+  DashboardWidgetDbSearchResults,
+  DashboardWidgetPropsContents,
+  NestedDashboardWidgetProps,
+} from '../util/types';
 
 type DbClaim = {
   id: number;
@@ -56,21 +62,23 @@ export default function Dashboard(props: DashboardProps) {
 
   const [fetchedResources, setFetchedResources] = useState([]);
   const [formattedResources, setFormattedResources] = useState<
-    FormattedResource[][]
+    DashboardWidgetPropsContents[][]
   >([]);
   const [evaluation, setEvaluation] = useState('');
   const [displayedResources, setDisplayedResources] = useState([]);
   const [modelContradictions, setModelContradictions] = useState<
-  FormattedResource[]>([]);
-  const [modelAgreements, setModelAgreements] = useState<
-  FormattedResource[]>([]);
+    FormattedResource[]
+  >([]);
+  const [modelAgreements, setModelAgreements] = useState<FormattedResource[]>(
+    [],
+  );
   const [displayPredictions, setDisplayPredictions] = useState(false);
 
   const [loadingRoBERTa, setLoadingRoBERTa] = useState(false);
   const [roBERTaError, setRoBERTaError] = useState('');
 
   const [dbClaimsSearchResults, setDbClaimsSearchResults] =
-    useState<FuseResult>([]);
+    useState<DashboardWidgetDbSearchResults>([]);
 
   // console.log('fetchedResources: ', fetchedResources);
   console.log('formattedResources: ', formattedResources);
@@ -86,15 +94,23 @@ export default function Dashboard(props: DashboardProps) {
   function handleDBSearch() {
     const results = dbClaimsSearchIndex.search(searchQuery);
     console.log('fuse results', results);
-    const sorteddbClaimsSearchResults = results.sort((resultA, resultB) => {
-      return resultA.score - resultB.score;
-    });
-    console.log('sorted Fuse results', sorteddbClaimsSearchResults);
-    setDbClaimsSearchResults(sorteddbClaimsSearchResults);
+    if (results.length > 0) {
+      const sorteddbClaimsSearchResults = results.sort((resultA, resultB) => {
+        if (resultA.score && resultB.score) {
+          return resultA.score - resultB.score;
+        }
+        return 0;
+      });
+      console.log('sorted Fuse results', sorteddbClaimsSearchResults);
+      setDbClaimsSearchResults(sorteddbClaimsSearchResults);
+    }
+
+    setDbClaimsSearchResults(results);
   }
 
+  // TODO review type here
   async function handleFetchResources() {
-    const [resources, shortedData] = await fetchResources(searchQuery);
+    const [resources, shortedData] = (await fetchResources(searchQuery)) as any;
     setFetchedResources(resources);
     setFormattedResources(shortedData);
     setLoadingResources(false);
@@ -295,7 +311,7 @@ export default function Dashboard(props: DashboardProps) {
                     }
                   >
                     Taglines that{' '}
-                    <Box component="span" sx={redTextHighlight}>
+                    <Box component="span" css={redTextHighlight}>
                       contradict
                     </Box>{' '}
                     claim:
@@ -337,7 +353,7 @@ export default function Dashboard(props: DashboardProps) {
                     }
                   >
                     Taglines that{' '}
-                    <Box component="span" sx={greenTextHighlight}>
+                    <Box component="span" css={greenTextHighlight}>
                       agree
                     </Box>{' '}
                     with claim:
@@ -403,22 +419,13 @@ export default function Dashboard(props: DashboardProps) {
                 <DatabaseWidget contents={dbClaimsSearchResults} />
               </Grid>
               <Grid item sm={12} md={8}>
-                <FactCheckToolWidget
-                  query={searchQuery}
-                  contents={formattedResources[0]}
-                />
+                <FactCheckToolWidget contents={formattedResources[0]} />
               </Grid>
               <Grid item sm={12} md={8}>
-                <NewsWidget
-                  query={searchQuery}
-                  contents={formattedResources.slice(3)}
-                />
+                <NewsWidget contents={formattedResources.slice(3)} />
               </Grid>
               <Grid item sm={12} md={4}>
-                <WikipediaWidget
-                  query={searchQuery}
-                  contents={formattedResources[2]}
-                />
+                <WikipediaWidget contents={formattedResources[2]} />
               </Grid>
             </Grid>
           </Box>

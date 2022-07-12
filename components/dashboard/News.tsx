@@ -1,3 +1,5 @@
+/** @jsxImportSource @emotion/react */
+import { css } from '@emotion/react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { List, ListItem, ListItemText, Pagination } from '@mui/material';
 import Accordion from '@mui/material/Accordion';
@@ -11,6 +13,7 @@ import { accordionHeadlineStyles } from '../../styles/customStyles';
 import {
   DashboardWidgetProps,
   DashboardWidgetPropsContents,
+  NestedDashboardWidgetProps,
 } from '../../util/types';
 import usePagination from './Pagination';
 
@@ -25,7 +28,7 @@ const collectAndShuffleResults = (nestedArray: DashboardWidgetPropsContents[][])
   return shuffledArray;
 };
 
-export default function NewsWidget(props: DashboardWidgetProps) {
+export default function NewsWidget(props: NestedDashboardWidgetProps) {
   const [results, setResults] = useState<DashboardWidgetPropsContents[]>([]);
   const [paginationCount, setPaginationCount] = useState<number>(0);
   const [page, setPage] = useState(1);
@@ -56,7 +59,7 @@ export default function NewsWidget(props: DashboardWidgetProps) {
     <section>
       <Accordion>
         <AccordionSummary
-          sx={accordionHeadlineStyles}
+          css={accordionHeadlineStyles}
           expandIcon={<ExpandMoreIcon color="secondary" />}
           aria-controls="panel1a-content"
           id="panel1a-header"

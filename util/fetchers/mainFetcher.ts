@@ -1,3 +1,5 @@
+import { DashboardWidgetPropsContents } from '../types';
+
 // text sanitizer for prompt generation
 function strip(html: string) {
   // const string  = html.replace(/[ –]/, '')
@@ -29,7 +31,7 @@ function formatGoogleFactCheckToolResults(rawResponse: {
         url: claim.claimReview[0].url,
         promptSource: strip(claim.claimReview[0].title),
       };
-      if (!["", undefined].some((i) => Object.values(entry).includes(i))) {
+      if (!['', undefined].some((i) => Object.values(entry).includes(i))) {
         unifiedOutput.push(entry);
       }
       /* if (!Object.values(entry).includes(undefined)) {
@@ -44,12 +46,12 @@ function formatGoogleFactCheckToolResults(rawResponse: {
 }
 
 function formatDuckDuckGoResults(rawResponse: { RelatedTopics: any }) {
-  const unifiedOutput = [];
+  const unifiedOutput = [] as DashboardWidgetPropsContents[];
   try {
     for (let topic of rawResponse.RelatedTopics) {
       unifiedOutput.push({
-        title: topic.Text,
-        url: topic.FirstURL,
+        title: topic.Text as string,
+        url: topic.FirstURL as string,
         promptSource: strip(topic.Text),
       });
     }
@@ -60,7 +62,10 @@ function formatDuckDuckGoResults(rawResponse: { RelatedTopics: any }) {
   return unifiedOutput;
 }
 
-function formatWikipediaResults(rawResponse) {
+function formatWikipediaResults(rawResponse: {
+  error: { info: any };
+  query: any;
+}) {
   if ('error' in rawResponse) {
     console.log('Wikipedia API responded with error');
     try {
@@ -81,7 +86,9 @@ function formatWikipediaResults(rawResponse) {
   return unifiedOutput;
 }
 
-function formatGuardianSearchResults(rawResponse) {
+function formatGuardianSearchResults(rawResponse: {
+  response: { results: any };
+}) {
   const unifiedOutput = [];
   try {
     for (let result of rawResponse.response.results) {
@@ -98,7 +105,10 @@ function formatGuardianSearchResults(rawResponse) {
   return unifiedOutput;
 }
 
-function formatNytResults(rawResponse) {
+function formatNytResults(rawResponse: {
+  fault: { faultstring: any };
+  response: { docs: any };
+}) {
   if ('fault' in rawResponse) {
     console.log('NYT api responded with error');
     try {
@@ -119,7 +129,11 @@ function formatNytResults(rawResponse) {
   return unifiedOutput;
 }
 
-function formatNewsapiResults(rawResponse) {
+function formatNewsapiResults(rawResponse: {
+  status: string;
+  message: any;
+  articles: any;
+}) {
   if (rawResponse.status === 'error') {
     console.log('News api responded with error');
     try {
@@ -211,7 +225,7 @@ export async function fetchResources(
   );
 
   console.log(responses);
-  const shortedData = [];
+  const shortedData = [] as DashboardWidgetPropsContents[][];
   shortedData.push(
     formatGoogleFactCheckToolResults(responses[0].factCheckTool),
   );

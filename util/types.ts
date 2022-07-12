@@ -43,11 +43,14 @@ export type DashboardWidgetPropsContents = {
   title: string;
   url: string;
   promptSource: string;
-  prediction: number;
+  prediction?: number;
 };
 
 export type DashboardWidgetProps = {
   contents: DashboardWidgetPropsContents[];
+};
+export type NestedDashboardWidgetProps = {
+  contents: DashboardWidgetPropsContents[][];
 };
 
 export type DashboardWidgetDbSearchItem = {

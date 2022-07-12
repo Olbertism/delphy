@@ -1,3 +1,4 @@
+/** @jsxImportSource @emotion/react */
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { List, ListItem, ListItemText, Pagination } from '@mui/material';
 import Accordion from '@mui/material/Accordion';
@@ -41,7 +42,7 @@ export default function WikipediaWidget(props: DashboardWidgetProps) {
     <section>
       <Accordion>
         <AccordionSummary
-          sx={accordionHeadlineStyles}
+          css={accordionHeadlineStyles}
           expandIcon={<ExpandMoreIcon color="secondary" />}
           aria-controls="panel1a-content"
           id="panel1a-header"

@@ -1,3 +1,4 @@
+/** @jsxImportSource @emotion/react */
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -5,10 +6,14 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import { accordionHeadlineStyles } from '../../styles/customStyles';
-import { DashboardWidgetProps } from '../../util/types';
+import {
+  DashboardWidgetProps,
+  DashboardWidgetPropsContents,
+  NestedDashboardWidgetProps,
+} from '../../util/types';
 
-export default function SearchEngineWidget(props: DashboardWidgetProps) {
-  const [results, setResults] = useState(props.contents);
+export default function SearchEngineWidget(props: NestedDashboardWidgetProps) {
+  const [results, setResults] = useState<DashboardWidgetPropsContents[][]>(props.contents);
 
   const displayedContents = props.contents;
 
@@ -23,7 +28,7 @@ export default function SearchEngineWidget(props: DashboardWidgetProps) {
       ) : (
         <Accordion>
           <AccordionSummary
-            sx={accordionHeadlineStyles}
+            css={accordionHeadlineStyles}
             expandIcon={<ExpandMoreIcon color="secondary" />}
             aria-controls="panel1a-content"
             id="panel1a-header"

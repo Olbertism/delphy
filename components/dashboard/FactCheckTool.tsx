@@ -1,3 +1,4 @@
+/** @jsxImportSource @emotion/react */
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Link, List, ListItem, ListItemText, Pagination } from '@mui/material';
 import Accordion from '@mui/material/Accordion';
@@ -20,7 +21,7 @@ type Props = {
   contents: Content[];
 };
 
-export default function FactCheckToolWidget(props: Props) {
+export default function FactCheckToolWidget(props: DashboardWidgetProps) {
   const [results, setResults] = useState(props.contents);
   const [paginationCount, setPaginationCount] = useState<number>(0);
   const [page, setPage] = useState(1);
@@ -55,7 +56,7 @@ export default function FactCheckToolWidget(props: Props) {
       <Accordion expanded={expanded}>
         <AccordionSummary
           onClick={() => handleExpansion()}
-          sx={accordionHeadlineStyles}
+          css={accordionHeadlineStyles}
           expandIcon={<ExpandMoreIcon color="secondary" />}
           aria-controls="panel1a-content"
           id="panel1a-header"

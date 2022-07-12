@@ -8,9 +8,12 @@ import {
   getAllReviewsWithUsernamesAndClaims,
   getUserByValidSessionToken,
 } from '../../util/database/database';
+import { Claim, Review } from '../../util/types';
 
 type Props = {
   refreshUserProfile: () => Promise<void>;
+  claims: Claim[];
+  reviews: Review[];
 };
 export default function Database(props: Props) {
   const refreshUserProfile = props.refreshUserProfile;
