@@ -14,13 +14,12 @@ import {
   getUserByUsername,
   getUserByValidSessionToken,
 } from '../../util/database/database';
-import { Claim, Review, User } from '../../util/types';
+import { DatabaseClaim, DatabaseReview, User } from '../../util/types';
 
 type ProfilePageProps = {
   user: User;
-  reviews: Review[];
-  claims: Claim[];
-  isPageOwner: boolean;
+  reviews: DatabaseReview[];
+  claims: DatabaseClaim[];
 };
 export default function PublicUserProfile(props: ProfilePageProps) {
   return (
@@ -35,7 +34,7 @@ export default function PublicUserProfile(props: ProfilePageProps) {
         <Typography variant="h2">{props.user.username}</Typography>
         <div>id: {props.user.id}</div>
 
-        <Box sx={{ mb: "30px"}}>
+        <Box sx={{ mb: '30px' }}>
           <Typography variant="h3">Claims submitted:</Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
             {props.claims.map((claim) => {
@@ -66,7 +65,7 @@ export default function PublicUserProfile(props: ProfilePageProps) {
             })}
           </Box>
         </Box>
-        <Box sx={{ mb: "30px"}}>
+        <Box sx={{ mb: '30px' }}>
           <Typography variant="h3">Reviews submitted:</Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
             {props.reviews.map((review) => {
