@@ -23,6 +23,7 @@ import { visuallyHidden } from '@mui/utils';
 import Link from 'next/link';
 import PropTypes from 'prop-types';
 import * as React from 'react';
+import formatDate from '../../util/formatDate';
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -57,31 +58,31 @@ function stableSort(array, comparator) {
 const headCells = [
   {
     id: 'id',
-    numeric: true,
+    numeric: false,
     disablePadding: true,
     label: 'Id',
   },
   {
     id: 'title',
-    numeric: false,
+    numeric: true,
     disablePadding: false,
     label: 'Title',
   },
   {
     id: 'added_on',
-    numeric: false,
+    numeric: true,
     disablePadding: false,
     label: 'Added on',
   },
   {
     id: 'added_by',
-    numeric: false,
+    numeric: true,
     disablePadding: false,
     label: 'Added by',
   },
   {
     id: 'reviews',
-    numeric: false,
+    numeric: true,
     disablePadding: false,
     label: 'Reviews',
   },
@@ -96,7 +97,7 @@ function EnhancedTableHead(props) {
     rowCount,
     onRequestSort,
   } = props;
-  console.log("Enhanced head props", props)
+  console.log('Enhanced head props', props);
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
   };
@@ -209,7 +210,6 @@ EnhancedTableToolbar.propTypes = {
 };
 
 export default function ClaimsTable(props) {
-
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState('id');
   const [selected, setSelected] = React.useState([]);
@@ -217,13 +217,12 @@ export default function ClaimsTable(props) {
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
-  
-  console.log("state: order", order)
-  console.log("state: orderBy", orderBy)
+  console.log('state: order', order);
+  console.log('state: orderBy', orderBy);
 
   const handleRequestSort = (event, property) => {
-    console.log("SORT FUNC TRIGGERED")
-    console.log("property in handleRequestSort", property)
+    console.log('SORT FUNC TRIGGERED');
+    console.log('property in handleRequestSort', property);
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
@@ -336,7 +335,9 @@ export default function ClaimsTable(props) {
                           {claim.claimTitle}
                         </Link>
                       </TableCell>
-                      <TableCell align="right">{claim.claimAdded}</TableCell>
+                      <TableCell align="right">
+                        {formatDate(claim.claimAdded)}
+                      </TableCell>
                       <TableCell align="right">
                         <Link href={`/users/${claim.username}`}>
                           {claim.username}
@@ -344,17 +345,19 @@ export default function ClaimsTable(props) {
                       </TableCell>
                       <TableCell align="right">
                         {claim.reviews ? (
-                          claim.reviews.map((review) => {
-                            return (
-                              <span key={review.reviewId}>
-                                <Link
-                                  href={`/database/reviews/${review.reviewId}`}
-                                >
-                                  {review.reviewTitle}
-                                </Link>{' '}
-                              </span>
-                            );
-                          })
+                          <ul>
+                            {claim.reviews.map((review) => {
+                              return (
+                                <li key={review.reviewId}>
+                                  <Link
+                                    href={`/database/reviews/${review.reviewId}`}
+                                  >
+                                    {review.reviewTitle}
+                                  </Link>{' '}
+                                </li>
+                              );
+                            })}
+                          </ul>
                         ) : (
                           <span>Unreviewed</span>
                         )}

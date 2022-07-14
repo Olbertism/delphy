@@ -71,7 +71,7 @@ export default function ContributeReview(props: Props) {
 
   console.log('author: ', authorId);
 
-  console.log("source list", currentSourceList)
+  console.log('source list', currentSourceList);
 
   const refreshUserProfile = props.refreshUserProfile;
 
@@ -152,9 +152,8 @@ export default function ContributeReview(props: Props) {
   };
 
   const handleSourcesCreation = async (reviewId: number) => {
-
     for (const source of currentSourceList) {
-      console.log("current source", source)
+      console.log('current source', source);
       const requestbody: SourceRequestbody = {
         sourceTitle: source.title,
         sourceUrl: source.url,
@@ -273,7 +272,7 @@ export default function ContributeReview(props: Props) {
               ) : null}
             </Box>
           </Box>
-          <Box sx={{mb: "15px"}}>
+          <Box sx={{ mb: '15px' }}>
             {' '}
             {currentSourceList.length === 0 ? (
               <Typography>Currently no sources provided</Typography>
@@ -281,27 +280,26 @@ export default function ContributeReview(props: Props) {
               <>
                 <Typography variant="h5">Sources:</Typography>
 
-                  <List sx={{ width: '100%' }}>
-                    {currentSourceList.map((source) => {
-                      return (
-                        <ListItem alignItems="flex-start" key={source.title}>
-                          <ListItemText
-                            primary={source.title}
-                            secondary={
-                              <Link
-                                href={source.url}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                {source.url}
-                              </Link>
-                            }
-                          />
-                        </ListItem>
-                      );
-                    })}
-                  </List>
-
+                <List sx={{ width: '100%' }}>
+                  {currentSourceList.map((source) => {
+                    return (
+                      <ListItem alignItems="flex-start" key={source.title}>
+                        <ListItemText
+                          primary={source.title}
+                          secondary={
+                            <Link
+                              href={source.url}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {source.url}
+                            </Link>
+                          }
+                        />
+                      </ListItem>
+                    );
+                  })}
+                </List>
               </>
             )}
           </Box>
@@ -334,24 +332,29 @@ export default function ContributeReview(props: Props) {
             variant="contained"
             color="secondary"
             onClick={async () => {
-              const { review } = await handleReviewCreation(
+              setErrors([]);
+              const wrappedReview = await handleReviewCreation(
                 selectedClaim as number,
               ).catch((error) => {
                 console.log('Error when trying to create new review');
                 appendError(error);
               });
+              if (!wrappedReview) {
+                setDisplayAlert(true);
+                return;
+              }
+              const { review } = wrappedReview;
               if (currentSourceList.length > 0) {
                 handleSourcesCreation(review.id).catch((error) => {
                   console.log('Error when trying to create new sources');
                   appendError(error);
+                  setDisplayAlert(true);
                 });
               }
               if (errors.length === 0) {
                 clearInputs();
-                setDisplayAlert(true)
+                setDisplayAlert(true);
               }
-
-              console.log('done');
             }}
           >
             Submit
@@ -369,6 +372,23 @@ export default function ContributeReview(props: Props) {
               setDisplayAlert(false);
             }}
           >
+            {errors.length > 0 ? (
+              <Alert
+                onClose={(
+                  event?: React.SyntheticEvent | Event,
+                  reason?: string,
+                ) => {
+                  if (reason === 'clickaway') {
+                    return;
+                  }
+                  setDisplayAlert(false);
+                }}
+                severity="error"
+                sx={{ width: '100%' }}
+              >
+                An error occured!
+              </Alert>
+            ) : (
             <Alert
               onClose={(
                 event?: React.SyntheticEvent | Event,
@@ -383,7 +403,7 @@ export default function ContributeReview(props: Props) {
               sx={{ width: '100%' }}
             >
               Review successfully added!
-            </Alert>
+            </Alert> )}
           </Snackbar>
         </section>
       </main>

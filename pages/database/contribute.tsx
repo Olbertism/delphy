@@ -107,6 +107,7 @@ export default function Contribute(props: Props) {
   const [errors, setErrors] = useState<Error[]>([]);
 
   console.log('author: ', authorId);
+  console.log('errors', errors);
 
   const refreshUserProfile = props.refreshUserProfile;
 
@@ -494,6 +495,7 @@ export default function Contribute(props: Props) {
             <Typography>Add source</Typography>
             <IconButton
               sx={{ mb: '5px' }}
+              disabled={!addReviewCheckbox}
               aria-label="Add source"
               onClick={() => setNewSourceInput(true)}
             >
@@ -598,11 +600,19 @@ export default function Contribute(props: Props) {
             variant="contained"
             color="secondary"
             onClick={async () => {
-              const { claim } = await handleClaimCreation().catch((error) => {
-                console.log('Error when trying to create new claim');
-                appendError(error);
-              });
-              console.log(claim);
+              setErrors([]);
+              const wrappedClaim = await handleClaimCreation().catch(
+                (error) => {
+                  console.log('Error when trying to create new claim');
+                  appendError(error);
+                },
+              );
+              if (!wrappedClaim) {
+                setDisplayAlert(true);
+                return;
+              }
+              const { claim } = wrappedClaim;
+              
               if (savedLabels.length > 0) {
                 handleCreateLabel(claim.id).catch((error) => {
                   console.log('Error when trying to create new label');
@@ -616,12 +626,17 @@ export default function Contribute(props: Props) {
                 });
               }
               if (addReviewCheckbox) {
-                const { review } = await handleReviewCreation(claim.id).catch(
-                  (error) => {
-                    console.log('Error when trying to create new review');
-                    appendError(error);
-                  },
-                );
+                const wrappedReview = await handleReviewCreation(
+                  claim.id,
+                ).catch((error) => {
+                  console.log('Error when trying to create new review');
+                  appendError(error);
+                });
+                if (!wrappedReview) {
+                  setDisplayAlert(true);
+                  return;
+                }
+                const { review } = wrappedReview;
                 if (currentSourceList.length > 0) {
                   handleSourcesCreation(review.id).catch((error) => {
                     console.log('Error when trying to create new sources');
@@ -631,8 +646,8 @@ export default function Contribute(props: Props) {
               }
               if (errors.length === 0) {
                 clearInputs();
-                setDisplayAlert(true);
               }
+              setDisplayAlert(true);
             }}
           >
             Submit
@@ -651,21 +666,39 @@ export default function Contribute(props: Props) {
               setDisplayAlert(false);
             }}
           >
-            <Alert
-              onClose={(
-                event?: React.SyntheticEvent | Event,
-                reason?: string,
-              ) => {
-                if (reason === 'clickaway') {
-                  return;
-                }
-                setDisplayAlert(false);
-              }}
-              severity="success"
-              sx={{ width: '100%' }}
-            >
-              Claim successfully added!
-            </Alert>
+            {errors.length > 0 ? (
+              <Alert
+                onClose={(
+                  event?: React.SyntheticEvent | Event,
+                  reason?: string,
+                ) => {
+                  if (reason === 'clickaway') {
+                    return;
+                  }
+                  setDisplayAlert(false);
+                }}
+                severity="error"
+                sx={{ width: '100%' }}
+              >
+                An error occured!
+              </Alert>
+            ) : (
+              <Alert
+                onClose={(
+                  event?: React.SyntheticEvent | Event,
+                  reason?: string,
+                ) => {
+                  if (reason === 'clickaway') {
+                    return;
+                  }
+                  setDisplayAlert(false);
+                }}
+                severity="success"
+                sx={{ width: '100%' }}
+              >
+                Claim successfully added!
+              </Alert>
+            )}
           </Snackbar>
         </section>
       </main>

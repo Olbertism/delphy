@@ -48,11 +48,9 @@ type Props = {
   refreshUserProfile: () => Promise<void>;
   claim: DatabaseClaim;
   author: Author | null;
-  verdicts: Verdict[]
+  verdicts: Verdict[];
 };
 export default function ClaimPage(props: Props) {
-  console.log(props);
-
   const [authorId, setAuthorId] = useState<number | undefined>(
     props.author === null ? undefined : props.author.id,
   );
@@ -74,6 +72,8 @@ export default function ClaimPage(props: Props) {
   const [displayAlert, setDisplayAlert] = useState(false);
 
   const [errors, setErrors] = useState<Error[]>([]);
+
+  console.log('errors', errors);
 
   const refreshUserProfile = props.refreshUserProfile;
 
@@ -399,16 +399,27 @@ export default function ClaimPage(props: Props) {
             </Button>
             <Button
               onClick={async () => {
-                const { review } = await handleReviewCreation().catch(() => {
-                  console.log('Error when trying to create new review');
-                });
+                setErrors([]);
+                const wrappedReview = await handleReviewCreation().catch(
+                  (error) => {
+                    console.log('Error when trying to create new review');
+                    appendError(error);
+                  },
+                );
+                if (!wrappedReview) {
+                  setDisplayAlert(true);
+                  return;
+                }
+                const { review } = wrappedReview;
                 console.log(review);
                 if (currentSourceList.length > 0) {
                   handleSourcesCreation(review.id).catch((error) => {
                     console.log('Error when trying to create new sources');
                     appendError(error);
+                    setDisplayAlert(true);
                   });
                 }
+                // TODO: This clause does not trigger if first try resulted in error and second one is successful
                 if (errors.length === 0) {
                   clearInputs();
                   setDisplayAlert(true);
@@ -430,21 +441,39 @@ export default function ClaimPage(props: Props) {
             setDisplayAlert(false);
           }}
         >
-          <Alert
-            onClose={(
-              event?: React.SyntheticEvent | Event,
-              reason?: string,
-            ) => {
-              if (reason === 'clickaway') {
-                return;
-              }
-              setDisplayAlert(false);
-            }}
-            severity="success"
-            sx={{ width: '100%' }}
-          >
-            Review successfully added!
-          </Alert>
+          {errors.length > 0 ? (
+            <Alert
+              onClose={(
+                event?: React.SyntheticEvent | Event,
+                reason?: string,
+              ) => {
+                if (reason === 'clickaway') {
+                  return;
+                }
+                setDisplayAlert(false);
+              }}
+              severity="error"
+              sx={{ width: '100%' }}
+            >
+              An error occured!
+            </Alert>
+          ) : (
+            <Alert
+              onClose={(
+                event?: React.SyntheticEvent | Event,
+                reason?: string,
+              ) => {
+                if (reason === 'clickaway') {
+                  return;
+                }
+                setDisplayAlert(false);
+              }}
+              severity="success"
+              sx={{ width: '100%' }}
+            >
+              Review successfully added!
+            </Alert>
+          )}
         </Snackbar>
       </main>
     </>

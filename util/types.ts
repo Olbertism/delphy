@@ -39,7 +39,21 @@ export type RoBERTaPrompt = [string, string];
 
 export type RoBERTaPrediction = number[];
 
+export type MainFetcherOutput = {
+  title: string;
+  url: string;
+  promptSource: string;
+}[]
+
 export type DashboardWidgetPropsContents = {
+  item: {
+    title: string;
+    url: string;
+    fromDB: boolean;
+    reviews:
+      | { reviewId: number; reviewTitle: string; prediction: number }[]
+      | null;
+  };
   title: string;
   url: string;
   promptSource: string;
@@ -54,9 +68,10 @@ export type NestedDashboardWidgetProps = {
 };
 
 export type DashboardWidgetDbSearchItem = {
-  id: number;
-  title: string;
+  claimId: number;
+  claimTitle: string;
   description: string;
+  reviews: { reviewId: number; reviewTitle: string }[] | null;
 };
 
 export type DashboardWidgetDbSearchResults = {

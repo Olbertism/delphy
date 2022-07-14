@@ -51,22 +51,33 @@ export const landingPageBackground = css`
     opacity: 0.2;
   }
 
-  .hero {
+  .contentWrapper {
     position: relative;
     top: 20%;
+    margin-left: auto;
+    margin-right: auto;
+
+    @media only screen and (max-width: 720px) {
+      width: 80%;
+    }
+
+  }
+
+  .hero {
+    position: relative;
+    margin-bottom: 8vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     color: white;
+    text-align: center;
 
-    margin-left: auto;
-    margin-right: auto;
   }
 
   .teaser {
     position: relative;
-    top: 35%;
+
     display: flex;
     flex-direction: column;
     align-items: center;

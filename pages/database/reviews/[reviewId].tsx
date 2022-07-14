@@ -1,4 +1,11 @@
-import { Link, List, ListItem, ListItemText, Typography } from '@mui/material';
+import {
+  Box,
+  Link,
+  List,
+  ListItem,
+  ListItemText,
+  Typography,
+} from '@mui/material';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import { getReviewWithAllRelationsById } from '../../../util/database/database';
@@ -60,12 +67,15 @@ export default function ReviewPage(props: ReviewPageProps) {
             })}
           </List>
         ) : (
-          <div>No sources given</div>
+          <Typography>No sources given</Typography>
         )}
 
-        <div>
-          {props.review.verdict ? <div>{props.review.verdict}</div> : <div />}
-        </div>
+        <Box>
+          <Typography variant="h3" sx={{mb: "10px"}}>Verdict to claim</Typography>
+          {props.review.verdict ? (
+            <Typography sx={{ fontStyle: "italic", fontSize: "18px"}}>"{props.review.verdict}"</Typography>
+          ) : null}
+        </Box>
       </main>
     </>
   );

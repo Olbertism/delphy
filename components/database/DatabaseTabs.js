@@ -54,7 +54,7 @@ export default function BasicTabs(props) {
         <Tabs
           value={value}
           onChange={handleChange}
-          aria-label="basic tabs example"
+          aria-label="Tabs for claims and reviews"
         >
           <Tab label="Claims" {...a11yProps(0)} />
           <Tab label="Review" {...a11yProps(1)} />

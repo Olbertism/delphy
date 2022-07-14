@@ -1,5 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import FeedIcon from '@mui/icons-material/Feed';
+import HelpIcon from '@mui/icons-material/Help';
 import StorageIcon from '@mui/icons-material/Storage';
 import {
   Box,
@@ -25,6 +26,7 @@ import SearchEngineWidget from '../components/dashboard/SearchEngine';
 import WikipediaWidget from '../components/dashboard/Wikipedia';
 import CircularIndeterminate from '../components/layout/ProgressCircle';
 import { greenTextHighlight, redTextHighlight } from '../styles/customStyles';
+import { theme } from '../styles/theme';
 import {
   getAllClaimsForSearch,
   getAllClaimsForSearchWithReviews,
@@ -36,6 +38,7 @@ import {
   DashboardWidgetDbSearchResults,
   DashboardWidgetPropsContents,
   DbClaim,
+  MainFetcherOutput,
   NestedDashboardWidgetProps,
 } from '../util/types';
 
@@ -44,10 +47,12 @@ type DashboardProps = {
 };
 
 type FormattedResource = {
+  item: { title: string; url: string; fromDB: boolean };
   title: any;
   url: any;
   promptSource: string;
   prediction?: number;
+  fromDB?: boolean;
 };
 
 export default function Dashboard(props: DashboardProps) {
@@ -64,11 +69,11 @@ export default function Dashboard(props: DashboardProps) {
   const [evaluation, setEvaluation] = useState('');
   // const [displayedResources, setDisplayedResources] = useState([]);
   const [modelContradictions, setModelContradictions] = useState<
-    FormattedResource[]
+    FormattedResource[] | Fuse.FuseResult<FormattedResource>[]
   >([]);
-  const [modelAgreements, setModelAgreements] = useState<FormattedResource[]>(
-    [],
-  );
+  const [modelAgreements, setModelAgreements] = useState<
+    FormattedResource[] | Fuse.FuseResult<FormattedResource>[]
+  >([]);
   const [displayPredictions, setDisplayPredictions] = useState(false);
 
   const [loadingRoBERTa, setLoadingRoBERTa] = useState(false);
@@ -116,7 +121,7 @@ export default function Dashboard(props: DashboardProps) {
     console.log('search results state', dbClaimsSearchResults);
     webAPIResults.push(dbResults);
 
-    setFormattedResources(webAPIResults);
+    setFormattedResources(webAPIResults as DashboardWidgetPropsContents[][]);
     setLoadingResources(false);
   }
 
@@ -228,11 +233,14 @@ export default function Dashboard(props: DashboardProps) {
     console.log('agree', agreements);
 
     // TODO add types
-    const contradictionsSearchIndex = new Fuse(contradictions, {
-      includeScore: true,
-      threshold: 0.7,
-      keys: ['title', 'promptSource'],
-    });
+    const contradictionsSearchIndex = new Fuse<FormattedResource>(
+      contradictions,
+      {
+        includeScore: true,
+        threshold: 0.7,
+        keys: ['title', 'promptSource'],
+      },
+    );
 
     const contradictionsSearchResults =
       contradictionsSearchIndex.search(searchQuery);
@@ -299,24 +307,33 @@ export default function Dashboard(props: DashboardProps) {
                     />
                   </Grid>
                   <Grid item md={4}>
-                    <Button
-                      disabled={loadingResources}
-                      variant="contained"
-                      color="secondary"
-                      onClick={() => {
-                        setDisplayPredictions(false);
-                        setLoadingResources(true);
-                        // handleDBSearch();
-                        handleFetchResources().catch((error) => {
-                          console.log(
-                            'An error occured with one or more fetched resources',
-                            error,
-                          );
-                        });
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        gap: '10px',
+                        alignItems: 'center',
                       }}
                     >
-                      Search
-                    </Button>
+                      <Button
+                        disabled={loadingResources}
+                        variant="contained"
+                        color="secondary"
+                        onClick={() => {
+                          setDisplayPredictions(false);
+                          setLoadingResources(true);
+                          // handleDBSearch();
+                          handleFetchResources().catch((error) => {
+                            console.log(
+                              'An error occured with one or more fetched resources',
+                              error,
+                            );
+                          });
+                        }}
+                      >
+                        Search
+                      </Button>
+                      <HelpIcon color="secondary" />
+                    </Box>
                   </Grid>
                 </Grid>
               </Box>

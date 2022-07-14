@@ -1,10 +1,12 @@
 // import '../styles/globals.css';
 import { CssBaseline, GlobalStyles, ThemeProvider } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
+import InfoBanner from '../components/banner/InfoBanner';
 import Layout from '../components/Layout';
 import ResponsiveAppBar from '../components/layout/AppBar';
 import FooterBar from '../components/layout/Footer';
 import { theme } from '../styles/theme';
+import { getLocalStorage, setLocalStorage } from '../util/localStorage';
 
 const inputGlobalStyles = (
   <GlobalStyles
@@ -24,7 +26,9 @@ const inputGlobalStyles = (
 
 function MyApp({ Component, pageProps, router }) {
   console.log(router.pathname);
+
   const [user, setUser] = useState();
+  const [bannerAccepted, setBannerAccepted] = useState(false);
 
   // create this function only one time, and not everytime page rerenders
   // otherwise this can be a memory leak
@@ -41,7 +45,18 @@ function MyApp({ Component, pageProps, router }) {
     }
   }, []);
 
+  // send this to the component...
+  function infoBannerHandler() {
+    setLocalStorage('bannerAccepted', true);
+    setBannerAccepted(true);
+  }
+
   useEffect(() => {
+
+    if (getLocalStorage('bannerAccepted')) {
+      setBannerAccepted(getLocalStorage('bannerAccepted'));
+    }
+
     refreshUserProfile().catch(() => {});
   }, [refreshUserProfile]);
 
@@ -51,6 +66,7 @@ function MyApp({ Component, pageProps, router }) {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <ResponsiveAppBar user={user} landingPage={landingPage} />
+        { bannerAccepted ? null : <InfoBanner open={bannerAccepted} infoBannerHandler={infoBannerHandler}/>}
         <Component {...pageProps} refreshUserProfile={refreshUserProfile} />
         <FooterBar landingPage={landingPage} />
       </ThemeProvider>

@@ -66,7 +66,7 @@ export default function ResponsiveAppBar(props) {
               textDecoration: 'none',
             }}
           >
-            Δelphi
+            ᐃelphi
           </Typography>
 
           {props.user ? (
@@ -145,7 +145,7 @@ export default function ResponsiveAppBar(props) {
               textDecoration: 'none',
             }}
           >
-            Δelphi
+            ᐃelphi
           </Typography>
           {/*  Desktop Top Bar Menu Entries */}
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>

@@ -1,4 +1,4 @@
-import { DashboardWidgetPropsContents } from '../types';
+import { DashboardWidgetPropsContents, MainFetcherOutput } from '../types';
 
 // text sanitizer for prompt generation
 function strip(html: string) {
@@ -49,7 +49,7 @@ function formatGoogleFactCheckToolResults(rawResponse: {
 }
 
 function formatDuckDuckGoResults(rawResponse: { RelatedTopics: any }) {
-  const unifiedOutput = [] as DashboardWidgetPropsContents[];
+  const unifiedOutput = [];
   try {
     for (let topic of rawResponse.RelatedTopics) {
       unifiedOutput.push({
@@ -251,7 +251,7 @@ export async function fetchResources(
   );
 
   console.log(responses);
-  const shortedData = [] as DashboardWidgetPropsContents[][];
+  const shortedData = [] as MainFetcherOutput[];
   shortedData.push(
     formatGoogleFactCheckToolResults(responses[0].factCheckTool),
   );

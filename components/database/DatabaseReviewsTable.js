@@ -21,6 +21,7 @@ import { visuallyHidden } from '@mui/utils';
 import Link from 'next/link';
 import PropTypes from 'prop-types';
 import * as React from 'react';
+import formatDate from '../../util/formatDate';
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -55,33 +56,33 @@ function stableSort(array, comparator) {
 const headCells = [
   {
     id: 'id',
-    numeric: true,
+    numeric: false,
     disablePadding: true,
     label: 'Id',
   },
   {
     id: 'title',
-    numeric: false,
+    numeric: true,
     disablePadding: false,
-    label: 'Title',
+    label: 'Review title',
   },
   {
     id: 'added_on',
-    numeric: false,
+    numeric: true,
     disablePadding: false,
     label: 'Added on',
   },
   {
     id: 'added_by',
-    numeric: false,
+    numeric: true,
     disablePadding: false,
     label: 'Added by',
   },
   {
-    id: 'reviews',
-    numeric: false,
+    id: 'claim',
+    numeric: true,
     disablePadding: false,
-    label: 'Reviews',
+    label: 'Claim',
   },
 ];
 
@@ -196,6 +197,7 @@ EnhancedTableToolbar.propTypes = {
 };
 
 export default function ReviewsTable(props) {
+  console.log(props.reviews)
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState('calories');
   const [selected, setSelected] = React.useState([]);
@@ -275,7 +277,7 @@ export default function ReviewsTable(props) {
                           {review.reviewTitle}
                         </Link>
                       </TableCell>
-                      <TableCell align="right">{review.added}</TableCell>
+                      <TableCell align="right">{formatDate(review.reviewAdded)}</TableCell>
                       <TableCell align="right">
                         <Link href={`/users/${review.username}`}>
                           {review.username}
