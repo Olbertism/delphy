@@ -13,6 +13,7 @@ import {
   ListItemText,
   Skeleton,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import arrayShuffle from 'array-shuffle';
@@ -332,7 +333,9 @@ export default function Dashboard(props: DashboardProps) {
                       >
                         Search
                       </Button>
-                      <HelpIcon color="secondary" />
+                      <Tooltip disableFocusListener title="The entered query will be used to fetch results from news outlets, fact check sites and knowledge bases.">
+                        <HelpIcon color="secondary" />
+                      </Tooltip>
                     </Box>
                   </Grid>
                 </Grid>
