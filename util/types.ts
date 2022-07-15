@@ -43,7 +43,7 @@ export type MainFetcherOutput = {
   title: string;
   url: string;
   promptSource: string;
-}[]
+}[];
 
 export type DashboardWidgetPropsContents = {
   item: {
@@ -165,9 +165,9 @@ export type DatabaseClaim = {
   claimDescription: string;
   added: Date;
   username?: string | undefined;
-  ratings: number[];
-  labels: string[];
-  reviews: { review_id: number; review_title: string }[];
+  ratings: number[] | null;
+  labels: string[] | null;
+  reviews: { id: number; title: string }[] | null;
 };
 
 export type DatabaseReview = {
@@ -178,9 +178,9 @@ export type DatabaseReview = {
   authorId: number;
   claimId: number;
   claimTitle: string;
-  verdict: string;
+  verdict: string | null;
   username?: string | undefined;
-  sources: { source_title: string; source_url: string }[];
+  sources: { source_title: string; source_url: string }[] | null;
 };
 
 export type DbClaim = {

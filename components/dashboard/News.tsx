@@ -1,42 +1,31 @@
 /** @jsxImportSource @emotion/react */
-import { css } from '@emotion/react';
+
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { List, ListItem, ListItemText, Pagination } from '@mui/material';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import Typography from '@mui/material/Typography';
-import arrayShuffle from 'array-shuffle';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { accordionHeadlineStyles } from '../../styles/customStyles';
 import {
   DashboardWidgetProps,
   DashboardWidgetPropsContents,
-  NestedDashboardWidgetProps,
 } from '../../util/types';
 import usePagination from './Pagination';
 
-const collectAndShuffleResults = (nestedArray: DashboardWidgetPropsContents[][]) => {
-  const outputArray = [] as DashboardWidgetPropsContents[];
-  nestedArray.map((subarray) => {
-    return subarray.map((entry) => {
-      return outputArray.push(entry);
-    });
-  });
-  const shuffledArray = arrayShuffle(outputArray);
-  return shuffledArray;
-};
-
-export default function NewsWidget(props: NestedDashboardWidgetProps) {
+export default function NewsWidget(props: DashboardWidgetProps) {
   const [results, setResults] = useState<DashboardWidgetPropsContents[]>([]);
   const [paginationCount, setPaginationCount] = useState<number>(0);
   const [page, setPage] = useState(1);
 
+  // TODO the shuffle bug... better approach would be to shuffle the array after fetching
   const displayedContents = props.contents;
+  // const displayedContents = collectAndShuffleResults(receivedContents) */
 
   useEffect(() => {
-    setResults(collectAndShuffleResults(displayedContents));
+    setResults(displayedContents);
   }, [displayedContents]);
 
   const perPage = 5;

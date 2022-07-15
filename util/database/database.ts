@@ -305,8 +305,8 @@ SELECT claims.id AS claim_id,
 
 (SELECT json_agg(reviews) FROM (
          SELECT
-           reviews.id AS review_id,
-           reviews.title AS review_title
+           reviews.id AS id,
+           reviews.title AS title
          FROM
            reviews
          WHERE

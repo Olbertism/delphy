@@ -528,7 +528,7 @@ export default function Dashboard(props: DashboardProps) {
                 <FactCheckToolWidget contents={formattedResources[0]} />
               </Grid>
               <Grid item sm={12} md={8}>
-                <NewsWidget contents={formattedResources.slice(3, 6)} />
+                <NewsWidget contents={formattedResources[3]} />
               </Grid>
               <Grid item sm={12} md={4}>
                 <WikipediaWidget contents={formattedResources[2]} />

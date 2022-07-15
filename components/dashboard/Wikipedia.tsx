@@ -20,9 +20,9 @@ export default function WikipediaWidget(props: DashboardWidgetProps) {
 
   console.log("WIKI results state", results)
 
-  useEffect(() => {
+ useEffect(() => {
     setResults(displayedContents);
-  }, [displayedContents]);
+  }, [displayedContents]); 
 
   const perPage = 5;
 

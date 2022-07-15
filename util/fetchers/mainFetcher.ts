@@ -1,3 +1,4 @@
+import arrayShuffle from 'array-shuffle';
 import { DashboardWidgetPropsContents, MainFetcherOutput } from '../types';
 
 // text sanitizer for prompt generation
@@ -185,6 +186,17 @@ function formatNewsapiResults(rawResponse: {
   return unifiedOutput;
 }
 
+const collectAndShuffleResults = (nestedArray) => {
+  const outputArray = [] as DashboardWidgetPropsContents[];
+  nestedArray.map((subarray) => {
+    return subarray.map((entry) => {
+      return outputArray.push(entry);
+    });
+  });
+  const shuffledArray = arrayShuffle(outputArray);
+  return shuffledArray;
+};
+
 export async function fetchResources(
   query: string,
   excludeLimitedAPIs: boolean = false,
@@ -257,9 +269,10 @@ export async function fetchResources(
   );
   shortedData.push(formatDuckDuckGoResults(responses[1].duckDuckGo));
   shortedData.push(formatWikipediaResults(responses[2].wikipedia));
-  shortedData.push(formatGuardianSearchResults(responses[3].guardianSearch));
-  shortedData.push(formatNytResults(responses[4].nyt));
-  shortedData.push(formatNewsapiResults(responses[5].newsapi));
+  shortedData.push(collectAndShuffleResults([formatGuardianSearchResults(responses[3].guardianSearch), formatNytResults(responses[4].nyt), formatNewsapiResults(responses[5].newsapi)]))
+  //shortedData.push(formatGuardianSearchResults(responses[3].guardianSearch));
+  //shortedData.push(formatNytResults(responses[4].nyt));
+  //shortedData.push(formatNewsapiResults(responses[5].newsapi));
 
   console.log(shortedData);
   return shortedData;

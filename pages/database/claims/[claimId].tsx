@@ -51,9 +51,12 @@ type Props = {
   verdicts: Verdict[];
 };
 export default function ClaimPage(props: Props) {
+  console.log(props)
   const [authorId, setAuthorId] = useState<number | undefined>(
     props.author === null ? undefined : props.author.id,
   );
+
+  const [displayedReviews, setDisplayedReviews] = useState(props.claim.reviews)
 
   const [addReviewPopup, setAddReviewPopup] = useState(false);
   const [newSourceInput, setNewSourceInput] = useState(false);
@@ -98,7 +101,7 @@ export default function ClaimPage(props: Props) {
   };
 
   function calculateRating() {
-    if (props.claim.ratings.length === 0) {
+    if (!props.claim.ratings) {
       return 0;
     }
     const averageRating =
@@ -223,14 +226,14 @@ export default function ClaimPage(props: Props) {
         )}
         <Box sx={{ mb: '30px' }}>
           <Typography variant="h3">Associated reviews</Typography>
-          {props.claim.reviews ? (
+          {displayedReviews ? (
             <List sx={{ width: '100%' }}>
-              {props.claim.reviews.map((review) => {
+              {displayedReviews.map((review) => {
                 console.log(review);
                 return (
                   <ListItem
                     alignItems="center"
-                    key={review.review_title}
+                    key={review.title}
                     disablePadding
                   >
                     <ListItemIcon>
@@ -238,8 +241,8 @@ export default function ClaimPage(props: Props) {
                     </ListItemIcon>
                     <ListItemText
                       primary={
-                        <Link href={`/database/reviews/${review.review_id}`}>
-                          {review.review_title}
+                        <Link href={`/database/reviews/${review.id}`}>
+                          {review.title}
                         </Link>
                       }
                     />
@@ -412,6 +415,7 @@ export default function ClaimPage(props: Props) {
                 }
                 const { review } = wrappedReview;
                 console.log(review);
+                console.log(review.id);
                 if (currentSourceList.length > 0) {
                   handleSourcesCreation(review.id).catch((error) => {
                     console.log('Error when trying to create new sources');
@@ -422,6 +426,12 @@ export default function ClaimPage(props: Props) {
                 // TODO: This clause does not trigger if first try resulted in error and second one is successful
                 if (errors.length === 0) {
                   clearInputs();
+                  if (!displayedReviews) {
+                    setDisplayedReviews([])
+                  } else {
+                    const updatedDisplayedReviews = [...displayedReviews, review]
+                  setDisplayedReviews(updatedDisplayedReviews)
+                  }
                   setDisplayAlert(true);
                   setAddReviewPopup(false);
                 }

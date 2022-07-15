@@ -41,7 +41,7 @@ export default function ReviewPage(props: ReviewPageProps) {
 
         <Typography variant="h3">Sources</Typography>
 
-        {props.review.sources.length > 0 ? (
+        {props.review.sources ? (
           <List sx={{ width: '100%' }}>
             {props.review.sources.map((source) => {
               return (
