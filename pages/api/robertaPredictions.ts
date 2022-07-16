@@ -1,5 +1,5 @@
+import { readFile } from 'node:fs/promises';
 import { PredictionServiceClient } from '@google-cloud/aiplatform';
-import { readFile } from 'fs/promises';
 import { JWT } from 'google-auth-library';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -32,8 +32,8 @@ export default async function handler(
     },
   };
 
-  console.log(req.body.instances)
-  const instances = req.body.instances
+  console.log(req.body.instances);
+  const instances = req.body.instances;
   /* const instances = [
     {
       source: 'Mars is not a Planet',
@@ -61,12 +61,12 @@ export default async function handler(
       },
     );
 
-  console.log("data:", data)
+  console.log('data:', data);
   const predictions = data.predictions;
 
-  console.log(predictions)
+  console.log(predictions);
 
-  ////////////////////////////////////////////
+  // ORIGINAL SAMPLE CODE - GIVES ERROR WITH THE INSTANCES OBJECT
 
   // Specifies the location of the api endpoint
   /* const clientOptions = {
@@ -107,30 +107,12 @@ export default async function handler(
     const [response] = await predictionServiceClient.predict(request);
     console.log(response)
 
-    console.log('Predict custom trained model response');
-    console.log(`\tDeployed model id : ${response.deployedModelId}`);
-    const predictions = response.predictions;
-    console.log('\tPredictions :');
-    for (const prediction of predictions) {
-      console.log(`\t\tPrediction : ${JSON.stringify(prediction)}`);
-    }
   }
 
   predictCustomTrainedModel(); */
 
-  /* const data = await fetch(apiBaseUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(req.body),
-  }).then((response) => response.json());
-
-  console.log(data);
-  console.log('after data log'); */
-
   try {
-    res.json({predictions: predictions}); // Send the response
+    res.json({ status: 'ok', predictions: predictions }); // Send the response
   } catch (error) {
     console.log('IN CUSTOM ERROR HANDLING');
     console.log(error);

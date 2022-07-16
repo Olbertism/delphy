@@ -189,3 +189,16 @@ export type DbClaim = {
   claimDescription: string;
   reviews: { reviewId: number; reviewTitle: string }[] | null;
 };
+
+export type DashboardProps = {
+  claims: DbClaim[];
+};
+
+export type FormattedResource = {
+  item: { title: string; url: string; fromDB: boolean };
+  title: any;
+  url: any;
+  promptSource: string;
+  prediction?: number;
+  fromDB?: boolean;
+};

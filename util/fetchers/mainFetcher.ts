@@ -120,7 +120,12 @@ function formatGuardianSearchResults(rawResponse: {
     console.log('Guardian API response could not be processed');
     console.log(error);
   }
-  return unifiedOutput;
+  const uniqueOutput = [
+    ...unifiedOutput
+      .reduce((map, obj) => map.set(obj.title, obj), new Map())
+      .values(),
+  ];
+  return uniqueOutput;
 }
 
 function formatNytResults(rawResponse: {
@@ -151,7 +156,12 @@ function formatNytResults(rawResponse: {
       count++;
     }
   }
-  return unifiedOutput;
+  const uniqueOutput = [
+    ...unifiedOutput
+      .reduce((map, obj) => map.set(obj.title, obj), new Map())
+      .values(),
+  ];
+  return uniqueOutput;
 }
 
 function formatNewsapiResults(rawResponse: {
@@ -183,10 +193,15 @@ function formatNewsapiResults(rawResponse: {
       count++;
     }
   }
-  return unifiedOutput;
+  const uniqueOutput = [
+    ...unifiedOutput
+      .reduce((map, obj) => map.set(obj.title, obj), new Map())
+      .values(),
+  ];
+  return uniqueOutput;
 }
 
-const collectAndShuffleResults = (nestedArray) => {
+const collectAndShuffleResults = (nestedArray: DashboardWidgetPropsContents[][]) => {
   const outputArray = [] as DashboardWidgetPropsContents[];
   nestedArray.map((subarray) => {
     return subarray.map((entry) => {

@@ -1,16 +1,20 @@
 /** @jsxImportSource @emotion/react */
 import FeedIcon from '@mui/icons-material/Feed';
 import HelpIcon from '@mui/icons-material/Help';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import StorageIcon from '@mui/icons-material/Storage';
 import {
   Box,
   Button,
   Grid,
+  IconButton,
   Link,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
+  Menu,
+  MenuItem,
   Skeleton,
   TextField,
   Tooltip,
@@ -24,9 +28,14 @@ import DatabaseWidget from '../components/dashboard/DbSearchResults';
 import FactCheckToolWidget from '../components/dashboard/FactCheckTool';
 import NewsWidget from '../components/dashboard/News';
 import SearchEngineWidget from '../components/dashboard/SearchEngine';
+import TaglineContextMenu from '../components/dashboard/TaglineContextMenu';
 import WikipediaWidget from '../components/dashboard/Wikipedia';
 import CircularIndeterminate from '../components/layout/ProgressCircle';
-import { greenTextHighlight, redTextHighlight } from '../styles/customStyles';
+import {
+  cardListItem,
+  greenTextHighlight,
+  redTextHighlight,
+} from '../styles/customStyles';
 import { theme } from '../styles/theme';
 import {
   getAllClaimsForSearch,
@@ -34,31 +43,19 @@ import {
   getUserByValidSessionToken,
 } from '../util/database/database';
 import { fetchResources } from '../util/fetchers/mainFetcher';
+import processText from '../util/textProcessor';
 import {
+  DashboardProps,
   DashboardWidgetDbSearchItem,
   DashboardWidgetDbSearchResults,
   DashboardWidgetPropsContents,
   DbClaim,
+  FormattedResource,
   MainFetcherOutput,
   NestedDashboardWidgetProps,
 } from '../util/types';
 
-type DashboardProps = {
-  claims: DbClaim[];
-};
-
-type FormattedResource = {
-  item: { title: string; url: string; fromDB: boolean };
-  title: any;
-  url: any;
-  promptSource: string;
-  prediction?: number;
-  fromDB?: boolean;
-};
-
 export default function Dashboard(props: DashboardProps) {
-  console.log('dashboard props', props);
-
   const [searchQuery, setSearchQuery] = useState('');
 
   const [loadingResources, setLoadingResources] = useState(false);
@@ -84,8 +81,9 @@ export default function Dashboard(props: DashboardProps) {
     DashboardWidgetDbSearchResults | Fuse.FuseResult<DbClaim>[]
   >([]);
 
-  // console.log('fetchedResources: ', fetchedResources);
-  console.log('formattedResources: ', formattedResources);
+  const [taglineContextAnchorEl, setTaglineContextAnchorEl] =
+    useState<null | HTMLElement>(null);
+  const taglineContextIsOpen = Boolean(taglineContextAnchorEl);
 
   const searchQueryInput = useRef(null);
 
@@ -133,10 +131,14 @@ export default function Dashboard(props: DashboardProps) {
     }
 
     const instances = [];
+    const processedQuery = processText(searchQuery);
     for (let resource of formattedResources) {
       for (let entry of resource) {
         if (typeof entry.promptSource === 'string') {
-          instances.push({source: searchQuery, comparer: entry.promptSource});
+          instances.push({
+            source: processedQuery,
+            comparer: processText(entry.promptSource),
+          });
         }
       }
     }
@@ -145,7 +147,10 @@ export default function Dashboard(props: DashboardProps) {
       if (searchResult.item.reviews) {
         searchResult.item.reviews.forEach(
           (review: { reviewId: number; reviewTitle: string }) => {
-            instances.push({source: searchQuery, comparer: review.reviewTitle});
+            instances.push({
+              source: processedQuery,
+              comparer: processText(review.reviewTitle),
+            });
           },
         );
       }
@@ -153,19 +158,10 @@ export default function Dashboard(props: DashboardProps) {
 
     console.log('instances handed over: ', instances);
 
-    // for tests
     const roBERTaRequestBody = {
       instances: instances,
-      /*  [
-      [
-          "Mars is a planet",
-          "Mars is a planet"
-      ],
-      [
-          "Mars is a planet",
-          "Mars is not a planet"
-      ]] */
     };
+
     const fetchedPredictions = await fetch('/api/robertaPredictions', {
       method: 'POST',
       headers: {
@@ -184,7 +180,7 @@ export default function Dashboard(props: DashboardProps) {
     // call function to combine fetched Resources with fetched Predictions
 
     // improve handling and storage of prediction resource display!!
-    const webResources = formattedResources.slice(0, -2);
+    const webResources = formattedResources.slice(0, -1);
     console.log('webResources', webResources);
     const dbResources = formattedResources.slice(-1);
     console.log('dbResources', dbResources);
@@ -233,12 +229,11 @@ export default function Dashboard(props: DashboardProps) {
     console.log('contra', contradictions);
     console.log('agree', agreements);
 
-    // TODO add types
     const contradictionsSearchIndex = new Fuse<FormattedResource>(
       contradictions,
       {
         includeScore: true,
-        threshold: 0.7,
+        threshold: 0.8,
         keys: ['title', 'promptSource'],
       },
     );
@@ -250,7 +245,7 @@ export default function Dashboard(props: DashboardProps) {
 
     const agreementsSearchIndex = new Fuse(agreements, {
       includeScore: true,
-      threshold: 0.7,
+      threshold: 0.8,
       keys: ['title', 'promptSource'],
     });
 
@@ -260,8 +255,6 @@ export default function Dashboard(props: DashboardProps) {
 
     console.log('shuffled contra', shuffledContradictions);
     console.log('shuffled agrees', shuffledAgreements);
-
-    // console.log('combinedResources', combinedResources);
     console.log('conclusio', conclusio);
 
     const modelEvaluation = `The claim seems to ${
@@ -275,15 +268,23 @@ export default function Dashboard(props: DashboardProps) {
 
     setEvaluation(modelEvaluation);
 
-    // this needs to change
-    // setDisplayedResources(combinedResources);
-
     setModelAgreements(shuffledAgreements);
     setModelContradictions(shuffledContradictions);
 
     setDisplayPredictions(true);
     setLoadingRoBERTa(false);
   }
+
+  const handleTaglineMenuClick = (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    console.log(event.currentTarget);
+    setTaglineContextAnchorEl(event.currentTarget);
+  };
+
+  const handleTaglineMenuClose = () => {
+    setTaglineContextAnchorEl(null);
+  };
 
   return (
     <main>
@@ -369,14 +370,13 @@ export default function Dashboard(props: DashboardProps) {
                     setRoBERTaError('');
                     setDisplayPredictions(false);
                     setLoadingRoBERTa(true);
-                    handleGenerateRoBERTaPrompts();
-                    /* .catch(() => {
+                    handleGenerateRoBERTaPrompts().catch(() => {
                       console.log(
                         'An error occured trying to generate RoBERTa results',
                       );
                       setRoBERTaError('No valid response received');
                       setLoadingRoBERTa(false);
-                    }); */
+                    });
                   }}
                 >
                   Run
@@ -413,6 +413,7 @@ export default function Dashboard(props: DashboardProps) {
                         <ListItem
                           alignItems="flex-start"
                           key={source.item.title}
+                          css={cardListItem}
                         >
                           <ListItemIcon>
                             {source.item.fromDB ? (
@@ -434,6 +435,28 @@ export default function Dashboard(props: DashboardProps) {
                               </Link>
                             }
                           />
+                          <IconButton
+                            aria-label="tagline-context-menu"
+                            onClick={handleTaglineMenuClick}
+                          >
+                            <MoreVertIcon />
+                          </IconButton>
+                          <Menu
+                            id="basic-menu"
+                            anchorEl={taglineContextAnchorEl}
+                            open={taglineContextIsOpen}
+                            onClose={handleTaglineMenuClose}
+                            MenuListProps={{
+                              'aria-labelledby': 'tagline-context-button',
+                            }}
+                          >
+                            <MenuItem onClick={handleTaglineMenuClose}>
+                              Add to Database
+                            </MenuItem>
+                            <MenuItem onClick={handleTaglineMenuClose}>
+                              Feedback on evaluation
+                            </MenuItem>
+                          </Menu>
                         </ListItem>
                       );
                     })}
@@ -462,6 +485,7 @@ export default function Dashboard(props: DashboardProps) {
                         <ListItem
                           alignItems="flex-start"
                           key={source.item.title}
+                          css={cardListItem}
                         >
                           <ListItemIcon>
                             <FeedIcon />
@@ -479,6 +503,25 @@ export default function Dashboard(props: DashboardProps) {
                               </Link>
                             }
                           />
+                          <IconButton aria-label="tagline-context-menu">
+                            <MoreVertIcon />
+                          </IconButton>
+                          <Menu
+                            id="basic-menu"
+                            anchorEl={taglineContextAnchorEl}
+                            open={taglineContextIsOpen}
+                            onClose={handleTaglineMenuClose}
+                            MenuListProps={{
+                              'aria-labelledby': 'tagline-context-button',
+                            }}
+                          >
+                            <MenuItem onClick={handleTaglineMenuClose}>
+                              Add to Database
+                            </MenuItem>
+                            <MenuItem onClick={handleTaglineMenuClose}>
+                              Feedback on evaluation
+                            </MenuItem>
+                          </Menu>
                         </ListItem>
                       );
                     })}

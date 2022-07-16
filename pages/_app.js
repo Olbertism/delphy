@@ -25,8 +25,6 @@ const inputGlobalStyles = (
 
 
 function MyApp({ Component, pageProps, router }) {
-  console.log(router.pathname);
-
   const [user, setUser] = useState();
   const [bannerAccepted, setBannerAccepted] = useState(false);
 
