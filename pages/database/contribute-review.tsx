@@ -17,7 +17,6 @@ import {
   Typography,
 } from '@mui/material';
 import { Box } from '@mui/system';
-import { truncate } from 'fs/promises';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import { useEffect, useState } from 'react';
@@ -58,8 +57,7 @@ export default function ContributeReview(props: Props) {
   const [newReviewTitle, setNewReviewTitle] = useState<string>('');
   const [newReviewDescription, setNewReviewDescription] = useState<string>('');
 
-  //const [selectedClaim, setSelectedClaim] = useState<number | string>('');
-  const [selectedClaim, setSelectedClaim] = useState(props.claims[0]);
+  const [selectedClaim, setSelectedClaim] = useState<Claim | null>(props.claims[0]);
 
   const [selectedVerdict, setSelectedVerdict] = useState<number | string>('');
 
@@ -218,7 +216,6 @@ export default function ContributeReview(props: Props) {
               onChange={(event, newValue) => {
                 setSelectedClaim(newValue)
               }}
-              //isOptionEqualToValue={()}
               getOptionLabel={(option) => option.title}
               sx={{ width: 350 }}
               renderInput={(params) => <TextField {...params} label="Claim" />}
@@ -359,13 +356,13 @@ export default function ContributeReview(props: Props) {
 
           <Button
             sx={{ mb: '30px' }}
-            disabled={newReviewTitle === '' || newReviewDescription === ''}
+            disabled={newReviewTitle === '' || newReviewDescription === '' || selectedClaim === null}
             variant="contained"
             color="secondary"
             onClick={async () => {
               setErrors([]);
               const wrappedReview = await handleReviewCreation(
-                selectedClaim.id,
+                selectedClaim!.id,
               ).catch((error) => {
                 console.log('Error when trying to create new review');
                 appendError(error);
@@ -458,7 +455,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   // to prevent serialization issue with date objects:
   claims = JSON.parse(JSON.stringify(claims));
 
-  if (user) {
+
     const author = await checkIfAuthorExists(user.id);
     if (author) {
       console.log('user logged in, is author');
@@ -475,8 +472,4 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     return {
       props: { user: user, author: null, verdicts: verdicts, claims: claims },
     };
-  }
-
-  console.log('no user logged in');
-  return { props: { author: null, verdicts: verdicts } };
 }

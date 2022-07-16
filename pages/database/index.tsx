@@ -1,7 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import BasicTabs from '../../components/database/DatabaseTabs';
 import {
   getAllClaimsWithUsernamesAndReviewIds,

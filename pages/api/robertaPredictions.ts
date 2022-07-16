@@ -1,5 +1,4 @@
 import { readFile } from 'node:fs/promises';
-import { PredictionServiceClient } from '@google-cloud/aiplatform';
 import { JWT } from 'google-auth-library';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -14,7 +13,7 @@ export default async function handler(
   }
 
   // dev URL
-  // const apiBaseUrl = `http://127.0.0.1:5000/predict?api-key=${process.env.ROBERTAKEY}`;
+  // const apiBaseUrl = `http://127.0.0.1:5000/predict`;
   // prod URL NOT WORKING!
 
   const servicekeybuffer = await readFile('give-me-context-93460497e19e.json');
@@ -45,8 +44,11 @@ export default async function handler(
     },
   ]; */
 
-  const { data } =
-    await client.request<AIPlatform.protos.google.cloud.aiplatform.v1.IPredictResponse>(
+  // presumed type def: <AIPlatform.protos.google.cloud.aiplatform.v1.IPredictResponse>
+  // not found...
+
+  const { data }: any =
+    await client.request(
       {
         url:
           'https://europe-west1-aiplatform.googleapis.com/v1/' +

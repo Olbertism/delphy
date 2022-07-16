@@ -1,4 +1,3 @@
-import { ThemeContext } from '@emotion/react';
 import { Menu as MenuIcon } from '@mui/icons-material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import AppBar from '@mui/material/AppBar';
@@ -11,7 +10,6 @@ import MenuItem from '@mui/material/MenuItem';
 import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import Link from 'next/link';
 import * as React from 'react';
 import { theme } from '../../styles/theme';
 
@@ -247,7 +245,7 @@ export default function ResponsiveAppBar(props) {
                     key="logout"
                     onClick={handleCloseUserMenu}
                     component="a"
-                    href={`/logout`}
+                    href="/logout"
                   >
                     <Typography textAlign="center">Logout</Typography>
                   </MenuItem>

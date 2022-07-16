@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 type Props = {
   refreshUserProfile: () => Promise<void>;

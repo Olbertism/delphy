@@ -1,4 +1,3 @@
-import Header from './Header';
 import ResponsiveAppBar from './layout/AppBar';
 import FooterBar from './layout/Footer';
 

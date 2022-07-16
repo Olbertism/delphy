@@ -270,15 +270,16 @@ export default function Contribute(props: Props) {
 
     const currentLabels = props.labels;
     const existingLabels = new Set();
-    for (let label of savedLabels) {
-      for (let currentLabel of currentLabels) {
+    for (const label of savedLabels) {
+      for (const currentLabel of currentLabels) {
         if (label === currentLabel.label) {
           // create only claim_labels entry
           const requestbody: ClaimLabelRequestbody = {
             claimId: claimId,
             labelId: currentLabel.id,
           };
-          const response = await fetch('/api/createClaimLabel', {
+          // const response =
+          await fetch('/api/createClaimLabel', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -308,7 +309,8 @@ export default function Contribute(props: Props) {
           claimId: claimId,
           labelId: newLabel.label.id,
         };
-        const responseClaimLabel = await fetch('/api/createClaimLabel', {
+        // const responseClaimLabel =
+        await fetch('/api/createClaimLabel', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -338,7 +340,8 @@ export default function Contribute(props: Props) {
         reviewId: reviewId,
       };
 
-      const response = await fetch('/api/createSource', {
+      // const response =
+      await fetch('/api/createSource', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

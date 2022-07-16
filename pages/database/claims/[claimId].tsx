@@ -28,7 +28,6 @@ import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 // import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { labelStyles, redTextHighlight } from '../../../styles/customStyles';
 import { theme } from '../../../styles/theme';
 import {
   checkAuthorClaimRating,
@@ -36,7 +35,6 @@ import {
   getAllVerdicts,
   getClaimWithAllRelationsById,
   getUserByValidSessionToken,
-  getUserThroughAuthorId,
 } from '../../../util/database/database';
 import {
   Author,
@@ -52,6 +50,7 @@ type Props = {
   claim: DatabaseClaim;
   author: Author | null;
   verdicts: Verdict[];
+  rating: number | (() => number | null) | null;
 };
 export default function ClaimPage(props: Props) {
   console.log(props);
@@ -86,7 +85,7 @@ export default function ClaimPage(props: Props) {
   const [selectedRating, setSelectedRating] = useState<number | null>(props.rating ? props.rating : null);
   const [userRated, setUserRated] = useState(false);
 
-  
+
   console.log('errors', errors);
   console.log('selectedRating', selectedRating);
   console.log('ratings', ratings);
@@ -196,7 +195,8 @@ export default function ClaimPage(props: Props) {
         reviewId: reviewId,
       };
 
-      const response = await fetch('/api/createSource', {
+      // const response =
+      await fetch('/api/createSource', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

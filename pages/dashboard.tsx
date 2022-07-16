@@ -27,8 +27,6 @@ import { useRef, useState } from 'react';
 import DatabaseWidget from '../components/dashboard/DbSearchResults';
 import FactCheckToolWidget from '../components/dashboard/FactCheckTool';
 import NewsWidget from '../components/dashboard/News';
-import SearchEngineWidget from '../components/dashboard/SearchEngine';
-import TaglineContextMenu from '../components/dashboard/TaglineContextMenu';
 import WikipediaWidget from '../components/dashboard/Wikipedia';
 import CircularIndeterminate from '../components/layout/ProgressCircle';
 import {
@@ -36,9 +34,7 @@ import {
   greenTextHighlight,
   redTextHighlight,
 } from '../styles/customStyles';
-import { theme } from '../styles/theme';
 import {
-  getAllClaimsForSearch,
   getAllClaimsForSearchWithReviews,
   getUserByValidSessionToken,
 } from '../util/database/database';
@@ -46,13 +42,10 @@ import { fetchResources } from '../util/fetchers/mainFetcher';
 import processText from '../util/textProcessor';
 import {
   DashboardProps,
-  DashboardWidgetDbSearchItem,
   DashboardWidgetDbSearchResults,
   DashboardWidgetPropsContents,
   DbClaim,
   FormattedResource,
-  MainFetcherOutput,
-  NestedDashboardWidgetProps,
 } from '../util/types';
 
 export default function Dashboard(props: DashboardProps) {
@@ -132,8 +125,8 @@ export default function Dashboard(props: DashboardProps) {
 
     const instances = [];
     const processedQuery = processText(searchQuery);
-    for (let resource of formattedResources) {
-      for (let entry of resource) {
+    for (const resource of formattedResources) {
+      for (const entry of resource) {
         if (typeof entry.promptSource === 'string') {
           instances.push({
             source: processedQuery,
@@ -189,8 +182,8 @@ export default function Dashboard(props: DashboardProps) {
     const contradictions = [];
     const agreements = [];
 
-    for (let sources of webResources) {
-      for (let source of sources) {
+    for (const sources of webResources) {
+      for (const source of sources) {
         source.prediction = fetchedPredictions.predictions.shift();
 
         if (source.prediction === 0) {
@@ -208,7 +201,7 @@ export default function Dashboard(props: DashboardProps) {
         if (resource.item.reviews) {
           resource.item.reviews.forEach((review) => {
             review.prediction = fetchedPredictions.predictions.shift();
-            let entry = {
+            const entry = {
               title: review.reviewTitle,
               url: `/database/reviews/${review.reviewId}`,
               fromDB: true,

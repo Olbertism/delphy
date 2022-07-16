@@ -53,7 +53,7 @@ type Author = {
 };
 
 type Claim = {
-  id: number;
+  claimId: number;
   title: string;
   authorId: number;
   description: string;
@@ -155,9 +155,9 @@ export async function deleteSessionByToken(token: string) {
 export async function deleteExpiredSessions() {
   const sessions = await sql<[Session[]]>`
   DELETE FROM sessions WHERE sessions.expiry_timestamp < now() RETURNING *`;
-  if (!sessions) {
+  /* if (!sessions) {
     console.log('Session ins deleteExpired undefined');
-  }
+  } */
   return sessions.map((session) => camelcaseKeys(session));
 }
 

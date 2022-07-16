@@ -26,8 +26,8 @@ function formatGoogleFactCheckToolResults(rawResponse: {
   }
   const unifiedOutput = [];
   try {
-    for (let claim of rawResponse.claims) {
-      let entry = {
+    for (const claim of rawResponse.claims) {
+      const entry = {
         title: claim.claimReview[0].title,
         url: claim.claimReview[0].url,
         promptSource: strip(claim.claimReview[0].title),
@@ -52,7 +52,7 @@ function formatGoogleFactCheckToolResults(rawResponse: {
 function formatDuckDuckGoResults(rawResponse: { RelatedTopics: any }) {
   const unifiedOutput = [];
   try {
-    for (let topic of rawResponse.RelatedTopics) {
+    for (const topic of rawResponse.RelatedTopics) {
       unifiedOutput.push({
         title: topic.Text as string,
         url: topic.FirstURL as string,
@@ -81,7 +81,7 @@ function formatWikipediaResults(rawResponse: {
   }
   const unifiedOutput = [];
   let count = 0;
-  for (let result of rawResponse.query.search) {
+  for (const result of rawResponse.query.search) {
     if (count > 7) {
       return unifiedOutput;
     }
@@ -103,7 +103,7 @@ function formatGuardianSearchResults(rawResponse: {
   const unifiedOutput = [];
   let count = 0;
   try {
-    for (let result of rawResponse.response.results) {
+    for (const result of rawResponse.response.results) {
       if (count > 4) {
         return unifiedOutput;
       }
@@ -143,7 +143,7 @@ function formatNytResults(rawResponse: {
   }
   const unifiedOutput = [];
   let count = 0;
-  for (let doc of rawResponse.response.docs) {
+  for (const doc of rawResponse.response.docs) {
     if (count > 4) {
       return unifiedOutput;
     }
@@ -180,7 +180,7 @@ function formatNewsapiResults(rawResponse: {
   }
   const unifiedOutput = [];
   let count = 0;
-  for (let article of rawResponse.articles) {
+  for (const article of rawResponse.articles) {
     if (count > 9) {
       return unifiedOutput;
     }
@@ -201,7 +201,9 @@ function formatNewsapiResults(rawResponse: {
   return uniqueOutput;
 }
 
-const collectAndShuffleResults = (nestedArray: DashboardWidgetPropsContents[][]) => {
+const collectAndShuffleResults = (
+  nestedArray: DashboardWidgetPropsContents[][],
+) => {
   const outputArray = [] as DashboardWidgetPropsContents[];
   nestedArray.map((subarray) => {
     return subarray.map((entry) => {
@@ -284,12 +286,14 @@ export async function fetchResources(
   );
   shortedData.push(formatDuckDuckGoResults(responses[1].duckDuckGo));
   shortedData.push(formatWikipediaResults(responses[2].wikipedia));
-  shortedData.push(collectAndShuffleResults([formatGuardianSearchResults(responses[3].guardianSearch), formatNytResults(responses[4].nyt), formatNewsapiResults(responses[5].newsapi)]))
-  //shortedData.push(formatGuardianSearchResults(responses[3].guardianSearch));
-  //shortedData.push(formatNytResults(responses[4].nyt));
-  //shortedData.push(formatNewsapiResults(responses[5].newsapi));
+  shortedData.push(
+    collectAndShuffleResults([
+      formatGuardianSearchResults(responses[3].guardianSearch),
+      formatNytResults(responses[4].nyt),
+      formatNewsapiResults(responses[5].newsapi),
+    ]),
+  );
 
   console.log(shortedData);
   return shortedData;
-  // return [responses, shortedData];
 }
