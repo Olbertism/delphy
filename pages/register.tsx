@@ -1,4 +1,11 @@
-import { Box, Button, TextField, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  Snackbar,
+  TextField,
+  Typography,
+} from '@mui/material';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
@@ -12,6 +19,7 @@ export default function Register(props: Props) {
   const [username, setUsername] = useState('');
   // const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [displayAlert, setDisplayAlert] = useState(false);
   const [errors, setErrors] = useState<RegisterError>([]);
 
   const router = useRouter();
@@ -31,6 +39,7 @@ export default function Register(props: Props) {
 
     if ('errors' in registerResponseBody) {
       setErrors(registerResponseBody.errors);
+      setDisplayAlert(true);
       return;
     }
     await props.refreshUserProfile();
@@ -45,9 +54,9 @@ export default function Register(props: Props) {
 
       <main>
         <Typography variant="h1">Register</Typography>
-        <Box sx={{display: "flex", gap: "30px", mb: "30px"}}>
+        <Box sx={{ display: 'flex', gap: '30px', mb: '30px' }}>
           <TextField
-          size="small"
+            size="small"
             value={username}
             onChange={(event) => {
               setUsername(event.currentTarget.value);
@@ -65,7 +74,7 @@ export default function Register(props: Props) {
             />
           </label> */}
           <TextField
-          size="small"
+            size="small"
             value={password}
             onChange={(event) => {
               setPassword(event.currentTarget.value);
@@ -105,6 +114,36 @@ export default function Register(props: Props) {
           </label>
           <button onClick={() => registerHandler()}>Sign up</button>
         </div> */}
+        <Snackbar
+          open={displayAlert}
+          autoHideDuration={5000}
+          onClose={(event?: React.SyntheticEvent | Event, reason?: string) => {
+            if (reason === 'clickaway') {
+              return;
+            }
+            setDisplayAlert(false);
+          }}
+        >
+          {errors.length > 0 ? (
+            <Alert
+              onClose={(
+                event?: React.SyntheticEvent | Event,
+                reason?: string,
+              ) => {
+                if (reason === 'clickaway') {
+                  return;
+                }
+                setDisplayAlert(false);
+              }}
+              severity="error"
+              sx={{ width: '100%' }}
+            >
+              {errors[0].message}
+            </Alert>
+          ) : (
+            <div />
+          )}
+        </Snackbar>
       </main>
     </>
   );

@@ -1,4 +1,4 @@
-import { Button, TextField, Typography } from '@mui/material';
+import { Alert, Button, Snackbar, TextField, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -13,8 +13,10 @@ export default function Login(props: Props) {
   const [username, setUsername] = useState('');
   // const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [displayAlert, setDisplayAlert] = useState(false);
   const [errors, setErrors] = useState<LoginError>([]);
 
+  console.log(errors);
   const router = useRouter();
 
   async function loginHandler() {
@@ -31,6 +33,7 @@ export default function Login(props: Props) {
 
     if ('errors' in loginResponseBody) {
       setErrors(loginResponseBody.errors);
+      setDisplayAlert(true);
       return;
     }
 
@@ -98,6 +101,36 @@ export default function Login(props: Props) {
             Login
           </Button>
         </Box>
+        <Snackbar
+          open={displayAlert}
+          autoHideDuration={5000}
+          onClose={(event?: React.SyntheticEvent | Event, reason?: string) => {
+            if (reason === 'clickaway') {
+              return;
+            }
+            setDisplayAlert(false);
+          }}
+        >
+          {errors.length > 0 ? (
+            <Alert
+              onClose={(
+                event?: React.SyntheticEvent | Event,
+                reason?: string,
+              ) => {
+                if (reason === 'clickaway') {
+                  return;
+                }
+                setDisplayAlert(false);
+              }}
+              severity="error"
+              sx={{ width: '100%' }}
+            >
+              Username or password not correct.
+            </Alert>
+          ) : (
+            <div />
+          )}
+        </Snackbar>
       </main>
     </>
   );
