@@ -1,3 +1,6 @@
+import { PredictionServiceClient } from '@google-cloud/aiplatform';
+import { readFile } from 'fs/promises';
+import { JWT } from 'google-auth-library';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(
@@ -11,11 +14,111 @@ export default async function handler(
   }
 
   // dev URL
-  const apiBaseUrl = `http://127.0.0.1:5000/predict?api-key=${process.env.ROBERTAKEY}`;
+  // const apiBaseUrl = `http://127.0.0.1:5000/predict?api-key=${process.env.ROBERTAKEY}`;
   // prod URL NOT WORKING!
-  // const apiBaseUrl = `https://roberta-mnli.herokuapp.com/predict?api-key=${process.env.ROBERTAKEY}`;
 
-  const data = await fetch(apiBaseUrl, {
+  const servicekeybuffer = await readFile('give-me-context-93460497e19e.json');
+  const servicekey = JSON.parse(servicekeybuffer.toString());
+
+  const client = new JWT({
+    email: servicekey.client_email,
+    key: servicekey.private_key,
+    scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+  });
+
+  const parameters = {
+    source: {
+      fields: {},
+    },
+  };
+
+  console.log(req.body.instances)
+  const instances = req.body.instances
+  /* const instances = [
+    {
+      source: 'Mars is not a Planet',
+      comparer: 'Mars is a Planet',
+    },
+    {
+      source: 'Climate change is real and a threat',
+      comparer: 'Climate change has to be considered as a threat',
+    },
+  ]; */
+
+  const { data } =
+    await client.request<AIPlatform.protos.google.cloud.aiplatform.v1.IPredictResponse>(
+      {
+        url:
+          'https://europe-west1-aiplatform.googleapis.com/v1/' +
+          `projects/${process.env.PROJECT_ID}/locations/europe-west1/endpoints/${process.env.ENDPOINT_ID}` +
+          ':predict',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        data: {
+          instances: instances,
+          parameters,
+        },
+      },
+    );
+
+  console.log("data:", data)
+  const predictions = data.predictions;
+
+  console.log(predictions)
+
+  ////////////////////////////////////////////
+
+  // Specifies the location of the api endpoint
+  /* const clientOptions = {
+    apiEndpoint: 'europe-west1-aiplatform.googleapis.com',
+  };
+
+  // Instantiates a client
+  const predictionServiceClient = new PredictionServiceClient(clientOptions);
+
+  async function predictCustomTrainedModel() {
+    const endpoint = `projects/${process.env.PROJECT_ID}/locations/europe-west1/endpoints/${process.env.ENDPOINT_ID}`;
+
+    const parameters = {
+      source: {
+        fields: {},
+      },
+    };
+
+    // sample - change later on
+    const instances = [
+      {
+        source: 'Mars is not a Planet',
+        comparer: 'Mars is a Planet',
+      },
+      {
+        source: 'Climate change is real and a threat',
+        comparer: 'Climate change has to be considered as a threat',
+      },
+    ];
+
+    const request = {
+      endpoint,
+      instances: instances,
+      parameters,
+    };
+    console.log("REQUEST:", request)
+
+    const [response] = await predictionServiceClient.predict(request);
+    console.log(response)
+
+    console.log('Predict custom trained model response');
+    console.log(`\tDeployed model id : ${response.deployedModelId}`);
+    const predictions = response.predictions;
+    console.log('\tPredictions :');
+    for (const prediction of predictions) {
+      console.log(`\t\tPrediction : ${JSON.stringify(prediction)}`);
+    }
+  }
+
+  predictCustomTrainedModel(); */
+
+  /* const data = await fetch(apiBaseUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -24,10 +127,10 @@ export default async function handler(
   }).then((response) => response.json());
 
   console.log(data);
-  console.log('after data log');
+  console.log('after data log'); */
 
   try {
-    res.json(data); // Send the response
+    res.json({predictions: predictions}); // Send the response
   } catch (error) {
     console.log('IN CUSTOM ERROR HANDLING');
     console.log(error);

@@ -19,6 +19,7 @@ export default function NewsWidget(props: DashboardWidgetProps) {
   const [results, setResults] = useState<DashboardWidgetPropsContents[]>([]);
   const [paginationCount, setPaginationCount] = useState<number>(0);
   const [page, setPage] = useState(1);
+  const [expanded, setExpanded] = useState(true);
 
   // TODO the shuffle bug... better approach would be to shuffle the array after fetching
   const displayedContents = props.contents;
@@ -44,10 +45,13 @@ export default function NewsWidget(props: DashboardWidgetProps) {
     paginatedData.jump(value);
   };
 
+  const handleExpansion = () => setExpanded(!expanded);
+
   return (
     <section>
-      <Accordion>
+      <Accordion expanded={expanded}>
         <AccordionSummary
+          onClick={() => handleExpansion()}
           css={accordionHeadlineStyles}
           expandIcon={<ExpandMoreIcon color="secondary" />}
           aria-controls="panel1a-content"
@@ -56,6 +60,7 @@ export default function NewsWidget(props: DashboardWidgetProps) {
           <Typography>Recent news results:</Typography>
         </AccordionSummary>
         <AccordionDetails>
+        {results.length === 0 ? <Typography sx={{ mt: "10px", mb: "10px"}}>No results found</Typography> :
           <List sx={{ width: '100%' }}>
             {paginatedData.currentData().map((result) => {
               return (
@@ -71,7 +76,7 @@ export default function NewsWidget(props: DashboardWidgetProps) {
                 </ListItem>
               );
             })}
-          </List>
+          </List>}
           <Pagination
             count={paginationCount}
             page={page}

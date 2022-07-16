@@ -132,11 +132,11 @@ export default function Dashboard(props: DashboardProps) {
       return;
     }
 
-    const prompts = [];
+    const instances = [];
     for (let resource of formattedResources) {
       for (let entry of resource) {
         if (typeof entry.promptSource === 'string') {
-          prompts.push([searchQuery, entry.promptSource]);
+          instances.push({source: searchQuery, comparer: entry.promptSource});
         }
       }
     }
@@ -145,17 +145,17 @@ export default function Dashboard(props: DashboardProps) {
       if (searchResult.item.reviews) {
         searchResult.item.reviews.forEach(
           (review: { reviewId: number; reviewTitle: string }) => {
-            prompts.push([searchQuery, review.reviewTitle]);
+            instances.push({source: searchQuery, comparer: review.reviewTitle});
           },
         );
       }
     }
 
-    console.log('prompts handed over: ', prompts);
+    console.log('instances handed over: ', instances);
 
     // for tests
     const roBERTaRequestBody = {
-      prompts: prompts,
+      instances: instances,
       /*  [
       [
           "Mars is a planet",
@@ -333,7 +333,10 @@ export default function Dashboard(props: DashboardProps) {
                       >
                         Search
                       </Button>
-                      <Tooltip disableFocusListener title="The entered query will be used to fetch results from news outlets, fact check sites and knowledge bases.">
+                      <Tooltip
+                        disableFocusListener
+                        title="The entered query will be used to fetch results from news outlets, fact check sites and knowledge bases."
+                      >
                         <HelpIcon color="secondary" />
                       </Tooltip>
                     </Box>
@@ -496,6 +499,17 @@ export default function Dashboard(props: DashboardProps) {
                   }}
                 >
                   <CircularIndeterminate />
+                </Box>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-around',
+                    mb: '30px',
+                  }}
+                >
+                  <Typography variant="body2" sx={{ mt: '10px' }}>
+                    This can take up to 15 seconds
+                  </Typography>
                 </Box>
 
                 <Grid container spacing={2} sx={{ mb: '40px' }}>

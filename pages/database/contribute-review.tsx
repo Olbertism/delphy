@@ -1,6 +1,7 @@
 import { AddCircle, Save } from '@mui/icons-material';
 import {
   Alert,
+  Autocomplete,
   Button,
   FormControl,
   IconButton,
@@ -16,6 +17,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Box } from '@mui/system';
+import { truncate } from 'fs/promises';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import { useEffect, useState } from 'react';
@@ -56,7 +58,9 @@ export default function ContributeReview(props: Props) {
   const [newReviewTitle, setNewReviewTitle] = useState<string>('');
   const [newReviewDescription, setNewReviewDescription] = useState<string>('');
 
-  const [selectedClaim, setSelectedClaim] = useState<number | string>('');
+  //const [selectedClaim, setSelectedClaim] = useState<number | string>('');
+  const [selectedClaim, setSelectedClaim] = useState(props.claims[0]);
+
   const [selectedVerdict, setSelectedVerdict] = useState<number | string>('');
 
   const [newSourceInput, setNewSourceInput] = useState(false);
@@ -64,14 +68,13 @@ export default function ContributeReview(props: Props) {
   const [sourceTitle, setSourceTitle] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [currentSourceList, setCurrentSourceList] = useState<SourceEntry[]>([]);
+  const [sourceUrlError, setSourceUrlError] = useState(false);
 
   const [displayAlert, setDisplayAlert] = useState(false);
 
   const [errors, setErrors] = useState<Error[]>([]);
 
-  console.log('author: ', authorId);
-
-  console.log('source list', currentSourceList);
+  console.log('selectedClaim', selectedClaim)
 
   const refreshUserProfile = props.refreshUserProfile;
 
@@ -87,7 +90,6 @@ export default function ContributeReview(props: Props) {
   };
 
   const clearInputs = () => {
-    setSelectedClaim('');
     setNewReviewTitle('');
     setNewReviewDescription('');
     setSourceTitle('');
@@ -170,6 +172,14 @@ export default function ContributeReview(props: Props) {
     }
   };
 
+  const handleValidation = () => {
+    if (sourceUrl.slice(0, 4) !== 'http') {
+      setSourceUrlError(true);
+      return false;
+    }
+    return true;
+  };
+
   return (
     <>
       <Head>
@@ -182,7 +192,7 @@ export default function ContributeReview(props: Props) {
 
         <Box sx={{ maxWidth: '320px', mb: '30px' }}>
           <FormControl fullWidth>
-            <InputLabel id="claim-select-label">Claim</InputLabel>
+            {/* <InputLabel id="claim-select-label">Claim</InputLabel>
             <Select
               labelId="claim-select-label"
               id="claim-select"
@@ -199,7 +209,20 @@ export default function ContributeReview(props: Props) {
                   </MenuItem>
                 );
               })}
-            </Select>
+            </Select> */}
+            <Autocomplete
+              disablePortal
+              id="claim-combobox"
+              options={props.claims}
+              value={selectedClaim}
+              onChange={(event, newValue) => {
+                setSelectedClaim(newValue)
+              }}
+              //isOptionEqualToValue={()}
+              getOptionLabel={(option) => option.title}
+              sx={{ width: 350 }}
+              renderInput={(params) => <TextField {...params} label="Claim" />}
+            />
           </FormControl>
         </Box>
 
@@ -253,10 +276,12 @@ export default function ContributeReview(props: Props) {
                     }}
                   />
                   <TextField
+                    error={sourceUrlError}
                     label="Source URL"
                     size="small"
                     required
                     value={sourceUrl}
+                    helperText="Start with http or https"
                     onChange={(event) => {
                       setSourceUrl(event.currentTarget.value);
                     }}
@@ -264,7 +289,13 @@ export default function ContributeReview(props: Props) {
                   <IconButton
                     disabled={sourceTitle === '' || sourceUrl === ''}
                     aria-label="Save source entry"
-                    onClick={() => handleSaveSource()}
+                    onClick={() => {
+                      setSourceUrlError(false);
+                      if (!handleValidation()) {
+                        return;
+                      }
+                      handleSaveSource();
+                    }}
                   >
                     <Save />
                   </IconButton>
@@ -334,7 +365,7 @@ export default function ContributeReview(props: Props) {
             onClick={async () => {
               setErrors([]);
               const wrappedReview = await handleReviewCreation(
-                selectedClaim as number,
+                selectedClaim.id,
               ).catch((error) => {
                 console.log('Error when trying to create new review');
                 appendError(error);
@@ -389,21 +420,22 @@ export default function ContributeReview(props: Props) {
                 An error occured!
               </Alert>
             ) : (
-            <Alert
-              onClose={(
-                event?: React.SyntheticEvent | Event,
-                reason?: string,
-              ) => {
-                if (reason === 'clickaway') {
-                  return;
-                }
-                setDisplayAlert(false);
-              }}
-              severity="success"
-              sx={{ width: '100%' }}
-            >
-              Review successfully added!
-            </Alert> )}
+              <Alert
+                onClose={(
+                  event?: React.SyntheticEvent | Event,
+                  reason?: string,
+                ) => {
+                  if (reason === 'clickaway') {
+                    return;
+                  }
+                  setDisplayAlert(false);
+                }}
+                severity="success"
+                sx={{ width: '100%' }}
+              >
+                Review successfully added!
+              </Alert>
+            )}
           </Snackbar>
         </section>
       </main>

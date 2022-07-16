@@ -17,6 +17,7 @@ import {
   ListItemIcon,
   ListItemText,
   MenuItem,
+  Popover,
   Rating,
   Select,
   Snackbar,
@@ -30,6 +31,7 @@ import { useEffect, useState } from 'react';
 import { labelStyles, redTextHighlight } from '../../../styles/customStyles';
 import { theme } from '../../../styles/theme';
 import {
+  checkAuthorClaimRating,
   checkIfAuthorExists,
   getAllVerdicts,
   getClaimWithAllRelationsById,
@@ -39,6 +41,7 @@ import {
 import {
   Author,
   DatabaseClaim,
+  RatingRequestbody,
   ReviewRequestbody,
   SourceRequestbody,
   Verdict,
@@ -51,12 +54,12 @@ type Props = {
   verdicts: Verdict[];
 };
 export default function ClaimPage(props: Props) {
-  console.log(props)
+  console.log(props);
   const [authorId, setAuthorId] = useState<number | undefined>(
     props.author === null ? undefined : props.author.id,
   );
 
-  const [displayedReviews, setDisplayedReviews] = useState(props.claim.reviews)
+  const [displayedReviews, setDisplayedReviews] = useState(props.claim.reviews);
 
   const [addReviewPopup, setAddReviewPopup] = useState(false);
   const [newSourceInput, setNewSourceInput] = useState(false);
@@ -69,6 +72,7 @@ export default function ClaimPage(props: Props) {
   const [currentSourceList, setCurrentSourceList] = useState<
     { title: string; url: string }[]
   >([]);
+  const [sourceUrlError, setSourceUrlError] = useState(false);
 
   const [selectedVerdict, setSelectedVerdict] = useState<number | string>('');
 
@@ -76,7 +80,17 @@ export default function ClaimPage(props: Props) {
 
   const [errors, setErrors] = useState<Error[]>([]);
 
+  const [ratings, setRatings] = useState(props.claim.ratings);
+  const [avgRating, setAvgRating] = useState(0);
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const [selectedRating, setSelectedRating] = useState<number | null>(props.rating ? props.rating : null);
+  const [userRated, setUserRated] = useState(false);
+
+  
   console.log('errors', errors);
+  console.log('selectedRating', selectedRating);
+  console.log('ratings', ratings);
+  console.log('avgRating', avgRating);
 
   const refreshUserProfile = props.refreshUserProfile;
 
@@ -100,15 +114,24 @@ export default function ClaimPage(props: Props) {
     setSelectedVerdict('');
   };
 
-  function calculateRating() {
-    if (!props.claim.ratings) {
+  useEffect(() => {
+    function calculateRating() {
+      if (!ratings) {
+        return 0;
+      }
+      const averageRating = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+      setAvgRating(averageRating);
+    }
+    calculateRating();
+  }, [ratings]);
+
+  /* function calculateRating() {
+    if (!ratings) {
       return 0;
     }
-    const averageRating =
-      props.claim.ratings.reduce((a, b) => a + b, 0) /
-      props.claim.ratings.length;
+    const averageRating = ratings.reduce((a, b) => a + b, 0) / ratings.length;
     return averageRating;
-  }
+  } */
 
   const handleAuthorCreation = async () => {
     const response = await fetch('/api/createAuthor');
@@ -184,6 +207,58 @@ export default function ClaimPage(props: Props) {
     }
   };
 
+  const handleRatingCreation = async (claimId: number, ratingValue: number) => {
+    const requestbody: RatingRequestbody = {
+      claimId: claimId,
+      ratingValue: ratingValue,
+      authorId: undefined, // value is inserted further below
+    };
+
+    if (!props.author) {
+      console.log('user not yet an author, let me handle that...');
+      const { author } = await handleAuthorCreation();
+
+      if (!author) {
+        console.log('An error ocurred while trying to create a new author');
+        return;
+      }
+
+      requestbody.authorId = author.id;
+      setAuthorId(author.id);
+    } else {
+      requestbody.authorId = authorId;
+    }
+
+    const response = await fetch('/api/createRating', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestbody),
+    });
+    const rating = await response.json();
+    return rating;
+  };
+
+  const handleValidation = () => {
+    if (sourceUrl.slice(0, 4) !== 'http') {
+      setSourceUrlError(true);
+      return false;
+    }
+    return true;
+  };
+
+  const handleAddRatingClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleAddRatingClose = () => {
+    setAnchorEl(null);
+  };
+
+  const popOverOpen = Boolean(anchorEl);
+  const popOverId = popOverOpen ? 'rating-popover' : undefined;
+
   return (
     <>
       <Head>
@@ -206,8 +281,56 @@ export default function ClaimPage(props: Props) {
         <Typography variant="body2">
           0 - Low credibility / 5 - High credibility
         </Typography>
-        <Rating name="avg-claim-rating" value={calculateRating()} readOnly />
+        <Rating name="avg-claim-rating" value={avgRating} readOnly />
+        <Typography>
+          {ratings
+            ? `Number of user ratings: ${ratings.length}`
+            : 'No user ratings'}
+        </Typography>
+        {props.rating || userRated ? (
+          <Typography>Your rating {selectedRating}/5</Typography>
+        ) : (
+          <>
+            <Button
+              aria-describedby={popOverId}
+              variant="contained"
+              onClick={handleAddRatingClick}
+            >
+              Add rating
+            </Button>
+            <Popover
+              id={popOverId}
+              open={popOverOpen}
+              anchorEl={anchorEl}
+              onClose={handleAddRatingClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'left',
+              }}
+            >
+              <Box sx={{ margin: '10px' }}>
+                <Rating
+                  name="user-rating-for-claim"
+                  value={selectedRating}
+                  onChange={async (event, newValue) => {
+                    setSelectedRating(newValue);
+                    const {rating} = await handleRatingCreation(
+                      props.claim.claimId, newValue!
+                    );
+                    if (ratings) {
+                      const updatedRatings = [...ratings, rating.rating];
+                      setRatings(updatedRatings);
+                    } else {
+                      setRatings([rating.rating]);
+                    }
 
+                    setUserRated(true);
+                  }}
+                />
+              </Box>
+            </Popover>
+          </>
+        )}
         <Typography variant="h3">Labels</Typography>
         {props.claim.labels ? (
           <Box sx={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
@@ -257,6 +380,7 @@ export default function ClaimPage(props: Props) {
         <Button
           variant="contained"
           color="secondary"
+          sx={{ mb: '30px' }}
           onClick={() => {
             setAddReviewPopup(true);
           }}
@@ -321,10 +445,12 @@ export default function ClaimPage(props: Props) {
                   }}
                 />
                 <TextField
+                  error={sourceUrlError}
                   label="Source URL"
                   size="small"
                   required
                   value={sourceUrl}
+                  helperText="Start with http or https"
                   onChange={(event) => {
                     setSourceUrl(event.currentTarget.value);
                   }}
@@ -332,7 +458,13 @@ export default function ClaimPage(props: Props) {
                 <IconButton
                   disabled={sourceTitle === '' || sourceUrl === ''}
                   aria-label="Save source entry"
-                  onClick={() => handleSaveSource()}
+                  onClick={() => {
+                    setSourceUrlError(false);
+                    if (!handleValidation()) {
+                      return;
+                    }
+                    handleSaveSource();
+                  }}
                 >
                   <Save />
                 </IconButton>
@@ -427,10 +559,13 @@ export default function ClaimPage(props: Props) {
                 if (errors.length === 0) {
                   clearInputs();
                   if (!displayedReviews) {
-                    setDisplayedReviews([])
+                    setDisplayedReviews([]);
                   } else {
-                    const updatedDisplayedReviews = [...displayedReviews, review]
-                  setDisplayedReviews(updatedDisplayedReviews)
+                    const updatedDisplayedReviews = [
+                      ...displayedReviews,
+                      review,
+                    ];
+                    setDisplayedReviews(updatedDisplayedReviews);
                   }
                   setDisplayAlert(true);
                   setAddReviewPopup(false);
@@ -512,18 +647,34 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     const author = await checkIfAuthorExists(user.id);
     if (author) {
       console.log('user logged in, is author');
+      // TODO query if user rated the current claim. Send this info to page to trigger the rating button
+      console.log(claim);
+      console.log(author);
+      const fetchedRating = await checkAuthorClaimRating(
+        claim.claimId,
+        author.id,
+      );
+      console.log('fetchedRating', fetchedRating);
+
       return {
         props: {
           user: user,
           author: author,
           claim: claim,
           verdicts: verdicts,
+          rating: fetchedRating ? fetchedRating.rating : null,
         },
       };
     }
     console.log('user logged in, but not an author');
     return {
-      props: { user: user, author: null, verdicts: verdicts, claim: claim },
+      props: {
+        user: user,
+        author: null,
+        verdicts: verdicts,
+        claim: claim,
+        rating: null,
+      },
     };
   }
 

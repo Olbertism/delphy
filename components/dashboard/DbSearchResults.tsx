@@ -15,7 +15,7 @@ type DashboardDbSearchProps = {
   contents: DashboardWidgetDbSearchResults | Fuse.FuseResult<DbClaim>[];
 };
 export default function DatabaseWidget(props: DashboardDbSearchProps) {
-  console.log("DB widget prop", props)
+  console.log('DB widget prop', props);
   const [results, setResults] = useState(props.contents);
   const [expanded, setExpanded] = useState(true);
 
@@ -47,13 +47,21 @@ export default function DatabaseWidget(props: DashboardDbSearchProps) {
                   return (
                     <li key={result.item.claimId}>
                       <a href={`/database/claims/${result.item.claimId}`}>
-                        {result.item.claimTitle} ({result.score ? 100 - Math.round(result.score * 100) + '%' : null})
+                        {result.item.claimTitle} (
+                        {result.score
+                          ? 100 - Math.round(result.score * 100) + '%'
+                          : null}
+                        )
                       </a>
                     </li>
                   );
                 })}
               </ul>
-            ): <Typography>No results from database</Typography>}
+            ) : (
+              <Typography sx={{ mb: '15px' }}>
+                No results from database
+              </Typography>
+            )}
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
             <Button

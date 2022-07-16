@@ -15,14 +15,13 @@ export default function WikipediaWidget(props: DashboardWidgetProps) {
   const [results, setResults] = useState(props.contents);
   const [paginationCount, setPaginationCount] = useState<number>(0);
   const [page, setPage] = useState(1);
+  const [expanded, setExpanded] = useState(true);
 
   const displayedContents = props.contents;
 
-  console.log("WIKI results state", results)
-
- useEffect(() => {
+  useEffect(() => {
     setResults(displayedContents);
-  }, [displayedContents]); 
+  }, [displayedContents]);
 
   const perPage = 5;
 
@@ -40,10 +39,13 @@ export default function WikipediaWidget(props: DashboardWidgetProps) {
     paginatedData.jump(value);
   };
 
+  const handleExpansion = () => setExpanded(!expanded);
+
   return (
     <section>
-      <Accordion>
+      <Accordion expanded={expanded}>
         <AccordionSummary
+          onClick={() => handleExpansion()}
           css={accordionHeadlineStyles}
           expandIcon={<ExpandMoreIcon color="secondary" />}
           aria-controls="panel1a-content"
@@ -52,24 +54,23 @@ export default function WikipediaWidget(props: DashboardWidgetProps) {
           <Typography>Search results from Wikipedia:</Typography>
         </AccordionSummary>
         <AccordionDetails>
+          {results.length === 0 ? <Typography sx={{ mt: "10px", mb: "10px"}}>No results found</Typography> :
           <List sx={{ width: '100%' }}>
             {paginatedData.currentData().map((result) => {
-
-                return (
-                  <ListItem alignItems="flex-start" key={result.title}>
-                    <ListItemText
-                      primary={result.title}
-                      secondary={
-                        <Link href={result.url} target="_blank" rel="noreferrer">
-                          {result.url}
-                        </Link>
-                      }
-                    />
-                  </ListItem>
-                );
-
+              return (
+                <ListItem alignItems="flex-start" key={result.title}>
+                  <ListItemText
+                    primary={result.title}
+                    secondary={
+                      <Link href={result.url} target="_blank" rel="noreferrer">
+                        {result.url}
+                      </Link>
+                    }
+                  />
+                </ListItem>
+              );
             })}
-          </List>
+          </List> }
           <Pagination
             count={paginationCount}
             page={page}

@@ -10,17 +10,6 @@ import { accordionHeadlineStyles } from '../../styles/customStyles';
 import { DashboardWidgetProps } from '../../util/types';
 import usePagination from './Pagination';
 
-type Content = {
-  title: string;
-  url: string;
-  promptSource: string;
-  prediction: number;
-};
-
-type Props = {
-  contents: Content[];
-};
-
 export default function FactCheckToolWidget(props: DashboardWidgetProps) {
   const [results, setResults] = useState(props.contents);
   const [paginationCount, setPaginationCount] = useState<number>(0);
@@ -64,6 +53,7 @@ export default function FactCheckToolWidget(props: DashboardWidgetProps) {
           <Typography>Google Fact Check Tool results:</Typography>
         </AccordionSummary>
         <AccordionDetails>
+        {results.length === 0 ? <Typography sx={{ mt: "10px", mb: "10px"}}>No results found</Typography> :
           <List sx={{ width: '100%' }}>
             {paginatedData.currentData().map((result) => {
               return (
@@ -79,7 +69,7 @@ export default function FactCheckToolWidget(props: DashboardWidgetProps) {
                 </ListItem>
               );
             })}
-          </List>
+          </List> }
           <Pagination
             count={paginationCount}
             page={page}

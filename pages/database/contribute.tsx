@@ -101,6 +101,7 @@ export default function Contribute(props: Props) {
   const [currentSourceList, setCurrentSourceList] = useState<
     { title: string; url: string }[]
   >([]);
+  const [sourceUrlError, setSourceUrlError] = useState(false);
 
   const [displayAlert, setDisplayAlert] = useState(false);
 
@@ -254,8 +255,8 @@ export default function Contribute(props: Props) {
       },
       body: JSON.stringify(requestbody),
     });
-    const review = await response.json();
-    return review;
+    const rating = await response.json();
+    return rating;
   };
 
   const handleSaveLabel = () => {
@@ -346,6 +347,14 @@ export default function Contribute(props: Props) {
       });
       // const source = await response.json();
     }
+  };
+
+  const handleValidation = () => {
+    if (sourceUrl.slice(0, 4) !== 'http') {
+      setSourceUrlError(true);
+      return false;
+    }
+    return true;
   };
 
   return (
@@ -515,10 +524,12 @@ export default function Contribute(props: Props) {
                     }}
                   />
                   <TextField
+                    error={sourceUrlError}
                     label="Source URL"
                     size="small"
                     required
                     value={sourceUrl}
+                    helperText="Start with http or https"
                     onChange={(event) => {
                       setSourceUrl(event.currentTarget.value);
                     }}
@@ -526,7 +537,13 @@ export default function Contribute(props: Props) {
                   <IconButton
                     disabled={sourceTitle === '' || sourceUrl === ''}
                     aria-label="Save source entry"
-                    onClick={() => handleSaveSource()}
+                    onClick={() => {
+                      setSourceUrlError(false);
+                      if (!handleValidation()) {
+                        return;
+                      }
+                      handleSaveSource();
+                    }}
                   >
                     <Save />
                   </IconButton>
@@ -612,7 +629,7 @@ export default function Contribute(props: Props) {
                 return;
               }
               const { claim } = wrappedClaim;
-              
+
               if (savedLabels.length > 0) {
                 handleCreateLabel(claim.id).catch((error) => {
                   console.log('Error when trying to create new label');
