@@ -2,7 +2,7 @@ import arrayShuffle from 'array-shuffle';
 import { DashboardWidgetPropsContents, MainFetcherOutput } from '../types';
 
 // text sanitizer for prompt generation
-function strip(html: string) {
+export function strip(html: string) {
   // const string  = html.replace(/[ –]/, '')
   const doc = new DOMParser().parseFromString(html, 'text/html');
   return doc.body.textContent || '';
@@ -66,7 +66,7 @@ function formatDuckDuckGoResults(rawResponse: { RelatedTopics: any }) {
   return unifiedOutput;
 }
 
-function formatWikipediaResults(rawResponse: {
+export function formatWikipediaResults(rawResponse: {
   error: { info: any };
   query: any;
 }) {

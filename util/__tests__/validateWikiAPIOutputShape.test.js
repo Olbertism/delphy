@@ -1,43 +1,25 @@
-// import nock from 'nock';
-// import path from 'path';
-// import getResources from '../agnosticFetch';
-
-// import { wikiTestResponse } from '../testResponses';
-
-const { getResources } = require('../agnosticFetch')
-const wikiTestResponse = require('../testResponses')
+const { getResources } = require('../agnosticFetch');
 const nock = require('nock');
+const path = require('node:path');
 
-/* const nockBack = require('nock').back;
+test('fetch Wiki API resources, check output shape', async () => {
+  nock.back.fixtures = path.join(__dirname, '..', 'fixtures');
+  nock.back.setMode('record');
+  const { nockDone } = await nock.back('wiki-response-data.json');
 
-nockBack.fixtures = path.join(__dirname, '__nock-fixtures__');
-nockBack.setMode('record'); */
+  return getResources(
+    `http://en.wikipedia.org/w/api.php?&origin=*&action=query&list=search&srsearch=${encodeURIComponent(
+      'unit test',
+    )}&format=json&prop=info&inprop=url`,
+  ).then((data) => {
+    // console.log(data)
 
-test('fetch Wiki API resources, check output shape', () => {
-  const params = {
-    query: 'unit test',
-  };
+    expect(data).toEqual(expect.any(Object));
+    expect(data).toHaveProperty('query');
+    expect(data.query).toHaveProperty('search');
+    expect(data.query.search).toEqual(expect.any(Array));
 
-  // nock will intercept the next request with the given params
-  nock('http://en.wikipedia.org')
-  .get(`/w/api.php?&origin=*&action=query&list=search&srsearch=${encodeURIComponent('unit test')}&format=json&prop=info&inprop=url`).reply(200, wikiTestResponse)
-
-  /* const url =
-    '/api/data-fetchers/wikipedia?' + new URLSearchParams(params).toString(); */
-
-  return getResources(`http://en.wikipedia.org/w/api.php?&origin=*&action=query&list=search&srsearch=${encodeURIComponent('unit test')}&format=json&prop=info&inprop=url`).then((data) => {
-    console.log(data)
-    console.log(data.length)
-    expect(data.wikiTestResponse.length).toBeGreaterThan(0);
-    // add any other check here
+    nockDone();
+    nock.back.setMode('wild');
   });
-
-/*   const response = await getResources(url);
-  const fetchedWikiData = await response.json();
-
-  if ('error' in fetchedWikiData) {
-    expect(fetchedWikiData).toHaveProperty('error.info');
-  } else {
-    expect(fetchedWikiData).toHaveProperty('query.search');
-  } */
 });

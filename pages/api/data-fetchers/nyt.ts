@@ -11,7 +11,6 @@ export default async function handler(
     return;
   }
 
-  // https://api.nytimes.com/svc/search/v2/articlesearch.json?q=election&api-key=yourkey
   const apiBaseUrl =
     'https://api.nytimes.com/svc/search/v2/articlesearch.json?';
 
