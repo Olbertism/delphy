@@ -66,6 +66,9 @@ export default function Login(props: Props) {
           <TextField
             size="small"
             value={username}
+            inputProps={{
+              'data-test-id': 'login-username',
+            }}
             onChange={(event) => {
               setUsername(event.currentTarget.value);
             }}
@@ -90,6 +93,9 @@ export default function Login(props: Props) {
             label="Password"
             type="password"
             autoComplete="current-password"
+            inputProps={{
+              'data-test-id': 'login-password',
+            }}
           />
         </Box>
         <Box>
@@ -97,6 +103,7 @@ export default function Login(props: Props) {
             onClick={() => loginHandler()}
             variant="contained"
             color="secondary"
+            data-test-id="login-submit"
           >
             Login
           </Button>

@@ -1,0 +1,15 @@
+{
+  "cookies": [
+    {
+      "sameSite": "Lax",
+      "name": "sessionToken",
+      "value": "QDoEyfSJH1UhFrQOneJB6KbKcpKX4AFUgKX1RsuVnDu3qgA1RKlHVb5fVYhrG4Kn5J3fPYsLQojd4gfVhxh0EazCQhwSBQRRlm4ZvGIybQk%3D",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1658150990.206508,
+      "httpOnly": true,
+      "secure": true
+    }
+  ],
+  "origins": []
+}
