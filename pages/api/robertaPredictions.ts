@@ -16,7 +16,7 @@ export default async function handler(
   // const apiBaseUrl = `http://127.0.0.1:5000/predict`;
   // prod URL NOT WORKING!
 
-  const servicekeybuffer = await readFile('give-me-context-93460497e19e.json');
+  const servicekeybuffer = await readFile('google-credentials.json');
   const servicekey = JSON.parse(servicekeybuffer.toString());
 
   const client = new JWT({
