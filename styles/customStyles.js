@@ -1,8 +1,57 @@
 import { css } from '@emotion/react';
 import { theme } from './theme';
 
-export const test = css`
-  background-color: blue;
+export const tableHeaderStyles = css`
+  background-color: ${theme.palette.primary.main};
+  color: ${theme.palette.neutral.light}!important;
+
+  th:active {
+    color: ${theme.palette.secondary.main};
+  }
+
+  th:hover {
+    color: ${theme.palette.secondary.main};
+  }
+
+  th:focus {
+    color: ${theme.palette.secondary.main};
+  }
+
+  th:target {
+    color: ${theme.palette.secondary.main};
+  }
+
+  span:active {
+    color: ${theme.palette.secondary.main};
+  }
+
+  span:hover {
+    color: ${theme.palette.secondary.main}!important;
+  }
+
+  span:focus {
+    color: ${theme.palette.secondary.main}!important;
+  }
+
+  span:target {
+    color: ${theme.palette.secondary.main};
+  }
+
+  svg:active {
+    color: ${theme.palette.secondary.main}!important;
+  }
+
+  svg:hover {
+    color: ${theme.palette.secondary.main}!important;
+  }
+
+  svg:focus {
+    color: ${theme.palette.secondary.main}!important;
+  }
+  svg:focus-visible {
+    color: ${theme.palette.secondary.main}!important;
+  }
+
 `;
 
 export const redTextHighlight = css`
@@ -36,7 +85,8 @@ export const cardListItem = css`
   color: ${theme.palette.neutral.light};
   margin-bottom: 5px;
   border-radius: 4px;
-  box-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);
+  box-shadow: 0px 2px 1px -1px rgba(0, 0, 0, 0.2),
+    0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12);
   svg {
     color: ${theme.palette.neutral.main};
   }

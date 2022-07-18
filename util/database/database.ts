@@ -140,9 +140,6 @@ export async function getUserByValidSessionToken(token: string) {
   AND sessions.expiry_timestamp > now();
   `;
 
-  // for a check...
-  console.log('Spam?', user);
-
   await deleteExpiredSessions();
 
   return user && camelcaseKeys(user);

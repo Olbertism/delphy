@@ -23,6 +23,7 @@ import {
 import arrayShuffle from 'array-shuffle';
 import Fuse from 'fuse.js';
 import { GetServerSidePropsContext } from 'next';
+import Head from 'next/head';
 import { useRef, useState } from 'react';
 import DatabaseWidget from '../components/dashboard/DbSearchResults';
 import FactCheckToolWidget from '../components/dashboard/FactCheckTool';
@@ -226,7 +227,7 @@ export default function Dashboard(props: DashboardProps) {
       contradictions,
       {
         includeScore: true,
-        threshold: 0.8,
+        threshold: 0.7,
         keys: ['title', 'promptSource'],
       },
     );
@@ -238,7 +239,7 @@ export default function Dashboard(props: DashboardProps) {
 
     const agreementsSearchIndex = new Fuse(agreements, {
       includeScore: true,
-      threshold: 0.8,
+      threshold: 0.7,
       keys: ['title', 'promptSource'],
     });
 
@@ -280,6 +281,11 @@ export default function Dashboard(props: DashboardProps) {
   };
 
   return (
+    <>
+    <Head>
+        <title>Dashboard</title>
+        <meta name="description" content="About the app" />
+      </Head>
     <main>
       <Typography variant="h1">Check Claim</Typography>
 
@@ -443,10 +449,10 @@ export default function Dashboard(props: DashboardProps) {
                               'aria-labelledby': 'tagline-context-button',
                             }}
                           >
-                            <MenuItem onClick={handleTaglineMenuClose}>
+                            <MenuItem disabled onClick={handleTaglineMenuClose}>
                               Add to Database
                             </MenuItem>
-                            <MenuItem onClick={handleTaglineMenuClose}>
+                            <MenuItem disabled onClick={handleTaglineMenuClose}>
                               Feedback on evaluation
                             </MenuItem>
                           </Menu>
@@ -508,10 +514,10 @@ export default function Dashboard(props: DashboardProps) {
                               'aria-labelledby': 'tagline-context-button',
                             }}
                           >
-                            <MenuItem onClick={handleTaglineMenuClose}>
+                            <MenuItem disabled onClick={handleTaglineMenuClose}>
                               Add to Database
                             </MenuItem>
-                            <MenuItem onClick={handleTaglineMenuClose}>
+                            <MenuItem disabled onClick={handleTaglineMenuClose}>
                               Feedback on evaluation
                             </MenuItem>
                           </Menu>
@@ -592,7 +598,7 @@ export default function Dashboard(props: DashboardProps) {
           contents={formattedResources.slice(1, 2)}
         /> */}
       </div>
-    </main>
+    </main></>
   );
 }
 

@@ -9,6 +9,7 @@ import {
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import { getReviewWithAllRelationsById } from '../../../util/database/database';
+import formatDate from '../../../util/formatDate';
 import { DatabaseReview } from '../../../util/types';
 
 type ReviewPageProps = {
@@ -44,6 +45,7 @@ export default function ReviewPage(props: ReviewPageProps) {
         <Link href={`/users/${props.review.username}`}>
           {props.review.username}
         </Link>
+        <Typography>{`Added on ${formatDate(props.review.reviewAdded)}`}</Typography>
 
         <Typography variant="h3">Sources</Typography>
 

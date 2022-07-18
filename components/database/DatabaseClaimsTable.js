@@ -23,6 +23,7 @@ import { visuallyHidden } from '@mui/utils';
 import Link from 'next/link';
 import PropTypes from 'prop-types';
 import * as React from 'react';
+import { tableHeaderStyles } from '../../styles/customStyles';
 import formatDate from '../../util/formatDate';
 
 function descendingComparator(a, b, orderBy) {
@@ -58,7 +59,7 @@ function stableSort(array, comparator) {
 const headCells = [
   {
     id: 'id',
-    numeric: false,
+    numeric: true,
     disablePadding: true,
     label: 'Id',
   },
@@ -105,8 +106,8 @@ function EnhancedTableHead(props) {
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="checkbox">
-          {/* <Checkbox
+        {/* <TableCell padding="checkbox" >
+          <Checkbox
             color="primary"
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
@@ -114,16 +115,18 @@ function EnhancedTableHead(props) {
             inputProps={{
               'aria-label': 'select all desserts',
             }}
-          /> */}
-        </TableCell>
+          />
+        </TableCell> */}
         {headCells.map((headCell) => (
           <TableCell
+            sx={tableHeaderStyles}
             key={headCell.id}
             align={headCell.numeric ? 'right' : 'left'}
             padding={headCell.disablePadding ? 'none' : 'normal'}
             sortDirection={orderBy === headCell.id ? order : false}
           >
             <TableSortLabel
+              sx={tableHeaderStyles}
               active={orderBy === headCell.id}
               direction={orderBy === headCell.id ? order : 'asc'}
               onClick={createSortHandler(headCell.id)}
@@ -156,17 +159,20 @@ const EnhancedTableToolbar = (props) => {
 
   return (
     <Toolbar
-      sx={{
-        pl: { sm: 2 },
-        pr: { xs: 1, sm: 1 },
-        ...(numSelected > 0 && {
-          bgcolor: (theme) =>
-            alpha(
-              theme.palette.primary.main,
-              theme.palette.action.activatedOpacity,
-            ),
-        }),
-      }}
+      sx={[
+        tableHeaderStyles,
+        {
+          pl: { sm: 2 },
+          pr: { xs: 1, sm: 1 },
+          ...(numSelected > 0 && {
+            bgcolor: (theme) =>
+              alpha(
+                theme.palette.primary.main,
+                theme.palette.action.activatedOpacity,
+              ),
+          }),
+        },
+      ]}
     >
       {numSelected > 0 ? (
         <Typography
@@ -197,7 +203,7 @@ const EnhancedTableToolbar = (props) => {
       ) : (
         <Tooltip title="Filter list">
           <IconButton>
-            <FilterListIcon />
+            <FilterListIcon sx={{tableHeaderStyles}}/>
           </IconButton>
         </Tooltip>
       )}
@@ -210,6 +216,9 @@ EnhancedTableToolbar.propTypes = {
 };
 
 export default function ClaimsTable(props) {
+
+  
+
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState('id');
   const [selected, setSelected] = React.useState([]);
@@ -279,7 +288,9 @@ export default function ClaimsTable(props) {
   return (
     <Box sx={{ width: '100%' }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
-        <EnhancedTableToolbar numSelected={selected.length} />
+        <EnhancedTableToolbar
+          numSelected={selected.length}
+        />
         <TableContainer>
           <Table
             sx={{ minWidth: 750 }}
@@ -306,23 +317,24 @@ export default function ClaimsTable(props) {
                   return (
                     <TableRow
                       hover
-                      /* onClick={(event) => handleClick(event, claim.claimId)}
+                      onClick={(event) => handleClick(event, claim.claimId)}
                       role="checkbox"
-                      aria-checked={isItemSelected} */
+                      aria-checked={isItemSelected}
                       tabIndex={-1}
                       key={claim.claimId}
                       selected={isItemSelected}
                     >
-                      <TableCell padding="checkbox">
-                        {/* <Checkbox
+                      {/* <TableCell padding="checkbox">
+                        <Checkbox
                           color="primary"
                           checked={isItemSelected}
                           inputProps={{
                             'aria-labelledby': labelId,
                           }}
-                        /> */}
-                      </TableCell>
+                        />
+                      </TableCell> */}
                       <TableCell
+                        align="right"
                         component="th"
                         id={labelId}
                         scope="row"

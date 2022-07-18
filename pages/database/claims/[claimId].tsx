@@ -36,6 +36,7 @@ import {
   getClaimWithAllRelationsById,
   getUserByValidSessionToken,
 } from '../../../util/database/database';
+import formatDate from '../../../util/formatDate';
 import {
   Author,
   DatabaseClaim,
@@ -273,80 +274,6 @@ export default function ClaimPage(props: Props) {
         <Typography variant="h1">{props.claim.claimTitle}</Typography>
         <Typography variant="h3">Description</Typography>
         <Typography>{props.claim.claimDescription}</Typography>
-        <Typography variant="h3">Added by</Typography>
-        <Link href={`/users/${props.claim.username}`}>
-          {props.claim.username}
-        </Link>
-        <Typography variant="h3">Average rating value</Typography>
-        <Typography variant="body2">
-          0 - Low credibility / 5 - High credibility
-        </Typography>
-        <Rating name="avg-claim-rating" value={avgRating} readOnly />
-        <Typography>
-          {ratings
-            ? `Number of user ratings: ${ratings.length}`
-            : 'No user ratings'}
-        </Typography>
-        {props.rating || userRated ? (
-          <Typography>Your rating {selectedRating}/5</Typography>
-        ) : (
-          <>
-            <Button
-              aria-describedby={popOverId}
-              variant="contained"
-              onClick={handleAddRatingClick}
-            >
-              Add rating
-            </Button>
-            <Popover
-              id={popOverId}
-              open={popOverOpen}
-              anchorEl={anchorEl}
-              onClose={handleAddRatingClose}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
-            >
-              <Box sx={{ margin: '10px' }}>
-                <Rating
-                  name="user-rating-for-claim"
-                  value={selectedRating}
-                  onChange={async (event, newValue) => {
-                    setSelectedRating(newValue);
-                    const {rating} = await handleRatingCreation(
-                      props.claim.claimId, newValue!
-                    );
-                    if (ratings) {
-                      const updatedRatings = [...ratings, rating.rating];
-                      setRatings(updatedRatings);
-                    } else {
-                      setRatings([rating.rating]);
-                    }
-
-                    setUserRated(true);
-                  }}
-                />
-              </Box>
-            </Popover>
-          </>
-        )}
-        <Typography variant="h3">Labels</Typography>
-        {props.claim.labels ? (
-          <Box sx={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            {props.claim.labels.map((label) => {
-              return (
-                <Chip
-                  label={label}
-                  key={label}
-                  sx={{ bgcolor: theme.palette.primary.light, color: 'white' }}
-                />
-              );
-            })}
-          </Box>
-        ) : (
-          <Typography>No labels associated</Typography>
-        )}
         <Box sx={{ mb: '30px' }}>
           <Typography variant="h3">Associated reviews</Typography>
           {displayedReviews ? (
@@ -387,6 +314,84 @@ export default function ClaimPage(props: Props) {
         >
           Add a review
         </Button>
+        <Typography variant="h3">Added by</Typography>
+        <Link href={`/users/${props.claim.username}`}>
+          {props.claim.username}
+        </Link>
+        <Typography>{`Added on ${formatDate(props.claim.claimAdded)}`}</Typography>
+        <Typography variant="h3">Average rating value</Typography>
+        <Typography variant="body2">
+          0 - Low credibility / 5 - High credibility
+        </Typography>
+        <Rating name="avg-claim-rating" value={avgRating} readOnly />
+        <Typography>
+          {ratings
+            ? `Number of user ratings: ${ratings.length}`
+            : 'No user ratings'}
+        </Typography>
+        {props.rating || userRated ? (
+          <Typography>Your rating {selectedRating}/5</Typography>
+        ) : (
+          <>
+            <Button
+              aria-describedby={popOverId}
+              variant="contained"
+              color="secondary"
+              onClick={handleAddRatingClick}
+            >
+              Add rating
+            </Button>
+            <Popover
+              id={popOverId}
+              open={popOverOpen}
+              anchorEl={anchorEl}
+              onClose={handleAddRatingClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'left',
+              }}
+            >
+              <Box sx={{ margin: '10px' }}>
+                <Rating
+                  name="user-rating-for-claim"
+                  value={selectedRating}
+                  onChange={async (event, newValue) => {
+                    setSelectedRating(newValue);
+                    const {rating} = await handleRatingCreation(
+                      props.claim.claimId, newValue!
+                    );
+                    if (ratings) {
+                      const updatedRatings = [...ratings, rating.rating];
+                      setRatings(updatedRatings);
+                    } else {
+                      setRatings([rating.rating]);
+                    }
+
+                    setUserRated(true);
+                  }}
+                />
+              </Box>
+            </Popover>
+          </>
+        )}
+        <Box sx={{mb: "30px"}}>
+        <Typography variant="h3">Labels</Typography>
+        {props.claim.labels ? (
+          <Box sx={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            {props.claim.labels.map((label) => {
+              return (
+                <Chip
+                  label={label}
+                  key={label}
+                  sx={{ bgcolor: theme.palette.primary.light, color: 'white' }}
+                />
+              );
+            })}
+          </Box>
+        ) : (
+          <Typography>No labels associated</Typography>
+        )}
+        </Box>
         <Dialog
           fullWidth
           maxWidth="md"

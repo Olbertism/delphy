@@ -163,7 +163,7 @@ export type DatabaseClaim = {
   claimTitle: string;
   authorId: number;
   claimDescription: string;
-  added: Date;
+  claimAdded: Date;
   username?: string | undefined;
   ratings: number[] | null;
   labels: string[] | null;
@@ -174,7 +174,7 @@ export type DatabaseReview = {
   reviewId: number;
   reviewTitle: string;
   reviewDescription: string;
-  added: Date;
+  reviewAdded: Date;
   authorId: number;
   claimId: number;
   claimTitle: string;
