@@ -8,6 +8,18 @@ const defaultTestLabels = [
   {
     label: 'Covid-19',
   },
+  {
+    label: '5G',
+  },
+  {
+    label: 'Russia',
+  },
+  {
+    label: 'Vaccines',
+  },
+  {
+    label: 'Climate change',
+  },
 ];
 
 exports.up = async (sql) => {

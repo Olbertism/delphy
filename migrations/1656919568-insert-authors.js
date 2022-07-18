@@ -1,6 +1,9 @@
 const defaultTestUsers = [
   { user_id: 1 },
   { user_id: 2 },
+  { user_id: 3 },
+  { user_id: 4 },
+  { user_id: 5 },
 ];
 
 exports.up = async (sql) => {
