@@ -1,7 +1,10 @@
 import camelcaseKeys from 'camelcase-keys';
 import { config } from 'dotenv-safe';
 import postgres from 'postgres';
+import setPostgresDefaultsOnHeroku from '../setPostgresDefaultsOnHeroku';
 import { ClaimLabel, Label, Verdict } from '../types';
+
+setPostgresDefaultsOnHeroku();
 
 config();
 
@@ -521,8 +524,11 @@ export async function getReviewsByUsername(username: string) {
   return reviews.map((review) => camelcaseKeys(review));
 }
 
-export async function checkAuthorClaimRating(claimId: number, authorId: number) {
+export async function checkAuthorClaimRating(
+  claimId: number,
+  authorId: number,
+) {
   const [rating] = await sql<[Rating | undefined]>`
-  SELECT rating FROM ratings WHERE ratings.claim_id = ${claimId} and ratings.author_id = ${authorId};`
-  return rating
+  SELECT rating FROM ratings WHERE ratings.claim_id = ${claimId} and ratings.author_id = ${authorId};`;
+  return rating;
 }
