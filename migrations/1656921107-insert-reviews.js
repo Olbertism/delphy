@@ -125,6 +125,7 @@ exports.up = async (sql) => {
       'added',
       'author_id',
       'claim_id',
+      'verdict_id',
     )}
   `;
 };

@@ -6,7 +6,7 @@ exports.up = async (sql) => {
 			description varchar(1300),
 			added timestamp NOT NULL DEFAULT NOW(),
 			author_id integer REFERENCES authors (id),
-			claim_id integer REFERENCES claims (id),
+			claim_id integer REFERENCES claims (id) ON DELETE CASCADE,
 			verdict_id integer
     )
   `;

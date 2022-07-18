@@ -19,7 +19,7 @@ export default function ReviewPage(props: ReviewPageProps) {
   return (
     <>
       <Head>
-        <title>Claim entry</title>
+        <title>{props.review.reviewTitle}</title>
         <meta name="description" content="About the app" />
       </Head>
 
@@ -32,6 +32,12 @@ export default function ReviewPage(props: ReviewPageProps) {
         <Link href={`/database/claims/${props.review.claimId}`}>
           {props.review.claimTitle}
         </Link>
+        <Box>
+          <Typography variant="h4" sx={{mb: "10px"}}>Verdict to claim</Typography>
+          {props.review.verdict ? (
+            <Typography sx={{ fontStyle: "italic", fontSize: "18px"}}>"{props.review.verdict}"</Typography>
+          ) : null}
+        </Box>
         <Typography variant="h3">Description</Typography>
         <Typography>{props.review.reviewDescription}</Typography>
         <Typography variant="h3">Added by</Typography>
@@ -70,12 +76,7 @@ export default function ReviewPage(props: ReviewPageProps) {
           <Typography>No sources given</Typography>
         )}
 
-        <Box>
-          <Typography variant="h3" sx={{mb: "10px"}}>Verdict to claim</Typography>
-          {props.review.verdict ? (
-            <Typography sx={{ fontStyle: "italic", fontSize: "18px"}}>"{props.review.verdict}"</Typography>
-          ) : null}
-        </Box>
+
       </main>
     </>
   );

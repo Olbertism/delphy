@@ -5,7 +5,7 @@ exports.up = async (sql) => {
 			title varchar(150) NOT NULL UNIQUE,
 			description varchar(1200),
 			added timestamp NOT NULL DEFAULT NOW(),
-			author_id integer REFERENCES authors (id)
+			author_id integer REFERENCES authors (id) ON DELETE CASCADE
     )
   `;
 };

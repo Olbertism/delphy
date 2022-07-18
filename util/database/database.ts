@@ -415,6 +415,7 @@ SELECT reviews.id AS review_id,
     claims.id AS claim_id,
     claims.title AS claim_title,
     verdicts.verdict AS verdict,
+    reviews.verdict_id AS verdict_id,
     authors.id AS author_id,
 
 (SELECT json_agg(sources) FROM (
