@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Link,
   List,
   ListItem,
@@ -8,14 +9,36 @@ import {
 } from '@mui/material';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
-import { getReviewWithAllRelationsById } from '../../../util/database/database';
+import { useRouter } from 'next/router';
+import {
+  getReviewWithAllRelationsById,
+  getUserByValidSessionToken,
+} from '../../../util/database/database';
 import formatDate from '../../../util/formatDate';
-import { DatabaseReview } from '../../../util/types';
+import { DatabaseReview, DeleteReviewRequestBody } from '../../../util/types';
 
 type ReviewPageProps = {
   review: DatabaseReview;
+  user: { id: number; username: string; roles: string[] | null };
 };
+
+const handleDeleteReview = async (reviewId: number) => {
+  const requestbody: DeleteReviewRequestBody = {
+    id: reviewId,
+  };
+  const response = await fetch('/api/deleteReview', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestbody),
+  });
+  const deletedReview = await response.json();
+  return deletedReview;
+};
+
 export default function ReviewPage(props: ReviewPageProps) {
+  const router = useRouter();
   console.log(props);
   return (
     <>
@@ -34,9 +57,13 @@ export default function ReviewPage(props: ReviewPageProps) {
           {props.review.claimTitle}
         </Link>
         <Box>
-          <Typography variant="h4" sx={{mb: "10px"}}>Verdict to claim</Typography>
+          <Typography variant="h4" sx={{ mb: '10px' }}>
+            Verdict to claim
+          </Typography>
           {props.review.verdict ? (
-            <Typography sx={{ fontStyle: "italic", fontSize: "18px"}}>"{props.review.verdict}"</Typography>
+            <Typography sx={{ fontStyle: 'italic', fontSize: '18px' }}>
+              "{props.review.verdict}"
+            </Typography>
           ) : null}
         </Box>
         <Typography variant="h3">Description</Typography>
@@ -45,7 +72,9 @@ export default function ReviewPage(props: ReviewPageProps) {
         <Link href={`/users/${props.review.username}`}>
           {props.review.username}
         </Link>
-        <Typography>{`Added on ${formatDate(props.review.reviewAdded)}`}</Typography>
+        <Typography>{`Added on ${formatDate(
+          props.review.reviewAdded,
+        )}`}</Typography>
 
         <Typography variant="h3">Sources</Typography>
 
@@ -77,14 +106,39 @@ export default function ReviewPage(props: ReviewPageProps) {
         ) : (
           <Typography>No sources given</Typography>
         )}
-
-
+        {props.review.username === props.user.username ? (
+          <Button
+            onClick={async () => {
+              const deletedReview = await handleDeleteReview(
+                props.review.reviewId,
+              );
+              if (deletedReview) {
+                router.push('/database');
+              }
+            }}
+            color="error"
+            variant="outlined"
+            sx={{ mb: '30px' }}
+          >
+            Delete review
+          </Button>
+        ) : null}
       </main>
     </>
   );
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const user = await getUserByValidSessionToken(
+    context.req.cookies.sessionToken,
+  );
+
+  if (!user) {
+    return {
+      redirect: { destination: '/', permanent: false },
+    };
+  }
+
   let review = await getReviewWithAllRelationsById(
     Number(context.query.reviewId),
   );
@@ -97,5 +151,5 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   // to prevent serialization issue with date objects:
   review = JSON.parse(JSON.stringify(review));
 
-  return { props: { review: review } };
+  return { props: { review: review, user: user } };
 }

@@ -131,7 +131,15 @@ export async function getUserByValidSessionToken(token: string) {
   if (!token) return undefined;
   const [user] = await sql<[User | undefined]>`
   SELECT
-  users.id, users.username
+  users.id, users.username,
+
+  (SELECT array_agg(roles.role)
+  FROM roles, user_roles
+  WHERE
+    roles.id = user_roles.role_id AND
+    user_roles.user_id = users.id
+    ) AS roles
+
   FROM
     users, sessions
   WHERE
@@ -528,4 +536,16 @@ export async function checkAuthorClaimRating(
   const [rating] = await sql<[Rating | undefined]>`
   SELECT rating FROM ratings WHERE ratings.claim_id = ${claimId} and ratings.author_id = ${authorId};`;
   return rating;
+}
+
+export async function deleteClaimById(id: number) {
+  const [claim] = await sql<[Claim | undefined]>`
+  DELETE FROM claims WHERE claims.id = ${id} RETURNING *`;
+  return claim && camelcaseKeys(claim);
+}
+
+export async function deleteReviewById(id: number) {
+  const [review] = await sql<[Review | undefined]>`
+  DELETE FROM reviews WHERE reviews.id = ${id} RETURNING *`;
+  return review && camelcaseKeys(review);
 }

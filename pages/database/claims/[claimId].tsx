@@ -48,6 +48,7 @@ import {
 
 type Props = {
   refreshUserProfile: () => Promise<void>;
+  user: { id: number; username: string; roles: string[] | null };
   claim: DatabaseClaim;
   author: Author | null;
   verdicts: Verdict[];
@@ -83,9 +84,10 @@ export default function ClaimPage(props: Props) {
   const [ratings, setRatings] = useState(props.claim.ratings);
   const [avgRating, setAvgRating] = useState(0);
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-  const [selectedRating, setSelectedRating] = useState<number | null>(props.rating ? props.rating : null);
+  const [selectedRating, setSelectedRating] = useState<number | null>(
+    props.rating ? props.rating : null,
+  );
   const [userRated, setUserRated] = useState(false);
-
 
   console.log('errors', errors);
   console.log('selectedRating', selectedRating);
@@ -318,7 +320,9 @@ export default function ClaimPage(props: Props) {
         <Link href={`/users/${props.claim.username}`}>
           {props.claim.username}
         </Link>
-        <Typography>{`Added on ${formatDate(props.claim.claimAdded)}`}</Typography>
+        <Typography>{`Added on ${formatDate(
+          props.claim.claimAdded,
+        )}`}</Typography>
         <Typography variant="h3">Average rating value</Typography>
         <Typography variant="body2">
           0 - Low credibility / 5 - High credibility
@@ -357,8 +361,9 @@ export default function ClaimPage(props: Props) {
                   value={selectedRating}
                   onChange={async (event, newValue) => {
                     setSelectedRating(newValue);
-                    const {rating} = await handleRatingCreation(
-                      props.claim.claimId, newValue!
+                    const { rating } = await handleRatingCreation(
+                      props.claim.claimId,
+                      newValue!,
                     );
                     if (ratings) {
                       const updatedRatings = [...ratings, rating.rating];
@@ -374,24 +379,32 @@ export default function ClaimPage(props: Props) {
             </Popover>
           </>
         )}
-        <Box sx={{mb: "30px"}}>
-        <Typography variant="h3">Labels</Typography>
-        {props.claim.labels ? (
-          <Box sx={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            {props.claim.labels.map((label) => {
-              return (
-                <Chip
-                  label={label}
-                  key={label}
-                  sx={{ bgcolor: theme.palette.primary.light, color: 'white' }}
-                />
-              );
-            })}
-          </Box>
-        ) : (
-          <Typography>No labels associated</Typography>
-        )}
+        <Box sx={{ mb: '30px' }}>
+          <Typography variant="h3">Labels</Typography>
+          {props.claim.labels ? (
+            <Box sx={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              {props.claim.labels.map((label) => {
+                return (
+                  <Chip
+                    label={label}
+                    key={label}
+                    sx={{
+                      bgcolor: theme.palette.primary.light,
+                      color: 'white',
+                    }}
+                  />
+                );
+              })}
+            </Box>
+          ) : (
+            <Typography>No labels associated</Typography>
+          )}
         </Box>
+        {props.claim.username === props.user.username ? (
+          <Button color="error" variant="outlined" sx={{ mb: '30px' }}>
+            Delete claim
+          </Button>
+        ) : null}
         <Dialog
           fullWidth
           maxWidth="md"
@@ -635,6 +648,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     context.req.cookies.sessionToken,
   );
 
+  if (!user) {
+    return {
+      redirect: { destination: '/', permanent: false },
+    };
+  }
+
   let claim = await getClaimWithAllRelationsById(Number(context.query.claimId));
 
   // to prevent serialization issue with date objects:
@@ -648,40 +667,31 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const verdicts = await getAllVerdicts();
 
-  if (user) {
-    const author = await checkIfAuthorExists(user.id);
-    if (author) {
-      console.log('user logged in, is author');
-      // TODO query if user rated the current claim. Send this info to page to trigger the rating button
-      console.log(claim);
-      console.log(author);
-      const fetchedRating = await checkAuthorClaimRating(
-        claim.claimId,
-        author.id,
-      );
-      console.log('fetchedRating', fetchedRating);
+  const author = await checkIfAuthorExists(user.id);
+  if (author) {
+    const fetchedRating = await checkAuthorClaimRating(
+      claim.claimId,
+      author.id,
+    );
 
-      return {
-        props: {
-          user: user,
-          author: author,
-          claim: claim,
-          verdicts: verdicts,
-          rating: fetchedRating ? fetchedRating.rating : null,
-        },
-      };
-    }
-    console.log('user logged in, but not an author');
     return {
       props: {
         user: user,
-        author: null,
-        verdicts: verdicts,
+        author: author,
         claim: claim,
-        rating: null,
+        verdicts: verdicts,
+        rating: fetchedRating ? fetchedRating.rating : null,
       },
     };
   }
 
-  return { props: { claim: claim, author: null, verdicts: verdicts } };
+  return {
+    props: {
+      user: user,
+      author: null,
+      verdicts: verdicts,
+      claim: claim,
+      rating: null,
+    },
+  };
 }

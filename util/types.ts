@@ -202,3 +202,7 @@ export type FormattedResource = {
   prediction?: number;
   fromDB?: boolean;
 };
+
+export type DeleteReviewRequestBody = {
+  id: number
+}
