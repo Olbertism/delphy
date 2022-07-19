@@ -118,7 +118,6 @@ function formatGuardianSearchResults(rawResponse: {
     }
   } catch (error) {
     console.log('Guardian API response could not be processed');
-    console.log(error);
   }
   const uniqueOutput = [
     ...unifiedOutput
@@ -137,7 +136,7 @@ function formatNytResults(rawResponse: {
     try {
       console.log(rawResponse.fault.faultstring);
     } catch (error) {
-      console.log(error);
+      console.log('NYT api error not handled');
     }
     return [];
   }
@@ -213,7 +212,12 @@ const collectAndShuffleResults = (
     });
   });
   const shuffledArray = arrayShuffle(outputArray);
-  return shuffledArray;
+  const uniqueOutput = [
+    ...shuffledArray
+      .reduce((map, obj) => map.set(obj.title, obj), new Map())
+      .values(),
+  ];
+  return uniqueOutput as DashboardWidgetPropsContents[];
 };
 
 export async function fetchResources(
@@ -226,8 +230,6 @@ export async function fetchResources(
   const params = {
     query: query,
   };
-
-  console.log('using query: ', params.query);
 
   // FactcheckTool
   sources.push({

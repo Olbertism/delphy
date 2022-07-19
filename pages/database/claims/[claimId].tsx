@@ -56,7 +56,6 @@ type Props = {
 };
 
 export default function ClaimPage(props: Props) {
-
   const [authorId, setAuthorId] = useState<number | undefined>(
     props.author === null ? undefined : props.author.id,
   );
@@ -316,7 +315,12 @@ export default function ClaimPage(props: Props) {
         <Typography variant="body2">
           0 - Low credibility / 5 - High credibility
         </Typography>
-        <Rating name="avg-claim-rating" value={avgRating} precision={0.5} readOnly />
+        <Rating
+          name="avg-claim-rating"
+          value={avgRating}
+          precision={0.5}
+          readOnly
+        />
         <Typography>
           {ratings
             ? `Number of user ratings: ${ratings.length}`
@@ -389,11 +393,12 @@ export default function ClaimPage(props: Props) {
             <Typography>No labels associated</Typography>
           )}
         </Box>
-        {props.claim.username === props.user.username || (props.user.roles && props.user.roles.includes("admin")) ? (
-
-          <DeleteEntryInterface id={props.claim.claimId} type="claim" />
-
-        ) : null}
+        <Box sx={{ mb: '30px' }}>
+          {props.claim.username === props.user.username ||
+          (props.user.roles && props.user.roles.includes('admin')) ? (
+            <DeleteEntryInterface id={props.claim.claimId} type="claim" />
+          ) : null}
+        </Box>
         <Dialog
           fullWidth
           maxWidth="md"
@@ -652,7 +657,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       notFound: true,
     };
   }
-  console.log(user)
+  console.log(user);
   const verdicts = await getAllVerdicts();
 
   const author = await checkIfAuthorExists(user.id);

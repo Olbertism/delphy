@@ -54,12 +54,11 @@ export default function Dashboard(props: DashboardProps) {
 
   const [loadingResources, setLoadingResources] = useState(false);
 
-  // const [fetchedResources, setFetchedResources] = useState([]);
   const [formattedResources, setFormattedResources] = useState<
     DashboardWidgetPropsContents[][]
   >([]);
   const [evaluation, setEvaluation] = useState('');
-  // const [displayedResources, setDisplayedResources] = useState([]);
+
   const [modelContradictions, setModelContradictions] = useState<
     FormattedResource[] | Fuse.FuseResult<FormattedResource>[]
   >([]);
@@ -83,13 +82,13 @@ export default function Dashboard(props: DashboardProps) {
 
   const dbClaimsSearchIndex = new Fuse<DbClaim>(props.claims, {
     includeScore: true,
-    threshold: 0.6,
+    threshold: 0.5,
     keys: ['claimTitle', 'claimDescription'],
   });
 
   function handleDBSearch() {
     const results = dbClaimsSearchIndex.search(searchQuery);
-    console.log('fuse results', results);
+
     if (results.length > 1) {
       const sorteddbClaimsSearchResults = results.sort((resultA, resultB) => {
         if (resultA.score && resultB.score) {
@@ -97,7 +96,7 @@ export default function Dashboard(props: DashboardProps) {
         }
         return 0;
       }) as any;
-      console.log('sorted Fuse results', sorteddbClaimsSearchResults);
+
       setDbClaimsSearchResults(sorteddbClaimsSearchResults);
       return sorteddbClaimsSearchResults;
     }
@@ -108,12 +107,8 @@ export default function Dashboard(props: DashboardProps) {
 
   async function handleFetchResources() {
     const dbResults = handleDBSearch();
-    console.log('dbResults', dbResults);
     const webAPIResults = await fetchResources(searchQuery);
-    console.log('webAPIResults', webAPIResults);
-    console.log('search results state', dbClaimsSearchResults);
     webAPIResults.push(dbResults);
-
     setFormattedResources(webAPIResults as DashboardWidgetPropsContents[][]);
     setLoadingResources(false);
   }
@@ -150,8 +145,6 @@ export default function Dashboard(props: DashboardProps) {
       }
     }
 
-    console.log('instances handed over: ', instances);
-
     const roBERTaRequestBody = {
       instances: instances,
     };
@@ -163,7 +156,6 @@ export default function Dashboard(props: DashboardProps) {
       },
       body: JSON.stringify(roBERTaRequestBody),
     }).then((response) => response.json());
-    console.log('RoBERTa response', fetchedPredictions);
 
     if (fetchedPredictions.status === 'error') {
       setRoBERTaError(fetchedPredictions.message);
@@ -171,13 +163,8 @@ export default function Dashboard(props: DashboardProps) {
       return;
     }
 
-    // call function to combine fetched Resources with fetched Predictions
-
-    // improve handling and storage of prediction resource display!!
     const webResources = formattedResources.slice(0, -1);
-    console.log('webResources', webResources);
     const dbResources = formattedResources.slice(-1);
-    console.log('dbResources', dbResources);
     const conclusio = { contradict: 0, agree: 0 };
 
     const contradictions = [];
@@ -220,14 +207,11 @@ export default function Dashboard(props: DashboardProps) {
       }
     }
 
-    console.log('contra', contradictions);
-    console.log('agree', agreements);
-
     const contradictionsSearchIndex = new Fuse<FormattedResource>(
       contradictions,
       {
         includeScore: true,
-        threshold: 0.7,
+        threshold: 0.9,
         keys: ['title', 'promptSource'],
       },
     );
@@ -239,7 +223,7 @@ export default function Dashboard(props: DashboardProps) {
 
     const agreementsSearchIndex = new Fuse(agreements, {
       includeScore: true,
-      threshold: 0.7,
+      threshold: 0.9,
       keys: ['title', 'promptSource'],
     });
 
@@ -247,24 +231,22 @@ export default function Dashboard(props: DashboardProps) {
 
     const shuffledAgreements = arrayShuffle(agreementsSearchResults);
 
-    console.log('shuffled contra', shuffledContradictions);
-    console.log('shuffled agrees', shuffledAgreements);
-    console.log('conclusio', conclusio);
-
     const modelEvaluation = `The claim seems to ${
       conclusio.contradict > conclusio.agree ? 'contradict' : 'agree'
     } with the found sources (extent: ${
       conclusio.contradict > conclusio.agree
-        ? (conclusio.contradict / (conclusio.contradict + conclusio.agree)) *
-          100
-        : (conclusio.agree / (conclusio.contradict + conclusio.agree)) * 100
+        ? Math.round(
+            (conclusio.contradict / (conclusio.contradict + conclusio.agree)) *
+              100,
+          )
+        : Math.round(
+            (conclusio.agree / (conclusio.contradict + conclusio.agree)) * 100,
+          )
     }%)`;
 
     setEvaluation(modelEvaluation);
-
     setModelAgreements(shuffledAgreements);
     setModelContradictions(shuffledContradictions);
-
     setDisplayPredictions(true);
     setLoadingRoBERTa(false);
   }
@@ -272,7 +254,6 @@ export default function Dashboard(props: DashboardProps) {
   const handleTaglineMenuClick = (
     event: React.MouseEvent<HTMLButtonElement>,
   ) => {
-    console.log(event.currentTarget);
     setTaglineContextAnchorEl(event.currentTarget);
   };
 
@@ -282,323 +263,340 @@ export default function Dashboard(props: DashboardProps) {
 
   return (
     <>
-    <Head>
+      <Head>
         <title>Dashboard</title>
         <meta name="description" content="About the app" />
       </Head>
-    <main>
-      <Typography variant="h1">Check Claim</Typography>
+      <main>
+        <Typography variant="h1">Check Claim</Typography>
 
-      <div>
-        <section>
-          <Grid container spacing={2} sx={{ marginBottom: '40px' }}>
-            <Grid item md={6}>
-              <Box>
-                <Grid container spacing={2}>
-                  <Grid item md={8}>
-                    <TextField
-                      fullWidth
-                      label="Enter a claim"
-                      size="small"
-                      value={searchQuery}
-                      ref={searchQueryInput}
-                      onChange={(event) => {
-                        setSearchQuery(event.currentTarget.value);
-                      }}
-                    />
-                  </Grid>
-                  <Grid item md={4}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        gap: '10px',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <Button
-                        disabled={loadingResources}
-                        variant="contained"
-                        color="secondary"
-                        onClick={() => {
-                          setDisplayPredictions(false);
-                          setLoadingResources(true);
-                          // handleDBSearch();
-                          handleFetchResources().catch((error) => {
-                            console.log(
-                              'An error occured with one or more fetched resources',
-                              error,
-                            );
-                          });
+        <div>
+          <section>
+            <Grid container spacing={2} sx={{ marginBottom: '40px' }}>
+              <Grid item md={6}>
+                <Box>
+                  <Grid container spacing={2}>
+                    <Grid item md={8}>
+                      <TextField
+                        fullWidth
+                        label="Enter a claim"
+                        size="small"
+                        value={searchQuery}
+                        ref={searchQueryInput}
+                        onChange={(event) => {
+                          setSearchQuery(event.currentTarget.value);
+                        }}
+                      />
+                    </Grid>
+                    <Grid item md={4}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          gap: '10px',
+                          alignItems: 'center',
                         }}
                       >
-                        Search
-                      </Button>
-                      <Tooltip
-                        disableFocusListener
-                        title="The entered query will be used to fetch results from news outlets, fact check sites and knowledge bases."
-                      >
-                        <HelpIcon color="secondary" />
-                      </Tooltip>
-                    </Box>
+                        <Button
+                          disabled={loadingResources}
+                          variant="contained"
+                          color="secondary"
+                          onClick={() => {
+                            setDisplayPredictions(false);
+                            setLoadingResources(true);
+                            // handleDBSearch();
+                            handleFetchResources().catch((error) => {
+                              console.log(
+                                'An error occured with one or more fetched resources',
+                                error,
+                              );
+                            });
+                          }}
+                        >
+                          Search
+                        </Button>
+                        <Tooltip
+                          disableFocusListener
+                          title="The entered query will be used to fetch results from news outlets, fact check sites and knowledge bases."
+                        >
+                          <HelpIcon color="secondary" />
+                        </Tooltip>
+                      </Box>
+                    </Grid>
                   </Grid>
-                </Grid>
-              </Box>
-            </Grid>
-
-            <Grid item md={6} />
-          </Grid>
-          <Grid container spacing={2}>
-            <Grid item md={6}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  gap: '20px',
-                  alignItems: 'center',
-                  mb: '40px',
-                }}
-              >
-                <Typography>Check claim against search results</Typography>
-                <Button
-                  disabled={
-                    (formattedResources.length === 0 ? true : false) ||
-                    loadingRoBERTa
-                  }
-                  variant="contained"
-                  color="secondary"
-                  onClick={() => {
-                    setRoBERTaError('');
-                    setDisplayPredictions(false);
-                    setLoadingRoBERTa(true);
-                    handleGenerateRoBERTaPrompts().catch(() => {
-                      console.log(
-                        'An error occured trying to generate RoBERTa results',
-                      );
-                      setRoBERTaError('No valid response received');
-                      setLoadingRoBERTa(false);
-                    });
-                  }}
-                >
-                  Run
-                </Button>
-              </Box>
-            </Grid>
-            <Grid item md={6} />
-          </Grid>
-
-          {displayPredictions ? (
-            <>
-              <Typography>{evaluation}</Typography>
-              <Grid container spacing={2}>
-                <Grid item md={6}>
-                  <Typography
-                    variant="h3"
-                    component="h3"
-                    hidden={
-                      modelAgreements.length === 0 &&
-                      modelContradictions.length === 0
-                        ? true
-                        : false
-                    }
-                  >
-                    Taglines that{' '}
-                    <Box component="span" css={redTextHighlight}>
-                      contradict
-                    </Box>{' '}
-                    claim:
-                  </Typography>
-                  <List sx={{ width: '100%', maxWidth: 600 }}>
-                    {modelContradictions.map((source) => {
-                      return (
-                        <ListItem
-                          alignItems="flex-start"
-                          key={source.item.title}
-                          css={cardListItem}
-                        >
-                          <ListItemIcon>
-                            {source.item.fromDB ? (
-                              <StorageIcon />
-                            ) : (
-                              <FeedIcon />
-                            )}
-                          </ListItemIcon>
-
-                          <ListItemText
-                            primary={source.item.title}
-                            secondary={
-                              <Link
-                                href={source.item.url}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                {source.item.url}
-                              </Link>
-                            }
-                          />
-                          <IconButton
-                            aria-label="tagline-context-menu"
-                            onClick={handleTaglineMenuClick}
-                          >
-                            <MoreVertIcon />
-                          </IconButton>
-                          <Menu
-                            id="basic-menu"
-                            anchorEl={taglineContextAnchorEl}
-                            open={taglineContextIsOpen}
-                            onClose={handleTaglineMenuClose}
-                            MenuListProps={{
-                              'aria-labelledby': 'tagline-context-button',
-                            }}
-                          >
-                            <MenuItem disabled onClick={handleTaglineMenuClose}>
-                              Add to Database
-                            </MenuItem>
-                            <MenuItem disabled onClick={handleTaglineMenuClose}>
-                              Feedback on evaluation
-                            </MenuItem>
-                          </Menu>
-                        </ListItem>
-                      );
-                    })}
-                  </List>
-                </Grid>
-                <Grid item md={6}>
-                  <Typography
-                    variant="h3"
-                    component="h3"
-                    hidden={
-                      modelAgreements.length === 0 &&
-                      modelContradictions.length === 0
-                        ? true
-                        : false
-                    }
-                  >
-                    Taglines that{' '}
-                    <Box component="span" css={greenTextHighlight}>
-                      agree
-                    </Box>{' '}
-                    with claim:
-                  </Typography>
-                  <List sx={{ width: '100%', maxWidth: 600 }}>
-                    {modelAgreements.map((source) => {
-                      return (
-                        <ListItem
-                          alignItems="flex-start"
-                          key={source.item.title}
-                          css={cardListItem}
-                        >
-                          <ListItemIcon>
-                            <FeedIcon />
-                          </ListItemIcon>
-
-                          <ListItemText
-                            primary={source.item.title}
-                            secondary={
-                              <Link
-                                href={source.item.url}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                {source.item.url}
-                              </Link>
-                            }
-                          />
-                          <IconButton aria-label="tagline-context-menu">
-                            <MoreVertIcon />
-                          </IconButton>
-                          <Menu
-                            id="basic-menu"
-                            anchorEl={taglineContextAnchorEl}
-                            open={taglineContextIsOpen}
-                            onClose={handleTaglineMenuClose}
-                            MenuListProps={{
-                              'aria-labelledby': 'tagline-context-button',
-                            }}
-                          >
-                            <MenuItem disabled onClick={handleTaglineMenuClose}>
-                              Add to Database
-                            </MenuItem>
-                            <MenuItem disabled onClick={handleTaglineMenuClose}>
-                              Feedback on evaluation
-                            </MenuItem>
-                          </Menu>
-                        </ListItem>
-                      );
-                    })}
-                  </List>
-                </Grid>
+                </Box>
               </Grid>
-            </>
-          ) : null}
 
-          <div>
-            {loadingRoBERTa ? (
+              <Grid item md={6} />
+            </Grid>
+            <Grid container spacing={2}>
+              <Grid item md={6}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    gap: '20px',
+                    alignItems: 'center',
+                    mb: '40px',
+                  }}
+                >
+                  <Typography>Check claim against search results</Typography>
+                  <Button
+                    disabled={
+                      (formattedResources.length === 0 ? true : false) ||
+                      loadingRoBERTa
+                    }
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => {
+                      setRoBERTaError('');
+                      setDisplayPredictions(false);
+                      setLoadingRoBERTa(true);
+                      handleGenerateRoBERTaPrompts().catch(() => {
+                        console.log(
+                          'An error occured trying to generate RoBERTa results',
+                        );
+                        setRoBERTaError('No valid response received');
+                        setLoadingRoBERTa(false);
+                      });
+                    }}
+                  >
+                    Run
+                  </Button>
+                </Box>
+              </Grid>
+              <Grid item md={6} />
+            </Grid>
+
+            {displayPredictions ? (
               <>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-around',
-                    mb: '30px',
-                  }}
-                >
-                  <CircularIndeterminate />
-                </Box>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-around',
-                    mb: '30px',
-                  }}
-                >
-                  <Typography variant="body2" sx={{ mt: '10px' }}>
-                    This can take up to 15 seconds
-                  </Typography>
-                </Box>
-
-                <Grid container spacing={2} sx={{ mb: '40px' }}>
+                <Typography>{evaluation}</Typography>
+                <Grid container spacing={2}>
                   <Grid item md={6}>
-                    <Skeleton variant="text" />
+                    <Typography
+                      variant="h3"
+                      component="h3"
+                      hidden={
+                        modelAgreements.length === 0 &&
+                        modelContradictions.length === 0
+                          ? true
+                          : false
+                      }
+                    >
+                      Taglines that{' '}
+                      <Box component="span" css={redTextHighlight}>
+                        contradict
+                      </Box>{' '}
+                      claim:
+                    </Typography>
+                    <List sx={{ width: '100%', maxWidth: 600 }}>
+                      {modelContradictions.map((source) => {
+                        return (
+                          <ListItem
+                            alignItems="flex-start"
+                            key={source.item.title}
+                            css={cardListItem}
+                          >
+                            <ListItemIcon>
+                              {source.item.fromDB ? (
+                                <StorageIcon />
+                              ) : (
+                                <FeedIcon />
+                              )}
+                            </ListItemIcon>
+
+                            <ListItemText
+                              primary={source.item.title}
+                              secondary={
+                                <Link
+                                  href={source.item.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                >
+                                  {source.item.url}
+                                </Link>
+                              }
+                            />
+                            <IconButton
+                              aria-label="tagline-context-menu"
+                              onClick={handleTaglineMenuClick}
+                            >
+                              <MoreVertIcon />
+                            </IconButton>
+                            <Menu
+                              id="basic-menu"
+                              anchorEl={taglineContextAnchorEl}
+                              open={taglineContextIsOpen}
+                              onClose={handleTaglineMenuClose}
+                              MenuListProps={{
+                                'aria-labelledby': 'tagline-context-button',
+                              }}
+                            >
+                              <MenuItem
+                                disabled
+                                onClick={handleTaglineMenuClose}
+                              >
+                                Add to Database
+                              </MenuItem>
+                              <MenuItem
+                                disabled
+                                onClick={handleTaglineMenuClose}
+                              >
+                                Feedback on evaluation
+                              </MenuItem>
+                            </Menu>
+                          </ListItem>
+                        );
+                      })}
+                    </List>
                   </Grid>
                   <Grid item md={6}>
-                    <Skeleton variant="text" />
+                    <Typography
+                      variant="h3"
+                      component="h3"
+                      hidden={
+                        modelAgreements.length === 0 &&
+                        modelContradictions.length === 0
+                          ? true
+                          : false
+                      }
+                    >
+                      Taglines that{' '}
+                      <Box component="span" css={greenTextHighlight}>
+                        agree
+                      </Box>{' '}
+                      with claim:
+                    </Typography>
+                    <List sx={{ width: '100%', maxWidth: 600 }}>
+                      {modelAgreements.map((source) => {
+                        return (
+                          <ListItem
+                            alignItems="flex-start"
+                            key={source.item.title}
+                            css={cardListItem}
+                          >
+                            <ListItemIcon>
+                              <FeedIcon />
+                            </ListItemIcon>
+
+                            <ListItemText
+                              primary={source.item.title}
+                              secondary={
+                                <Link
+                                  href={source.item.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                >
+                                  {source.item.url}
+                                </Link>
+                              }
+                            />
+                            <IconButton aria-label="tagline-context-menu">
+                              <MoreVertIcon />
+                            </IconButton>
+                            <Menu
+                              id="basic-menu"
+                              anchorEl={taglineContextAnchorEl}
+                              open={taglineContextIsOpen}
+                              onClose={handleTaglineMenuClose}
+                              MenuListProps={{
+                                'aria-labelledby': 'tagline-context-button',
+                              }}
+                            >
+                              <MenuItem
+                                disabled
+                                onClick={handleTaglineMenuClose}
+                              >
+                                Add to Database
+                              </MenuItem>
+                              <MenuItem
+                                disabled
+                                onClick={handleTaglineMenuClose}
+                              >
+                                Feedback on evaluation
+                              </MenuItem>
+                            </Menu>
+                          </ListItem>
+                        );
+                      })}
+                    </List>
                   </Grid>
                 </Grid>
               </>
             ) : null}
-          </div>
-          {roBERTaError !== '' ? <p>{roBERTaError}</p> : null}
-        </section>
-        {loadingResources ? (
-          <Box
-            sx={{ display: 'flex', justifyContent: 'space-around', mb: '20px' }}
-          >
-            <CircularIndeterminate />
-          </Box>
-        ) : null}
-        {formattedResources.length === 0 ? null : (
-          <Box sx={{ flexGrow: 1, mb: '30px' }}>
-            <Grid container spacing={2}>
-              <Grid item sm={12} md={4}>
-                <DatabaseWidget contents={dbClaimsSearchResults} />
-              </Grid>
-              <Grid item sm={12} md={8}>
-                <FactCheckToolWidget contents={formattedResources[0]} />
-              </Grid>
-              <Grid item sm={12} md={8}>
-                <NewsWidget contents={formattedResources[3]} />
-              </Grid>
-              <Grid item sm={12} md={4}>
-                <WikipediaWidget contents={formattedResources[2]} />
-              </Grid>
-            </Grid>
-          </Box>
-        )}
 
-        {/* <SearchEngineWidget
+            <div>
+              {loadingRoBERTa ? (
+                <>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-around',
+                      mb: '30px',
+                    }}
+                  >
+                    <CircularIndeterminate />
+                  </Box>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-around',
+                      mb: '30px',
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ mt: '10px' }}>
+                      This can take up to 15 seconds
+                    </Typography>
+                  </Box>
+
+                  <Grid container spacing={2} sx={{ mb: '40px' }}>
+                    <Grid item md={6}>
+                      <Skeleton variant="text" />
+                    </Grid>
+                    <Grid item md={6}>
+                      <Skeleton variant="text" />
+                    </Grid>
+                  </Grid>
+                </>
+              ) : null}
+            </div>
+            {roBERTaError !== '' ? <p>{roBERTaError}</p> : null}
+          </section>
+          {loadingResources ? (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-around',
+                mb: '20px',
+              }}
+            >
+              <CircularIndeterminate />
+            </Box>
+          ) : null}
+          {formattedResources.length === 0 ? null : (
+            <Box sx={{ flexGrow: 1, mb: '30px' }}>
+              <Grid container spacing={2}>
+                <Grid item sm={12} md={4}>
+                  <DatabaseWidget contents={dbClaimsSearchResults} />
+                </Grid>
+                <Grid item sm={12} md={8}>
+                  <FactCheckToolWidget contents={formattedResources[0]} />
+                </Grid>
+                <Grid item sm={12} md={8}>
+                  <NewsWidget contents={formattedResources[3]} />
+                </Grid>
+                <Grid item sm={12} md={4}>
+                  <WikipediaWidget contents={formattedResources[2]} />
+                </Grid>
+              </Grid>
+            </Box>
+          )}
+
+          {/* <SearchEngineWidget
           query={searchQuery}
           contents={formattedResources.slice(1, 2)}
         /> */}
-      </div>
-    </main></>
+        </div>
+      </main>
+    </>
   );
 }
 
