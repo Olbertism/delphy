@@ -56,7 +56,7 @@ function stableSort(array, comparator) {
 const headCells = [
   {
     id: 'id',
-    numeric: false,
+    numeric: true,
     disablePadding: true,
     label: 'Id',
   },
@@ -88,11 +88,11 @@ const headCells = [
 
 function EnhancedTableHead(props) {
   const {
-    onSelectAllClick,
+    // onSelectAllClick,
     order,
     orderBy,
-    numSelected,
-    rowCount,
+    // numSelected,
+    // rowCount,
     onRequestSort,
   } = props;
   const createSortHandler = (property) => (event) => {
@@ -102,7 +102,6 @@ function EnhancedTableHead(props) {
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="checkbox"></TableCell>
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
@@ -130,12 +129,12 @@ function EnhancedTableHead(props) {
 }
 
 EnhancedTableHead.propTypes = {
-  numSelected: PropTypes.number.isRequired,
+  // numSelected: PropTypes.number.isRequired,
   onRequestSort: PropTypes.func.isRequired,
-  onSelectAllClick: PropTypes.func.isRequired,
+  // onSelectAllClick: PropTypes.func.isRequired,
   order: PropTypes.oneOf(['asc', 'desc']).isRequired,
   orderBy: PropTypes.string.isRequired,
-  rowCount: PropTypes.number.isRequired,
+  // rowCount: PropTypes.number.isRequired,
 };
 
 const EnhancedTableToolbar = (props) => {
@@ -197,7 +196,6 @@ EnhancedTableToolbar.propTypes = {
 };
 
 export default function ReviewsTable(props) {
-  console.log(props.reviews)
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState('calories');
   const [selected, setSelected] = React.useState([]);
@@ -209,6 +207,26 @@ export default function ReviewsTable(props) {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
+  };
+
+  const handleClick = (event, name) => {
+    const selectedIndex = selected.indexOf(name);
+    let newSelected = [];
+
+    if (selectedIndex === -1) {
+      newSelected = newSelected.concat(selected, name);
+    } else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(selected.slice(1));
+    } else if (selectedIndex === selected.length - 1) {
+      newSelected = newSelected.concat(selected.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(
+        selected.slice(0, selectedIndex),
+        selected.slice(selectedIndex + 1),
+      );
+    }
+
+    setSelected(newSelected);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -259,12 +277,13 @@ export default function ReviewsTable(props) {
                   return (
                     <TableRow
                       hover
+                      onClick={(event) => handleClick(event, review.reviewId)}
                       tabIndex={-1}
                       key={review.reviewId}
                       selected={isItemSelected}
                     >
-                      <TableCell padding="checkbox"></TableCell>
                       <TableCell
+                        align="right"
                         component="th"
                         id={labelId}
                         scope="row"
@@ -277,7 +296,9 @@ export default function ReviewsTable(props) {
                           {review.reviewTitle}
                         </Link>
                       </TableCell>
-                      <TableCell align="right">{formatDate(review.reviewAdded)}</TableCell>
+                      <TableCell align="right">
+                        {formatDate(review.reviewAdded)}
+                      </TableCell>
                       <TableCell align="right">
                         <Link href={`/users/${review.username}`}>
                           {review.username}

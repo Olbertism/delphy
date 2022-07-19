@@ -36,9 +36,11 @@ export default async function handler(
       return;
     }
 
-    if (claim.username !== user.username) {
-      res.status(400).json({ errors: [{ message: 'Access denied' }] });
-      return;
+    if (!user.roles || !user.roles.includes('admin')) {
+      if (claim.username !== user.username) {
+        res.status(400).json({ errors: [{ message: 'Access denied' }] });
+        return;
+      }
     }
 
     const deletedClaim = await deleteClaimById(req.body.id);

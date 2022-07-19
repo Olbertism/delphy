@@ -39,6 +39,7 @@ const sql = connectOneTimeToDatabase();
 type User = {
   id: number;
   username: string;
+  roles: string[] | null;
 };
 
 type UserWithPasswordHash = User & {

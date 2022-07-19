@@ -35,10 +35,13 @@ export default async function handler(
       return;
     }
 
-    if (review.username !== user.username) {
-      res.status(400).json({ errors: [{ message: 'Access denied' }] });
-      return;
+    if (!user.roles || !user.roles.includes('admin')) {
+      if (review.username !== user.username) {
+        res.status(400).json({ errors: [{ message: 'Access denied' }] });
+        return;
+      }
     }
+
 
     const deletedReview = await deleteReviewById(req.body.id)
     res.status(200).json({ deletedReview: deletedReview });

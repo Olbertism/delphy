@@ -412,7 +412,7 @@ export default function ClaimPage(props: Props) {
             <Typography>No labels associated</Typography>
           )}
         </Box>
-        {props.claim.username === props.user.username ? (
+        {props.claim.username === props.user.username || (props.user.roles && props.user.roles.includes("admin")) ? (
 
           <DeleteEntryInterface id={props.claim.claimId} type="claim" />
 
@@ -676,7 +676,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       notFound: true,
     };
   }
-
+  console.log(user)
   const verdicts = await getAllVerdicts();
 
   const author = await checkIfAuthorExists(user.id);

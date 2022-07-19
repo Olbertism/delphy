@@ -108,9 +108,9 @@ export default function ReviewPage(props: ReviewPageProps) {
         ) : (
           <Typography>No sources given</Typography>
         )}
-        {props.review.username === props.user.username ? (
+        {props.review.username === props.user.username || (props.user.roles && "admin" in props.user.roles) ? (
           <DeleteEntryInterface id={props.review.reviewId} type='review' />
-          
+
         ) : null}
       </main>
     </>

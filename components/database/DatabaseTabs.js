@@ -57,7 +57,7 @@ export default function BasicTabs(props) {
           aria-label="Tabs for claims and reviews"
         >
           <Tab label="Claims" {...a11yProps(0)} />
-          <Tab label="Review" {...a11yProps(1)} />
+          <Tab label="Reviews" {...a11yProps(1)} />
         </Tabs>
       </Box>
       <TabPanel value={value} index={0}>

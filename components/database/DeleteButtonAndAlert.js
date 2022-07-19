@@ -52,7 +52,7 @@ export default function DeleteEntryInterface(props) {
                 deletedEntry = await handleDeleteReview(props.id);
               }
               if (deletedEntry) {
-                router.push('/database');
+                router.push('/database').catch(() => {});
                 handleClose();
               }
 

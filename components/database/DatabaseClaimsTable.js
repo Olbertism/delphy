@@ -2,7 +2,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { Button } from '@mui/material';
 import Box from '@mui/material/Box';
-import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
@@ -23,7 +22,6 @@ import { visuallyHidden } from '@mui/utils';
 import Link from 'next/link';
 import PropTypes from 'prop-types';
 import * as React from 'react';
-import { tableHeaderStyles } from '../../styles/customStyles';
 import formatDate from '../../util/formatDate';
 
 function descendingComparator(a, b, orderBy) {
@@ -91,11 +89,11 @@ const headCells = [
 
 function EnhancedTableHead(props) {
   const {
-    onSelectAllClick,
+    // onSelectAllClick,
     order,
     orderBy,
-    numSelected,
-    rowCount,
+    // numSelected,
+    // rowCount,
     onRequestSort,
   } = props;
   console.log('Enhanced head props', props);
@@ -119,14 +117,12 @@ function EnhancedTableHead(props) {
         </TableCell> */}
         {headCells.map((headCell) => (
           <TableCell
-            sx={tableHeaderStyles}
             key={headCell.id}
             align={headCell.numeric ? 'right' : 'left'}
             padding={headCell.disablePadding ? 'none' : 'normal'}
             sortDirection={orderBy === headCell.id ? order : false}
           >
             <TableSortLabel
-              sx={tableHeaderStyles}
               active={orderBy === headCell.id}
               direction={orderBy === headCell.id ? order : 'asc'}
               onClick={createSortHandler(headCell.id)}
@@ -151,7 +147,7 @@ EnhancedTableHead.propTypes = {
   // onSelectAllClick: PropTypes.func.isRequired,
   order: PropTypes.oneOf(['asc', 'desc']).isRequired,
   orderBy: PropTypes.string.isRequired,
-  rowCount: PropTypes.number.isRequired,
+  // rowCount: PropTypes.number.isRequired,
 };
 
 const EnhancedTableToolbar = (props) => {
@@ -159,20 +155,17 @@ const EnhancedTableToolbar = (props) => {
 
   return (
     <Toolbar
-      sx={[
-        tableHeaderStyles,
-        {
-          pl: { sm: 2 },
-          pr: { xs: 1, sm: 1 },
-          ...(numSelected > 0 && {
-            bgcolor: (theme) =>
-              alpha(
-                theme.palette.primary.main,
-                theme.palette.action.activatedOpacity,
-              ),
-          }),
-        },
-      ]}
+      sx={{
+        pl: { sm: 2 },
+        pr: { xs: 1, sm: 1 },
+        ...(numSelected > 0 && {
+          bgcolor: (theme) =>
+            alpha(
+              theme.palette.primary.main,
+              theme.palette.action.activatedOpacity,
+            ),
+        }),
+      }}
     >
       {numSelected > 0 ? (
         <Typography
@@ -203,7 +196,7 @@ const EnhancedTableToolbar = (props) => {
       ) : (
         <Tooltip title="Filter list">
           <IconButton>
-            <FilterListIcon sx={{tableHeaderStyles}}/>
+            <FilterListIcon />
           </IconButton>
         </Tooltip>
       )}
@@ -216,9 +209,6 @@ EnhancedTableToolbar.propTypes = {
 };
 
 export default function ClaimsTable(props) {
-
-  
-
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState('id');
   const [selected, setSelected] = React.useState([]);
@@ -237,14 +227,14 @@ export default function ClaimsTable(props) {
     setOrderBy(property);
   };
 
-  const handleSelectAllClick = (event) => {
+  /*   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
       const newSelecteds = props.claims.map((n) => n.id);
       setSelected(newSelecteds);
       return;
     }
     setSelected([]);
-  };
+  }; */
 
   const handleClick = (event, name) => {
     const selectedIndex = selected.indexOf(name);
@@ -288,9 +278,7 @@ export default function ClaimsTable(props) {
   return (
     <Box sx={{ width: '100%' }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
-        <EnhancedTableToolbar
-          numSelected={selected.length}
-        />
+        <EnhancedTableToolbar numSelected={selected.length} />
         <TableContainer>
           <Table
             sx={{ minWidth: 750 }}
@@ -318,7 +306,7 @@ export default function ClaimsTable(props) {
                     <TableRow
                       hover
                       onClick={(event) => handleClick(event, claim.claimId)}
-                      role="checkbox"
+                      // role="checkbox"
                       aria-checked={isItemSelected}
                       tabIndex={-1}
                       key={claim.claimId}
