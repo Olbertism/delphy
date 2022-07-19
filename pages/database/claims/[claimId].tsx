@@ -26,8 +26,10 @@ import {
 } from '@mui/material';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 // import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import DeleteEntryInterface from '../../../components/database/DeleteButtonAndAlert';
 import { theme } from '../../../styles/theme';
 import {
   checkAuthorClaimRating,
@@ -40,6 +42,7 @@ import formatDate from '../../../util/formatDate';
 import {
   Author,
   DatabaseClaim,
+  DeleteRequestBody,
   RatingRequestbody,
   ReviewRequestbody,
   SourceRequestbody,
@@ -54,8 +57,25 @@ type Props = {
   verdicts: Verdict[];
   rating: number | (() => number | null) | null;
 };
+
+const handleDeleteClaim = async (claimId: number) => {
+  const requestbody: DeleteRequestBody = {
+    id: claimId,
+  };
+  const response = await fetch('/api/deleteClaim', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestbody),
+  });
+  const deletedClaim = await response.json();
+  return deletedClaim;
+};
+
 export default function ClaimPage(props: Props) {
-  console.log(props);
+  const router = useRouter();
+
   const [authorId, setAuthorId] = useState<number | undefined>(
     props.author === null ? undefined : props.author.id,
   );
@@ -90,7 +110,7 @@ export default function ClaimPage(props: Props) {
   const [userRated, setUserRated] = useState(false);
 
   console.log('errors', errors);
-  console.log('selectedRating', selectedRating);
+
   console.log('ratings', ratings);
   console.log('avgRating', avgRating);
 
@@ -126,14 +146,6 @@ export default function ClaimPage(props: Props) {
     }
     calculateRating();
   }, [ratings]);
-
-  /* function calculateRating() {
-    if (!ratings) {
-      return 0;
-    }
-    const averageRating = ratings.reduce((a, b) => a + b, 0) / ratings.length;
-    return averageRating;
-  } */
 
   const handleAuthorCreation = async () => {
     const response = await fetch('/api/createAuthor');
@@ -401,9 +413,9 @@ export default function ClaimPage(props: Props) {
           )}
         </Box>
         {props.claim.username === props.user.username ? (
-          <Button color="error" variant="outlined" sx={{ mb: '30px' }}>
-            Delete claim
-          </Button>
+
+          <DeleteEntryInterface id={props.claim.claimId} type="claim" />
+
         ) : null}
         <Dialog
           fullWidth

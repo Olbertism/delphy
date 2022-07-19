@@ -1,7 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import {
-  deleteReviewById,
-  getReviewByIdWithUsername,
+  deleteClaimById,
+  getClaimById,
+  getClaimByIdWithUsername,
   getUserByValidSessionToken,
 } from '../../util/database/database';
 
@@ -28,20 +29,21 @@ export default async function handler(
       return;
     }
 
-    const review = await getReviewByIdWithUsername(req.body.id);
+    const claim = await getClaimByIdWithUsername(req.body.id);
 
-    if (!review) {
+    if (!claim) {
       res.status(400).json({ errors: [{ message: 'An error occured' }] });
       return;
     }
 
-    if (review.username !== user.username) {
+    if (claim.username !== user.username) {
       res.status(400).json({ errors: [{ message: 'Access denied' }] });
       return;
     }
 
-    const deletedReview = await deleteReviewById(req.body.id)
-    res.status(200).json({ deletedReview: deletedReview });
+    const deletedClaim = await deleteClaimById(req.body.id);
+
+    res.status(200).json({ deletedClaim: deletedClaim });
   } else {
     res.status(405).json({ errors: [{ message: 'Method not allowed' }] });
   }

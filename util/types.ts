@@ -203,6 +203,6 @@ export type FormattedResource = {
   fromDB?: boolean;
 };
 
-export type DeleteReviewRequestBody = {
+export type DeleteRequestBody = {
   id: number
 }

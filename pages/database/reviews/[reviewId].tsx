@@ -10,12 +10,13 @@ import {
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
+import DeleteEntryInterface from '../../../components/database/DeleteButtonAndAlert';
 import {
   getReviewWithAllRelationsById,
   getUserByValidSessionToken,
 } from '../../../util/database/database';
 import formatDate from '../../../util/formatDate';
-import { DatabaseReview, DeleteReviewRequestBody } from '../../../util/types';
+import { DatabaseReview, DeleteRequestBody } from '../../../util/types';
 
 type ReviewPageProps = {
   review: DatabaseReview;
@@ -23,7 +24,7 @@ type ReviewPageProps = {
 };
 
 const handleDeleteReview = async (reviewId: number) => {
-  const requestbody: DeleteReviewRequestBody = {
+  const requestbody: DeleteRequestBody = {
     id: reviewId,
   };
   const response = await fetch('/api/deleteReview', {
@@ -38,8 +39,9 @@ const handleDeleteReview = async (reviewId: number) => {
 };
 
 export default function ReviewPage(props: ReviewPageProps) {
+
   const router = useRouter();
-  console.log(props);
+
   return (
     <>
       <Head>
@@ -107,21 +109,8 @@ export default function ReviewPage(props: ReviewPageProps) {
           <Typography>No sources given</Typography>
         )}
         {props.review.username === props.user.username ? (
-          <Button
-            onClick={async () => {
-              const deletedReview = await handleDeleteReview(
-                props.review.reviewId,
-              );
-              if (deletedReview) {
-                router.push('/database');
-              }
-            }}
-            color="error"
-            variant="outlined"
-            sx={{ mb: '30px' }}
-          >
-            Delete review
-          </Button>
+          <DeleteEntryInterface id={props.review.reviewId} type='review' />
+          
         ) : null}
       </main>
     </>

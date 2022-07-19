@@ -301,6 +301,22 @@ WHERE
   );
 }
 
+export async function getClaimByIdWithUsername(claimId: number) {
+  const [claim] = await sql<[Claim | undefined]>`
+
+    SELECT
+    claims.id AS claim_id,
+    users.username AS username
+    FROM
+    claims, users, authors
+    WHERE
+    claims.id = ${claimId} AND
+    users.id = authors.user_id AND
+    authors.id = claims.author_id;
+  `;
+  return claim && camelcaseKeys(claim);
+}
+
 export async function getClaimWithAllRelationsById(claimId: number) {
   const [claim] = await sql<[Claim | undefined]>`
 
@@ -410,6 +426,21 @@ WHERE
       deep: true,
     }),
   );
+}
+
+export async function getReviewByIdWithUsername(reviewId: number) {
+  const [review] = await sql<[Review | undefined]>`
+    SELECT
+    reviews.id AS review_id,
+    users.username AS username
+    FROM
+    reviews, users, authors
+    WHERE
+    reviews.id = ${reviewId} AND
+    reviews.author_id = authors.id AND
+    authors.user_id = users.id;
+  `;
+  return review && camelcaseKeys(review);
 }
 
 export async function getReviewWithAllRelationsById(reviewId: number) {
