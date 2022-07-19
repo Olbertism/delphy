@@ -27,8 +27,8 @@ export default async function handler(
       res.status(400).json({ errors: [{ message: 'Invalid session token' }] });
       return;
     }
-    
-    const label = await createLabel(req.body.newLabel)
+
+    const label = await createLabel(req.body.newLabel);
     res.status(200).json({ label: label });
   } else {
     res.status(405).json({ errors: [{ message: 'Method not allowed' }] });

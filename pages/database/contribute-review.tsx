@@ -2,6 +2,7 @@ import { AddCircle, Save } from '@mui/icons-material';
 import {
   Alert,
   Autocomplete,
+  Box,
   Button,
   FormControl,
   IconButton,
@@ -16,7 +17,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { Box } from '@mui/system';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import { useEffect, useState } from 'react';

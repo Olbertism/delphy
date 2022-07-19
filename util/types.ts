@@ -204,5 +204,5 @@ export type FormattedResource = {
 };
 
 export type DeleteRequestBody = {
-  id: number
-}
+  id: number;
+};

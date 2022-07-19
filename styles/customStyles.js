@@ -51,7 +51,6 @@ export const tableHeaderStyles = css`
   svg:focus-visible {
     color: ${theme.palette.secondary.main}!important;
   }
-
 `;
 
 export const redTextHighlight = css`

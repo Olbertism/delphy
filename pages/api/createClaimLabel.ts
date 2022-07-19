@@ -28,7 +28,10 @@ export default async function handler(
       return;
     }
 
-    const claimLabel = await createClaimLabelPair(req.body.claimId, req.body.labelId)
+    const claimLabel = await createClaimLabelPair(
+      req.body.claimId,
+      req.body.labelId,
+    );
     res.status(200).json({ claimLabel: claimLabel });
   } else {
     res.status(405).json({ errors: [{ message: 'Method not allowed' }] });

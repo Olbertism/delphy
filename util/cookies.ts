@@ -1,8 +1,8 @@
 import cookie from 'cookie';
 
 export function createSerializedRegisterSessionTokenCookie(token: string) {
-  const isProduction = process.env.NODE_ENV === 'production' // this comes from next.js
-  const maxAge = 60 * 60 * 24 // 24h in seconds
+  const isProduction = process.env.NODE_ENV === 'production'; // this comes from next.js
+  const maxAge = 60 * 60 * 24; // 24h in seconds
 
   return cookie.serialize('sessionToken', token, {
     maxAge: maxAge, // for new browsers
@@ -10,6 +10,6 @@ export function createSerializedRegisterSessionTokenCookie(token: string) {
     httpOnly: true,
     secure: isProduction,
     path: '/',
-    sameSite: 'lax' // to prevent cross site request forgery
-  })
+    sameSite: 'lax', // to prevent cross site request forgery
+  });
 }

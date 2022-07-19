@@ -28,7 +28,11 @@ export default async function handler(
       return;
     }
 
-    const rating = await createRating(req.body.claimId, req.body.ratingValue, req.body.authorId)
+    const rating = await createRating(
+      req.body.claimId,
+      req.body.ratingValue,
+      req.body.authorId,
+    );
     res.status(200).json({ rating: rating });
   } else {
     res.status(405).json({ errors: [{ message: 'Method not allowed' }] });

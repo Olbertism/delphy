@@ -12,7 +12,7 @@ export default function FooterBar(props) {
     <footer
       // position={ props.landingPage ? "fixed" : "absolute" }
       style={{
-        backgroundColor: theme.palette.primary.main ,
+        backgroundColor: theme.palette.primary.main,
         position: props.landingPage ? 'fixed' : 'absolute',
         left: props.landingPage ? 0 : 'none',
         bottom: props.landingPage ? 0 : 'none',

@@ -14,7 +14,6 @@ export default async function handler(
 
   // dev URL
   // const apiBaseUrl = `http://127.0.0.1:5000/predict`;
-  // prod URL NOT WORKING!
 
   const servicekeybuffer = await readFile('google-credentials.json');
   const servicekey = JSON.parse(servicekeybuffer.toString());
@@ -47,21 +46,18 @@ export default async function handler(
   // presumed type def: <AIPlatform.protos.google.cloud.aiplatform.v1.IPredictResponse>
   // not found...
 
-  const { data }: any =
-    await client.request(
-      {
-        url:
-          'https://europe-west1-aiplatform.googleapis.com/v1/' +
-          `projects/${process.env.PROJECT_ID}/locations/europe-west1/endpoints/${process.env.ENDPOINT_ID}` +
-          ':predict',
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        data: {
-          instances: instances,
-          parameters,
-        },
-      },
-    );
+  const { data }: any = await client.request({
+    url:
+      'https://europe-west1-aiplatform.googleapis.com/v1/' +
+      `projects/${process.env.PROJECT_ID}/locations/europe-west1/endpoints/${process.env.ENDPOINT_ID}` +
+      ':predict',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: {
+      instances: instances,
+      parameters,
+    },
+  });
 
   console.log('data:', data);
   const predictions = data.predictions;

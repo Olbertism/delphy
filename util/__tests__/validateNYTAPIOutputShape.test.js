@@ -10,15 +10,13 @@ test('fetch NYT API resources, check output shape', async () => {
   return getResources(
     `https://api.nytimes.com/svc/search/v2/articlesearch.json?q=${encodeURIComponent(
       'unit test',
-    )}&api-key=${
-      process.env.NYTAPI
-    }`,
+    )}&api-key=${process.env.NYTAPI}`,
   ).then((data) => {
     // console.log(data);
 
     expect(data).toEqual(expect.any(Object));
     expect(data).toHaveProperty('response');
-    expect(data.response).toHaveProperty('docs')
+    expect(data.response).toHaveProperty('docs');
     expect(data.response.docs).toEqual(expect.any(Array));
     expect(data.response.docs[0]).toHaveProperty('abstract');
 

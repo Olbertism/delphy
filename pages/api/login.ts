@@ -49,12 +49,17 @@ export default async function handler(
     const userId = userWithHash.id;
     const username = userWithHash.username;
 
-    const token = crypto.randomBytes(80).toString('base64')
-    const session = await createSession(token, userId)
+    const token = crypto.randomBytes(80).toString('base64');
+    const session = await createSession(token, userId);
 
-    const serializedCookie = await createSerializedRegisterSessionTokenCookie(session.token)
+    const serializedCookie = await createSerializedRegisterSessionTokenCookie(
+      session.token,
+    );
 
-    res.status(200).setHeader("set-Cookie", serializedCookie).json({ user: { id: userId, username: username } });
+    res
+      .status(200)
+      .setHeader('set-Cookie', serializedCookie)
+      .json({ user: { id: userId, username: username } });
   } else {
     res.status(405).json({ errors: [{ message: 'Method not allowed' }] });
   }

@@ -17,7 +17,7 @@ export default async function handler(
       return;
     }
     // get user from the token
-    console.log("Calling getUserBy.. from profile api")
+    console.log('Calling getUserBy.. from profile api');
     const user = await getUserByValidSessionToken(token);
 
     if (!user) {

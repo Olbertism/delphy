@@ -28,8 +28,12 @@ export default async function handler(
       return;
     }
 
-    console.log(req.body)
-    const claim = await createClaim(req.body.title, req.body.description, req.body.authorId)
+    console.log(req.body);
+    const claim = await createClaim(
+      req.body.title,
+      req.body.description,
+      req.body.authorId,
+    );
     res.status(200).json({ claim: claim });
   } else {
     res.status(405).json({ errors: [{ message: 'Method not allowed' }] });

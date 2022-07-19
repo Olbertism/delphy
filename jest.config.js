@@ -4,8 +4,7 @@ module.exports = {
   testEnvironment: 'node',
   transform: {
     '^.+\\.ts?$': 'ts-jest',
-    "^.+\\.(js|jsx)$": "babel-jest"
+    '^.+\\.(js|jsx)$': 'babel-jest',
   },
-  setupFilesAfterEnv: ['./jest.setup.js']
-
+  setupFilesAfterEnv: ['./jest.setup.js'],
 };

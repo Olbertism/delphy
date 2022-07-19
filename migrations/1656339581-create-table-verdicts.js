@@ -1,4 +1,3 @@
-
 exports.up = async (sql) => {
   await sql`
     CREATE TABLE verdicts (

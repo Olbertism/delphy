@@ -1,4 +1,2 @@
-
-
-const {loadEnvConfig} = require('@next/env')
-loadEnvConfig(process.cwd())
+const { loadEnvConfig } = require('@next/env');
+loadEnvConfig(process.cwd());

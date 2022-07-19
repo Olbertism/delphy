@@ -42,8 +42,7 @@ export default async function handler(
       }
     }
 
-
-    const deletedReview = await deleteReviewById(req.body.id)
+    const deletedReview = await deleteReviewById(req.body.id);
     res.status(200).json({ deletedReview: deletedReview });
   } else {
     res.status(405).json({ errors: [{ message: 'Method not allowed' }] });

@@ -1,11 +1,11 @@
 import {
+  Box,
   Button,
   Card,
   CardActions,
   CardContent,
   Typography,
 } from '@mui/material';
-import { Box } from '@mui/system';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import {
@@ -86,7 +86,7 @@ export default function PublicUserProfile(props: ProfilePageProps) {
                   <CardActions>
                     <Button
                       size="small"
-                      href={`/database/claims/${review.reviewId}`}
+                      href={`/database/reviews/${review.reviewId}`}
                     >
                       Go to review
                     </Button>

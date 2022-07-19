@@ -16,7 +16,7 @@ test('fetch Guardian API resources, check output shape', async () => {
 
     expect(data).toEqual(expect.any(Object));
     expect(data).toHaveProperty('response');
-    expect(data.response).toHaveProperty('results')
+    expect(data.response).toHaveProperty('results');
     expect(data.response.results).toEqual(expect.any(Array));
     expect(data.response.results[0]).toHaveProperty('webTitle');
 

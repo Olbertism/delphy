@@ -44,8 +44,9 @@ export default function ResponsiveAppBar(props) {
   return (
     <AppBar
       position="static"
-      sx={props.landingPage ? { position: "fixed", zIndex: "99" } : { mb: '30px' }}
-
+      sx={
+        props.landingPage ? { position: 'fixed', zIndex: '99' } : { mb: '30px' }
+      }
     >
       <Container maxWidth="xl">
         <Toolbar disableGutters>

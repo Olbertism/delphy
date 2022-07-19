@@ -28,8 +28,14 @@ export default async function handler(
       return;
     }
 
-    console.log(req.body)
-    const review = await createReview(req.body.title, req.body.description, req.body.authorId, req.body.claimId, req.body.verdictId)
+    console.log(req.body);
+    const review = await createReview(
+      req.body.title,
+      req.body.description,
+      req.body.authorId,
+      req.body.claimId,
+      req.body.verdictId,
+    );
     res.status(200).json({ review: review });
   } else {
     res.status(405).json({ errors: [{ message: 'Method not allowed' }] });
