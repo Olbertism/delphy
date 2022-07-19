@@ -1,18 +1,18 @@
 import cookie from 'cookie';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
-import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { deleteSessionByToken } from '../util/database/database';
 
 type Props = {
   refreshUserProfile: () => Promise<void>;
 };
 export default function Logout(props: Props) {
-  const refreshUserProfile = props.refreshUserProfile
+  const refreshUserProfile = props.refreshUserProfile;
   useEffect(() => {
-    refreshUserProfile()
-      .catch(() => console.log('refresh user profile failed'));
+    refreshUserProfile().catch(() =>
+      console.log('refresh user profile failed'),
+    );
   }, [refreshUserProfile]);
   return (
     <div>

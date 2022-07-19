@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import {
   deleteClaimById,
-  getClaimById,
   getClaimByIdWithUsername,
   getUserByValidSessionToken,
 } from '../../util/database/database';

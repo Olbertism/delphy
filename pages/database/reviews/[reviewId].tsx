@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   Link,
   List,
   ListItem,
@@ -9,38 +8,20 @@ import {
 } from '@mui/material';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
-import { useRouter } from 'next/router';
 import DeleteEntryInterface from '../../../components/database/DeleteButtonAndAlert';
 import {
   getReviewWithAllRelationsById,
   getUserByValidSessionToken,
 } from '../../../util/database/database';
 import formatDate from '../../../util/formatDate';
-import { DatabaseReview, DeleteRequestBody } from '../../../util/types';
+import { DatabaseReview } from '../../../util/types';
 
 type ReviewPageProps = {
   review: DatabaseReview;
   user: { id: number; username: string; roles: string[] | null };
 };
 
-const handleDeleteReview = async (reviewId: number) => {
-  const requestbody: DeleteRequestBody = {
-    id: reviewId,
-  };
-  const response = await fetch('/api/deleteReview', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(requestbody),
-  });
-  const deletedReview = await response.json();
-  return deletedReview;
-};
-
 export default function ReviewPage(props: ReviewPageProps) {
-  const router = useRouter();
-
   return (
     <>
       <Head>

@@ -26,8 +26,6 @@ import {
 } from '@mui/material';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
-import { useRouter } from 'next/router';
-// import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import DeleteEntryInterface from '../../../components/database/DeleteButtonAndAlert';
 import { theme } from '../../../styles/theme';
@@ -42,7 +40,6 @@ import formatDate from '../../../util/formatDate';
 import {
   Author,
   DatabaseClaim,
-  DeleteRequestBody,
   RatingRequestbody,
   ReviewRequestbody,
   SourceRequestbody,
@@ -56,21 +53,6 @@ type Props = {
   author: Author | null;
   verdicts: Verdict[];
   rating: number | (() => number | null) | null;
-};
-
-const handleDeleteClaim = async (claimId: number) => {
-  const requestbody: DeleteRequestBody = {
-    id: claimId,
-  };
-  const response = await fetch('/api/deleteClaim', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(requestbody),
-  });
-  const deletedClaim = await response.json();
-  return deletedClaim;
 };
 
 export default function ClaimPage(props: Props) {
@@ -571,7 +553,7 @@ export default function ClaimPage(props: Props) {
                   return;
                 }
                 const { review } = wrappedReview;
-                
+
                 if (currentSourceList.length > 0) {
                   handleSourcesCreation(review.id).catch((error) => {
                     console.log('Error when trying to create new sources');
