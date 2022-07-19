@@ -105,7 +105,7 @@ function formatGuardianSearchResults(rawResponse: {
   try {
     for (const result of rawResponse.response.results) {
       if (count > 4) {
-        return unifiedOutput;
+        break;
       }
       if (typeof result.webTitle === 'string') {
         unifiedOutput.push({
@@ -145,7 +145,7 @@ function formatNytResults(rawResponse: {
   let count = 0;
   for (const doc of rawResponse.response.docs) {
     if (count > 4) {
-      return unifiedOutput;
+      break;
     }
     if (typeof doc.abstract === 'string') {
       unifiedOutput.push({
@@ -156,6 +156,7 @@ function formatNytResults(rawResponse: {
       count++;
     }
   }
+
   const uniqueOutput = [
     ...unifiedOutput
       .reduce((map, obj) => map.set(obj.title, obj), new Map())
@@ -182,7 +183,7 @@ function formatNewsapiResults(rawResponse: {
   let count = 0;
   for (const article of rawResponse.articles) {
     if (count > 9) {
-      return unifiedOutput;
+      break;
     }
     if (typeof article.description === 'string') {
       unifiedOutput.push({
@@ -193,6 +194,7 @@ function formatNewsapiResults(rawResponse: {
       count++;
     }
   }
+
   const uniqueOutput = [
     ...unifiedOutput
       .reduce((map, obj) => map.set(obj.title, obj), new Map())

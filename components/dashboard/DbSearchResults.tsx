@@ -15,7 +15,7 @@ type DashboardDbSearchProps = {
   contents: DashboardWidgetDbSearchResults | Fuse.FuseResult<DbClaim>[];
 };
 export default function DatabaseWidget(props: DashboardDbSearchProps) {
-  console.log('DB widget prop', props);
+  
   const [results, setResults] = useState(props.contents);
   const [expanded, setExpanded] = useState(true);
 

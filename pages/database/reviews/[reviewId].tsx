@@ -39,7 +39,6 @@ const handleDeleteReview = async (reviewId: number) => {
 };
 
 export default function ReviewPage(props: ReviewPageProps) {
-
   const router = useRouter();
 
   return (
@@ -78,39 +77,41 @@ export default function ReviewPage(props: ReviewPageProps) {
           props.review.reviewAdded,
         )}`}</Typography>
 
-        <Typography variant="h3">Sources</Typography>
+        <Box sx={{ mb: '30px' }}>
+          <Typography variant="h3">Sources</Typography>
 
-        {props.review.sources ? (
-          <List sx={{ width: '100%' }}>
-            {props.review.sources.map((source) => {
-              return (
-                <ListItem
-                  alignItems="flex-start"
-                  key={source.source_title}
-                  disablePadding
-                >
-                  <ListItemText
-                    primary={source.source_title}
-                    secondary={
-                      <Link
-                        href={source.source_url}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {source.source_url}
-                      </Link>
-                    }
-                  />
-                </ListItem>
-              );
-            })}
-          </List>
-        ) : (
-          <Typography>No sources given</Typography>
-        )}
-        {props.review.username === props.user.username || (props.user.roles && "admin" in props.user.roles) ? (
-          <DeleteEntryInterface id={props.review.reviewId} type='review' />
-
+          {props.review.sources ? (
+            <List sx={{ width: '100%' }}>
+              {props.review.sources.map((source) => {
+                return (
+                  <ListItem
+                    alignItems="flex-start"
+                    key={source.source_title}
+                    disablePadding
+                  >
+                    <ListItemText
+                      primary={source.source_title}
+                      secondary={
+                        <Link
+                          href={source.source_url}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {source.source_url}
+                        </Link>
+                      }
+                    />
+                  </ListItem>
+                );
+              })}
+            </List>
+          ) : (
+            <Typography>No sources given</Typography>
+          )}
+        </Box>
+        {props.review.username === props.user.username ||
+        (props.user.roles && 'admin' in props.user.roles) ? (
+          <DeleteEntryInterface id={props.review.reviewId} type="review" />
         ) : null}
       </main>
     </>

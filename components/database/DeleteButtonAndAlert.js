@@ -43,7 +43,7 @@ export default function DeleteEntryInterface(props) {
         <DialogActions>
           <Button
             color="error"
-            variant='contained'
+            variant="contained"
             onClick={async () => {
               let deletedEntry = null;
               if (props.type === 'claim') {

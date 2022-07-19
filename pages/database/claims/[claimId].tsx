@@ -74,7 +74,6 @@ const handleDeleteClaim = async (claimId: number) => {
 };
 
 export default function ClaimPage(props: Props) {
-  const router = useRouter();
 
   const [authorId, setAuthorId] = useState<number | undefined>(
     props.author === null ? undefined : props.author.id,
@@ -110,9 +109,6 @@ export default function ClaimPage(props: Props) {
   const [userRated, setUserRated] = useState(false);
 
   console.log('errors', errors);
-
-  console.log('ratings', ratings);
-  console.log('avgRating', avgRating);
 
   const refreshUserProfile = props.refreshUserProfile;
 
@@ -293,7 +289,6 @@ export default function ClaimPage(props: Props) {
           {displayedReviews ? (
             <List sx={{ width: '100%' }}>
               {displayedReviews.map((review) => {
-                console.log(review);
                 return (
                   <ListItem
                     alignItems="center"
@@ -339,7 +334,7 @@ export default function ClaimPage(props: Props) {
         <Typography variant="body2">
           0 - Low credibility / 5 - High credibility
         </Typography>
-        <Rating name="avg-claim-rating" value={avgRating} readOnly />
+        <Rating name="avg-claim-rating" value={avgRating} precision={0.5} readOnly />
         <Typography>
           {ratings
             ? `Number of user ratings: ${ratings.length}`
@@ -576,8 +571,7 @@ export default function ClaimPage(props: Props) {
                   return;
                 }
                 const { review } = wrappedReview;
-                console.log(review);
-                console.log(review.id);
+                
                 if (currentSourceList.length > 0) {
                   handleSourcesCreation(review.id).catch((error) => {
                     console.log('Error when trying to create new sources');
@@ -589,7 +583,7 @@ export default function ClaimPage(props: Props) {
                 if (errors.length === 0) {
                   clearInputs();
                   if (!displayedReviews) {
-                    setDisplayedReviews([]);
+                    setDisplayedReviews([review]);
                   } else {
                     const updatedDisplayedReviews = [
                       ...displayedReviews,
