@@ -57,7 +57,9 @@ export default function ContributeReview(props: Props) {
   const [newReviewTitle, setNewReviewTitle] = useState<string>('');
   const [newReviewDescription, setNewReviewDescription] = useState<string>('');
 
-  const [selectedClaim, setSelectedClaim] = useState<Claim | null>(props.claims[0]);
+  const [selectedClaim, setSelectedClaim] = useState<Claim | null>(
+    props.claims[0],
+  );
 
   const [selectedVerdict, setSelectedVerdict] = useState<number | string>('');
 
@@ -72,7 +74,7 @@ export default function ContributeReview(props: Props) {
 
   const [errors, setErrors] = useState<Error[]>([]);
 
-  console.log('selectedClaim', selectedClaim)
+  console.log('selectedClaim', selectedClaim);
 
   const refreshUserProfile = props.refreshUserProfile;
 
@@ -214,7 +216,7 @@ export default function ContributeReview(props: Props) {
               options={props.claims}
               value={selectedClaim}
               onChange={(event, newValue) => {
-                setSelectedClaim(newValue)
+                setSelectedClaim(newValue);
               }}
               getOptionLabel={(option) => option.title}
               sx={{ width: 350 }}
@@ -230,6 +232,8 @@ export default function ContributeReview(props: Props) {
             <TextField
               label="Review title"
               size="small"
+              sx={{ minWidth: '280px' }}
+              multiline
               required
               value={newReviewTitle}
               onChange={(event) => {
@@ -356,7 +360,11 @@ export default function ContributeReview(props: Props) {
 
           <Button
             sx={{ mb: '30px' }}
-            disabled={newReviewTitle === '' || newReviewDescription === '' || selectedClaim === null}
+            disabled={
+              newReviewTitle === '' ||
+              newReviewDescription === '' ||
+              selectedClaim === null
+            }
             variant="contained"
             color="secondary"
             onClick={async () => {
@@ -455,21 +463,20 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   // to prevent serialization issue with date objects:
   claims = JSON.parse(JSON.stringify(claims));
 
-
-    const author = await checkIfAuthorExists(user.id);
-    if (author) {
-      console.log('user logged in, is author');
-      return {
-        props: {
-          user: user,
-          author: author,
-          verdicts: verdicts,
-          claims: claims,
-        },
-      };
-    }
-    console.log('user logged in, but not an author');
+  const author = await checkIfAuthorExists(user.id);
+  if (author) {
+    console.log('user logged in, is author');
     return {
-      props: { user: user, author: null, verdicts: verdicts, claims: claims },
+      props: {
+        user: user,
+        author: author,
+        verdicts: verdicts,
+        claims: claims,
+      },
     };
+  }
+  console.log('user logged in, but not an author');
+  return {
+    props: { user: user, author: null, verdicts: verdicts, claims: claims },
+  };
 }

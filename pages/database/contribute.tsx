@@ -374,8 +374,10 @@ export default function Contribute(props: Props) {
           <Typography variant="h2">New claim</Typography>
           <Box sx={{ marginBottom: '30px' }}>
             <TextField
+              sx={{ minWidth: '280px' }}
               label="Claim title"
               size="small"
+              multiline
               required
               value={newClaimTitle}
               onChange={(event) => {
@@ -481,7 +483,9 @@ export default function Contribute(props: Props) {
             <TextField
               label="Review title"
               size="small"
+              sx={{ minWidth: '280px' }}
               disabled={!addReviewCheckbox}
+              multiline
               required
               value={newReviewTitle}
               onChange={(event) => {
