@@ -507,7 +507,7 @@ export default function Contribute(props: Props) {
               }}
             />
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: '20px' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: '20px', flexWrap: "wrap" }}>
             <Typography>Add source</Typography>
             <IconButton
               sx={{ mb: '5px' }}

@@ -219,7 +219,7 @@ export default function ContributeReview(props: Props) {
                 setSelectedClaim(newValue);
               }}
               getOptionLabel={(option) => option.title}
-              sx={{ width: 350 }}
+              sx={{ width: 280 }}
               renderInput={(params) => <TextField {...params} label="Claim" />}
             />
           </FormControl>
@@ -254,7 +254,7 @@ export default function ContributeReview(props: Props) {
               }}
             />
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: '20px' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: '20px', flexWrap: "wrap" }}>
             <Typography>Add source</Typography>
             <IconButton
               sx={{ mb: '5px' }}
