@@ -368,7 +368,9 @@ export default function Contribute(props: Props) {
       </Head>
 
       <main>
-        <Typography variant="h1" data-test-id="add-claim-h1">Add a claim to the database</Typography>
+        <Typography variant="h1" data-test-id="add-claim-h1">
+          Add a claim to the database
+        </Typography>
 
         <section>
           <Typography variant="h2">New claim</Typography>
@@ -379,6 +381,9 @@ export default function Contribute(props: Props) {
               size="small"
               multiline
               required
+              inputProps={{
+                'data-test-id': 'claim-title',
+              }}
               value={newClaimTitle}
               onChange={(event) => {
                 setNewClaimTitle(event.currentTarget.value);
@@ -392,6 +397,9 @@ export default function Contribute(props: Props) {
               multiline
               rows={9}
               fullWidth
+              inputProps={{
+                'data-test-id': 'claim-description',
+              }}
               value={newClaimDescription}
               onChange={(event) => {
                 setNewClaimDescription(event.currentTarget.value);
@@ -410,6 +418,9 @@ export default function Contribute(props: Props) {
             <TextField
               label="Labels"
               size="small"
+              inputProps={{
+                'data-test-id': 'claim-label-input',
+              }}
               value={selectedLabel}
               onChange={(event) => {
                 setSelectedLabel(event.currentTarget.value);
@@ -420,6 +431,7 @@ export default function Contribute(props: Props) {
             ) : (
               <IconButton
                 aria-label="Save label entry"
+                data-test-id="claim-save-label"
                 onClick={() => handleSaveLabel()}
               >
                 <Save />
@@ -507,7 +519,14 @@ export default function Contribute(props: Props) {
               }}
             />
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: '20px', flexWrap: "wrap" }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              mb: '20px',
+              flexWrap: 'wrap',
+            }}
+          >
             <Typography>Add source</Typography>
             <IconButton
               sx={{ mb: '5px' }}
@@ -621,6 +640,7 @@ export default function Contribute(props: Props) {
               (addReviewCheckbox &&
                 (newReviewTitle === '' || newReviewDescription === ''))
             }
+            data-test-id="claim-submit-btn"
             variant="contained"
             color="secondary"
             onClick={async () => {

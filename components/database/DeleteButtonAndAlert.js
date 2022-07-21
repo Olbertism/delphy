@@ -24,7 +24,7 @@ export default function DeleteEntryInterface(props) {
 
   return (
     <Box>
-      <Button variant="outlined" color="error" onClick={handleClickOpen}>
+      <Button variant="outlined" color="error" data-test-id='delete-btn' onClick={handleClickOpen}>
         {`Delete ${props.type}`}
       </Button>
       <Dialog
@@ -44,6 +44,7 @@ export default function DeleteEntryInterface(props) {
           <Button
             color="error"
             variant="contained"
+            data-test-id='confirm-btn'
             onClick={async () => {
               let deletedEntry = null;
               if (props.type === 'claim') {

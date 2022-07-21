@@ -30,7 +30,9 @@ export default function Database(props: Props) {
       </Head>
 
       <main>
-        <Typography variant="h1">Browse the database</Typography>
+        <Typography variant="h1" data-test-id="database-h1">
+          Browse the database
+        </Typography>
         <Typography>
           Select between Claims and Reviews that were submitted to our Database.
           Add your own claims or reviews.

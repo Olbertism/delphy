@@ -57,6 +57,7 @@ export default function PublicUserProfile(props: ProfilePageProps) {
                   <CardActions>
                     <Button
                       size="small"
+                      data-test-id={`link-to-${claim.claimTitle}`}
                       href={`/database/claims/${claim.claimId}`}
                     >
                       Go to claim
