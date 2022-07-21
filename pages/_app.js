@@ -14,9 +14,14 @@ const inputGlobalStyles = (
       main: {
         position: 'relative',
         minHeight: 'calc(100vh - 166px)',
-        width: '75%',
         marginLeft: 'auto',
         marginRight: 'auto',
+        [theme.breakpoints.up('xs')]: {
+          width: '75%',
+        },
+        [theme.breakpoints.up('xl')]: {
+          width: '59%',
+        },
       },
     }}
   />

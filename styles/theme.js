@@ -35,8 +35,8 @@ export const theme = createTheme({
     },
     h4: {
       fontSize: '1.3rem',
-      marginTop: '20px',
-      marginBottom: '5px',
+      marginTop: '25px',
+      marginBottom: '8px',
     },
     h5: {
       fontSize: '1.2rem',

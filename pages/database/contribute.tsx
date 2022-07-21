@@ -368,7 +368,7 @@ export default function Contribute(props: Props) {
       </Head>
 
       <main>
-        <Typography variant="h1">Add a claim to the database</Typography>
+        <Typography variant="h1" data-test-id="add-claim-h1">Add a claim to the database</Typography>
 
         <section>
           <Typography variant="h2">New claim</Typography>

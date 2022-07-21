@@ -1,3 +1,4 @@
+import { Typography } from '@mui/material';
 import Head from 'next/head';
 import { useEffect } from 'react';
 
@@ -19,8 +20,21 @@ export default function Imprint(props: Props) {
       </Head>
 
       <main>
-        <h1>Imprint</h1>
-        <div />
+        <Typography variant="h1" data-test-id="profile-h1">
+          Imprint
+        </Typography>
+        <div>
+          <Typography>
+            Web application created and maintained by Albert Pichler
+          </Typography>
+          <a
+            href="https://github.com/Olbertism"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Visit me on GitHub
+          </a>
+        </div>
       </main>
     </>
   );

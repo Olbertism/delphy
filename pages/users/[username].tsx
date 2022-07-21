@@ -30,7 +30,9 @@ export default function PublicUserProfile(props: ProfilePageProps) {
       </Head>
 
       <main>
-        <Typography variant="h1">Profile page</Typography>
+        <Typography variant="h1" data-test-id="profile-h1">
+          Profile page
+        </Typography>
         <Typography variant="h2">{props.user.username}</Typography>
         <div>id: {props.user.id}</div>
 

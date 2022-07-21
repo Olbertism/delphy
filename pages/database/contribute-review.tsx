@@ -188,7 +188,7 @@ export default function ContributeReview(props: Props) {
       </Head>
 
       <main>
-        <Typography variant="h1">Add a review to the database</Typography>
+        <Typography variant="h1" data-test-id="add-review-h1">Add a review to the database</Typography>
 
         <Box sx={{ maxWidth: '320px', mb: '30px' }}>
           <FormControl fullWidth>

@@ -262,7 +262,7 @@ export default function ClaimPage(props: Props) {
         <Typography variant="subtitle1">
           Claim #{props.claim.claimId}
         </Typography>
-        <Typography variant="h1">{props.claim.claimTitle}</Typography>
+        <Typography variant="h1" data-test-id="claim-h1">{props.claim.claimTitle}</Typography>
         <Typography variant="h3">Description</Typography>
         <Typography>{props.claim.claimDescription}</Typography>
         <Box sx={{ mb: '30px' }}>

@@ -268,7 +268,7 @@ export default function Dashboard(props: DashboardProps) {
         <meta name="description" content="About the app" />
       </Head>
       <main>
-        <Typography variant="h1">Check Claim</Typography>
+        <Typography variant="h1" data-test-id="dashboard-h1">Check Claim</Typography>
 
         <div>
           <section>
