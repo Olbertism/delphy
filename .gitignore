@@ -42,6 +42,6 @@ google-credentials.json
 debug.log
 /util/fixtures
 playwright-report/
-/util/playwright/storage-state/
+/util/playwright/storage-state/storageState.json
+/util/playwright/storage-state
 /util/playwright/storageState
-util\playwright\storage-state
