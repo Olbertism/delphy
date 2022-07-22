@@ -4,6 +4,9 @@
 
 > Contribute to a claim and review database and grow a fact check resources.
 
+![Landing page](./public/readme-screen-1.png)
+![Dashboard page](./public/readme-screen-2.png)
+
 ## About
 
 This is my final project from the UpLeveled Bootcamp class of spring 2022. It is an interactive web app that you can try out with the link in the description. Please make sure you read the disclaimer and do not spam search or evaluation requests.
