@@ -6,7 +6,6 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  console.log(req.body);
   if (req.method !== 'POST') {
     res.status(405).send({ message: 'Only POST requests allowed' });
     return;
@@ -60,8 +59,6 @@ export default async function handler(
 
   const predictions = data.predictions;
 
-  console.log(predictions);
-
   // ORIGINAL SAMPLE CODE - GIVES ERROR WITH THE INSTANCES OBJECT
 
   // Specifies the location of the api endpoint
@@ -98,10 +95,10 @@ export default async function handler(
       instances: instances,
       parameters,
     };
-    console.log("REQUEST:", request)
+
 
     const [response] = await predictionServiceClient.predict(request);
-    console.log(response)
+
 
   }
 

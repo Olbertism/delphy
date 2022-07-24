@@ -224,8 +224,6 @@ export async function fetchResources(
   query: string,
   excludeLimitedAPIs: boolean = false,
 ) {
-  console.log('Starting fetch all...');
-
   const sources = [];
   const params = {
     query: query,
@@ -283,7 +281,6 @@ export async function fetchResources(
     }),
   );
 
-  console.log(responses);
   const shortedData = [] as MainFetcherOutput[];
   shortedData.push(
     formatGoogleFactCheckToolResults(responses[0].factCheckTool),
@@ -298,6 +295,5 @@ export async function fetchResources(
     ]),
   );
 
-  console.log(shortedData);
   return shortedData;
 }

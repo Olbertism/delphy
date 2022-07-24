@@ -183,7 +183,6 @@ function filterAndShuffleRoBERTaResults(
   results: DashboardWidgetPropsContents[],
   searchQuery: string,
 ) {
-  console.log(results);
   const searchIndex = new Fuse<FormattedResource>(results, {
     includeScore: true,
     threshold: 0.9,
@@ -192,7 +191,7 @@ function filterAndShuffleRoBERTaResults(
 
   const searchResults = searchIndex.search(searchQuery);
   const shuffledResults = arrayShuffle(searchResults);
-  console.log(shuffledResults);
+
   return shuffledResults;
 }
 
@@ -316,7 +315,7 @@ export default function Dashboard(props: DashboardProps) {
       setLoadingRoBERTa(false);
       return;
     }
-    
+
     const webResources = formattedResources.slice(0, -1);
     const dbResources = formattedResources.slice(-1);
 

@@ -28,7 +28,6 @@ export default async function handler(
       return;
     }
 
-    console.log(req.body);
     const claim = await createClaim(
       req.body.title,
       req.body.description,

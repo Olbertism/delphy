@@ -96,7 +96,7 @@ function EnhancedTableHead(props) {
     // rowCount,
     onRequestSort,
   } = props;
-  console.log('Enhanced head props', props);
+
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
   };
@@ -216,12 +216,7 @@ export default function ClaimsTable(props) {
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
-  console.log('state: order', order);
-  console.log('state: orderBy', orderBy);
-
   const handleRequestSort = (event, property) => {
-    console.log('SORT FUNC TRIGGERED');
-    console.log('property in handleRequestSort', property);
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);

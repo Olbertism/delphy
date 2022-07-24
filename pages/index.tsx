@@ -9,7 +9,6 @@ type Props = {
   refreshUserProfile: () => Promise<void>;
 };
 export default function Home(props: Props) {
-  console.log('index props: ', props);
   const refreshUserProfile = props.refreshUserProfile;
   useEffect(() => {
     refreshUserProfile().catch(() =>
