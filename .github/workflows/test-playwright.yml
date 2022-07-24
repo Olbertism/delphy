@@ -16,12 +16,18 @@ jobs:
         run: |
           sudo systemctl start postgresql.service
           pg_isready
-      - name: Create database user
+      - name: Create database
         run: |
-          sudo -u postgres psql --command="CREATE USER $PGUSERNAME PASSWORD $PGPASSWORD" --command="\du"
-      - name: Create database and allow user
+          sudo -u postgres psql --command="CREATE DATABASE $PGDATABASE;"
+      - name: Create user
         run: |
-          sudo -u postgres createdb --owner="$PGUSERNAME $PGDATABASE Superuser"
+          sudo -u postgres psql --command="CREATE USER $PGUSERNAME WITH ENCRYPTED PASSWORD '$PGPASSWORD';"
+      - name: Create privileges
+        run: |
+          sudo -u postgres psql --command="GRANT ALL PRIVILEGES ON DATABASE $PGDATABASE TO $PGUSERNAME;"
+      - name: Add user
+        run: |
+          sudo adduser $PGUSERNAME
       - uses: actions/checkout@v2
       # Use the official setup-node action (sets up Node.js):
       # https://github.com/actions/setup-node
