@@ -232,25 +232,6 @@ export default function Dashboard(props: DashboardProps) {
     keys: ['claimTitle', 'claimDescription'],
   });
 
-  /*   function handleDBSearch() {
-    const results = dbClaimsSearchIndex.search(searchQuery);
-
-    if (results.length > 1) {
-      const sorteddbClaimsSearchResults = results.sort((resultA, resultB) => {
-        if (resultA.score && resultB.score) {
-          return resultA.score - resultB.score;
-        }
-        return 0;
-      }) as any;
-
-      setDbClaimsSearchResults(sorteddbClaimsSearchResults);
-      return sorteddbClaimsSearchResults;
-    }
-
-    setDbClaimsSearchResults(results);
-    return results;
-  } */
-
   async function handleFetchResources() {
     const dbResults = handleDBSearch(dbClaimsSearchIndex, searchQuery);
     setDbClaimsSearchResults(dbResults);
@@ -265,36 +246,6 @@ export default function Dashboard(props: DashboardProps) {
       console.log('Tried to generate prompts without query or resources');
       return;
     }
-
-    /* const instances = [];
-    const processedQuery = processText(searchQuery);
-    for (const resource of formattedResources) {
-      for (const entry of resource) {
-        if (typeof entry.promptSource === 'string') {
-          instances.push({
-            source: processedQuery,
-            comparer: processText(entry.promptSource),
-          });
-        }
-      }
-    }
-
-    for (const searchResult of dbClaimsSearchResults) {
-      if (searchResult.item.reviews) {
-        searchResult.item.reviews.forEach(
-          (review: { reviewId: number; reviewTitle: string }) => {
-            instances.push({
-              source: processedQuery,
-              comparer: processText(review.reviewTitle),
-            });
-          },
-        );
-      }
-    }
-
-    const roBERTaRequestBody = {
-      instances: instances,
-    }; */
 
     const roBERTaRequestBody = generateRoBERTaRequestBody(
       searchQuery,
@@ -325,100 +276,15 @@ export default function Dashboard(props: DashboardProps) {
       fetchedPredictions,
     );
 
-    /* const conclusio = { contradict: 0, agree: 0 };
-    const contradictions = [];
-    const agreements = [];
-
-    for (const sources of webResources) {
-      for (const source of sources) {
-        source.prediction = fetchedPredictions.predictions.shift();
-
-        if (source.prediction === 0) {
-          contradictions.push(source);
-          conclusio.contradict += 1;
-        } else if (source.prediction === 2) {
-          agreements.push(source);
-          conclusio.agree += 1;
-        }
-      }
-    }
-
-    for (const resources of dbResources) {
-      for (const resource of resources) {
-        if (resource.item.reviews) {
-          resource.item.reviews.forEach((review) => {
-            review.prediction = fetchedPredictions.predictions.shift();
-            const entry = {
-              title: review.reviewTitle,
-              url: `/database/reviews/${review.reviewId}`,
-              fromDB: true,
-            };
-
-            if (review.prediction === 0) {
-              contradictions.push(entry);
-              conclusio.contradict += 1;
-            } else if (review.prediction === 2) {
-              agreements.push(entry);
-              conclusio.agree += 1;
-            }
-          });
-        }
-      }
-    } */
-
     const shuffledContradictions = filterAndShuffleRoBERTaResults(
       contradictions,
       searchQuery,
     );
 
-    /* const contradictionsSearchIndex = new Fuse<FormattedResource>(
-      contradictions,
-      {
-        includeScore: true,
-        threshold: 0.9,
-        keys: ['title', 'promptSource'],
-      },
-    );
-
-    const contradictionsSearchResults =
-      contradictionsSearchIndex.search(searchQuery);
-
-    const shuffledContradictions = arrayShuffle(contradictionsSearchResults); */
-
     const shuffledAgreements = filterAndShuffleRoBERTaResults(
       agreements,
       searchQuery,
     );
-
-    /* const agreementsSearchIndex = new Fuse(agreements, {
-      includeScore: true,
-      threshold: 0.9,
-      keys: ['title', 'promptSource'],
-    });
-
-    const agreementsSearchResults = agreementsSearchIndex.search(searchQuery);
-
-    const shuffledAgreements = arrayShuffle(agreementsSearchResults); */
-
-    /* let modelEvaluation;
-    if (conclusio.contradict === 0 && conclusio.agree === 0) {
-      modelEvaluation = 'No relevant taglines found';
-    } else {
-      modelEvaluation = `The claim seems to ${
-        conclusio.contradict > conclusio.agree ? 'contradict' : 'agree'
-      } with the found sources (extent: ${
-        conclusio.contradict > conclusio.agree
-          ? Math.round(
-              (conclusio.contradict /
-                (conclusio.contradict + conclusio.agree)) *
-                100,
-            )
-          : Math.round(
-              (conclusio.agree / (conclusio.contradict + conclusio.agree)) *
-                100,
-            )
-      }%)`;
-    } */
 
     const modelEvaluation = generateRoBERTaEvaluationString(conclusio);
 
