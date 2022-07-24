@@ -4,10 +4,10 @@ on:
   push:
     secrets:
       TEST_USERNAME:
-        description: 'for login'
+        description: 'username for login'
         required: true
       TEST_PASSWORD:
-        description: 'for login'
+        description: 'pw for login'
         required: true
 
 
