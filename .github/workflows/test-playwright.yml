@@ -53,7 +53,7 @@ jobs:
       - name: Install dependencies
         run: yarn
       - name: Install playwright
-        run: yarn playwright install-deps
+        run: yarn playwright install-deps chromium
       - run: yarn migrate up
       - name: Build localhost
         run: yarn build
