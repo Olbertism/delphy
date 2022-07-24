@@ -1,5 +1,6 @@
 import { devices, PlaywrightTestConfig } from '@playwright/test';
-import dotenv from 'dotenv';
+// import dotenv from 'dotenv';
+import dotenv from 'dotenv-safe';
 
 dotenv.config();
 

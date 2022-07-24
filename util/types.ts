@@ -57,7 +57,7 @@ export type DashboardWidgetPropsContents = {
   title: string;
   url: string;
   promptSource: string;
-  prediction?: number;
+  prediction: number;
 };
 
 export type DashboardWidgetProps = {
@@ -132,7 +132,7 @@ export type ReviewRequestbody = {
 
 export type RatingRequestbody = {
   claimId: number;
-  ratingValue: number;
+  ratingValue: number | null;
   authorId: number | undefined;
 };
 
@@ -199,7 +199,7 @@ export type FormattedResource = {
   title: any;
   url: any;
   promptSource: string;
-  prediction?: number;
+  prediction: number;
   fromDB?: boolean;
 };
 

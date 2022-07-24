@@ -14,12 +14,6 @@ export default async function handler(
   const apiParams = 'list=search';
   const apiActionMode = 'action=query';
 
-  console.log(
-    `${apiBaseUrl}&origin=*&${apiActionMode}&${apiParams}&srsearch=${encodeURIComponent(
-      req.query.query,
-    )}&format=json&prop=info&inprop=url`,
-  );
-
   const data = await fetch(
     `${apiBaseUrl}&origin=*&${apiActionMode}&${apiParams}&srsearch=${encodeURIComponent(
       req.query.query,

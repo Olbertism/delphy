@@ -38,7 +38,6 @@ function MyApp({ Component, pageProps, router }) {
   const refreshUserProfile = useCallback(async () => {
     const profileResponse = await fetch('/api/profile');
     const profileResponseBody = await profileResponse.json();
-    console.log('profileresponsebody:', profileResponseBody);
 
     if (!('errors' in profileResponseBody)) {
       setUser(profileResponseBody.user);

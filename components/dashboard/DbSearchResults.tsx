@@ -1,11 +1,10 @@
 /** @jsxImportSource @emotion/react */
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Button } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import Typography from '@mui/material/Typography';
-import { Box } from '@mui/system';
 import Fuse from 'fuse.js';
 import { useEffect, useState } from 'react';
 import { accordionHeadlineStyles } from '../../styles/customStyles';
@@ -15,7 +14,7 @@ type DashboardDbSearchProps = {
   contents: DashboardWidgetDbSearchResults | Fuse.FuseResult<DbClaim>[];
 };
 export default function DatabaseWidget(props: DashboardDbSearchProps) {
-  
+
   const [results, setResults] = useState(props.contents);
   const [expanded, setExpanded] = useState(true);
 

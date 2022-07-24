@@ -1,5 +1,10 @@
 import { DeleteRequestBody } from './types';
 
+export const handleAuthorCreation = async () => {
+  const response = await fetch('/api/createAuthor');
+  const author = await response.json();
+  return author;
+};
 export const handleDeleteClaim = async (claimId: number) => {
   const requestbody: DeleteRequestBody = {
     id: claimId,

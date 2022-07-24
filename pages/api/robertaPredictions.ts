@@ -30,7 +30,6 @@ export default async function handler(
     },
   };
 
-  console.log(req.body.instances);
   const instances = req.body.instances;
   /* const instances = [
     {
@@ -59,7 +58,6 @@ export default async function handler(
     },
   });
 
-  console.log('data:', data);
   const predictions = data.predictions;
 
   console.log(predictions);
@@ -112,7 +110,6 @@ export default async function handler(
   try {
     res.json({ status: 'ok', predictions: predictions }); // Send the response
   } catch (error) {
-    console.log('IN CUSTOM ERROR HANDLING');
     console.log(error);
     res.json({ status: 'error', message: 'No valid response received' });
   }

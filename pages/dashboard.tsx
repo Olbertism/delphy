@@ -49,6 +49,153 @@ import {
   FormattedResource,
 } from '../util/types';
 
+type FetchedPredictions = { status: string; predictions: number[] };
+
+type Conclusio = { contradict: number; agree: number };
+
+function handleDBSearch(searchIndex: Fuse<DbClaim>, query: string) {
+  const results = searchIndex.search(query);
+
+  if (results.length > 1) {
+    const sorteddbClaimsSearchResults = results.sort((resultA, resultB) => {
+      if (resultA.score && resultB.score) {
+        return resultA.score - resultB.score;
+      }
+      return 0;
+    }) as any;
+
+    return sorteddbClaimsSearchResults;
+  }
+
+  return results;
+}
+
+function generateRoBERTaRequestBody(
+  searchQuery: string,
+  formattedResources: DashboardWidgetPropsContents[][],
+  dbClaimsSearchResults:
+    | Fuse.FuseResult<DbClaim>[]
+    | DashboardWidgetDbSearchResults,
+) {
+  const instances = [];
+  const processedQuery = processText(searchQuery);
+  for (const resource of formattedResources) {
+    for (const entry of resource) {
+      if (typeof entry.promptSource === 'string') {
+        instances.push({
+          source: processedQuery,
+          comparer: processText(entry.promptSource),
+        });
+      }
+    }
+  }
+
+  for (const searchResult of dbClaimsSearchResults) {
+    if (searchResult.item.reviews) {
+      searchResult.item.reviews.forEach(
+        (review: { reviewId: number; reviewTitle: string }) => {
+          instances.push({
+            source: processedQuery,
+            comparer: processText(review.reviewTitle),
+          });
+        },
+      );
+    }
+  }
+
+  const roBERTaRequestBody = {
+    instances: instances,
+  };
+  return roBERTaRequestBody;
+}
+
+function formatRoBERTaResults(
+  webResources: DashboardWidgetPropsContents[][],
+  dbResources: DashboardWidgetPropsContents[][],
+  fetchedPredictions: FetchedPredictions,
+): [Conclusio, DashboardWidgetPropsContents[], DashboardWidgetPropsContents[]] {
+  const conclusio = { contradict: 0, agree: 0 };
+  const contradictions = [];
+  const agreements = [];
+
+  for (const sources of webResources) {
+    for (const source of sources) {
+      source.prediction = fetchedPredictions.predictions.shift()!;
+
+      if (source.prediction === 0) {
+        contradictions.push(source);
+        conclusio.contradict += 1;
+      } else if (source.prediction === 2) {
+        agreements.push(source);
+        conclusio.agree += 1;
+      }
+    }
+  }
+
+  for (const resources of dbResources) {
+    for (const resource of resources) {
+      if (resource.item.reviews) {
+        resource.item.reviews.forEach((review) => {
+          review.prediction = fetchedPredictions.predictions.shift()!;
+          const entry = {
+            title: review.reviewTitle,
+            url: `/database/reviews/${review.reviewId}`,
+            fromDB: true,
+          };
+
+          if (review.prediction === 0) {
+            contradictions.push(entry);
+            conclusio.contradict += 1;
+          } else if (review.prediction === 2) {
+            agreements.push(entry);
+            conclusio.agree += 1;
+          }
+        });
+      }
+    }
+  }
+
+  return [conclusio, contradictions, agreements];
+}
+
+function generateRoBERTaEvaluationString(conclusio: Conclusio) {
+  let modelEvaluation;
+  if (conclusio.contradict === 0 && conclusio.agree === 0) {
+    modelEvaluation = 'No relevant taglines found';
+  } else {
+    modelEvaluation = `The claim seems to ${
+      conclusio.contradict > conclusio.agree ? 'contradict' : 'agree'
+    } with the found sources (extent: ${
+      conclusio.contradict > conclusio.agree
+        ? Math.round(
+            (conclusio.contradict / (conclusio.contradict + conclusio.agree)) *
+              100,
+          )
+        : Math.round(
+            (conclusio.agree / (conclusio.contradict + conclusio.agree)) * 100,
+          )
+    }%)`;
+  }
+  return modelEvaluation;
+}
+
+function filterAndShuffleRoBERTaResults(
+  results: DashboardWidgetPropsContents[],
+  searchQuery: string,
+) {
+  console.log(results);
+  const searchIndex = new Fuse<FormattedResource>(results, {
+    includeScore: true,
+    threshold: 0.9,
+    keys: ['title', 'promptSource'],
+  });
+
+  const searchResults = searchIndex.search(searchQuery);
+  const shuffledResults = arrayShuffle(searchResults);
+  console.log(shuffledResults);
+  return shuffledResults;
+}
+
 export default function Dashboard(props: DashboardProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -86,7 +233,7 @@ export default function Dashboard(props: DashboardProps) {
     keys: ['claimTitle', 'claimDescription'],
   });
 
-  function handleDBSearch() {
+  /*   function handleDBSearch() {
     const results = dbClaimsSearchIndex.search(searchQuery);
 
     if (results.length > 1) {
@@ -103,10 +250,11 @@ export default function Dashboard(props: DashboardProps) {
 
     setDbClaimsSearchResults(results);
     return results;
-  }
+  } */
 
   async function handleFetchResources() {
-    const dbResults = handleDBSearch();
+    const dbResults = handleDBSearch(dbClaimsSearchIndex, searchQuery);
+    setDbClaimsSearchResults(dbResults);
     const webAPIResults = await fetchResources(searchQuery);
     webAPIResults.push(dbResults);
     setFormattedResources(webAPIResults as DashboardWidgetPropsContents[][]);
@@ -119,7 +267,7 @@ export default function Dashboard(props: DashboardProps) {
       return;
     }
 
-    const instances = [];
+    /* const instances = [];
     const processedQuery = processText(searchQuery);
     for (const resource of formattedResources) {
       for (const entry of resource) {
@@ -147,7 +295,13 @@ export default function Dashboard(props: DashboardProps) {
 
     const roBERTaRequestBody = {
       instances: instances,
-    };
+    }; */
+
+    const roBERTaRequestBody = generateRoBERTaRequestBody(
+      searchQuery,
+      formattedResources,
+      dbClaimsSearchResults,
+    );
 
     const fetchedPredictions = await fetch('/api/robertaPredictions', {
       method: 'POST',
@@ -162,11 +316,17 @@ export default function Dashboard(props: DashboardProps) {
       setLoadingRoBERTa(false);
       return;
     }
-
+    
     const webResources = formattedResources.slice(0, -1);
     const dbResources = formattedResources.slice(-1);
-    const conclusio = { contradict: 0, agree: 0 };
 
+    const [conclusio, contradictions, agreements] = formatRoBERTaResults(
+      webResources,
+      dbResources,
+      fetchedPredictions,
+    );
+
+    /* const conclusio = { contradict: 0, agree: 0 };
     const contradictions = [];
     const agreements = [];
 
@@ -205,9 +365,14 @@ export default function Dashboard(props: DashboardProps) {
           });
         }
       }
-    }
+    } */
 
-    const contradictionsSearchIndex = new Fuse<FormattedResource>(
+    const shuffledContradictions = filterAndShuffleRoBERTaResults(
+      contradictions,
+      searchQuery,
+    );
+
+    /* const contradictionsSearchIndex = new Fuse<FormattedResource>(
       contradictions,
       {
         includeScore: true,
@@ -219,9 +384,14 @@ export default function Dashboard(props: DashboardProps) {
     const contradictionsSearchResults =
       contradictionsSearchIndex.search(searchQuery);
 
-    const shuffledContradictions = arrayShuffle(contradictionsSearchResults);
+    const shuffledContradictions = arrayShuffle(contradictionsSearchResults); */
 
-    const agreementsSearchIndex = new Fuse(agreements, {
+    const shuffledAgreements = filterAndShuffleRoBERTaResults(
+      agreements,
+      searchQuery,
+    );
+
+    /* const agreementsSearchIndex = new Fuse(agreements, {
       includeScore: true,
       threshold: 0.9,
       keys: ['title', 'promptSource'],
@@ -229,20 +399,29 @@ export default function Dashboard(props: DashboardProps) {
 
     const agreementsSearchResults = agreementsSearchIndex.search(searchQuery);
 
-    const shuffledAgreements = arrayShuffle(agreementsSearchResults);
+    const shuffledAgreements = arrayShuffle(agreementsSearchResults); */
 
-    const modelEvaluation = `The claim seems to ${
-      conclusio.contradict > conclusio.agree ? 'contradict' : 'agree'
-    } with the found sources (extent: ${
-      conclusio.contradict > conclusio.agree
-        ? Math.round(
-            (conclusio.contradict / (conclusio.contradict + conclusio.agree)) *
-              100,
-          )
-        : Math.round(
-            (conclusio.agree / (conclusio.contradict + conclusio.agree)) * 100,
-          )
-    }%)`;
+    /* let modelEvaluation;
+    if (conclusio.contradict === 0 && conclusio.agree === 0) {
+      modelEvaluation = 'No relevant taglines found';
+    } else {
+      modelEvaluation = `The claim seems to ${
+        conclusio.contradict > conclusio.agree ? 'contradict' : 'agree'
+      } with the found sources (extent: ${
+        conclusio.contradict > conclusio.agree
+          ? Math.round(
+              (conclusio.contradict /
+                (conclusio.contradict + conclusio.agree)) *
+                100,
+            )
+          : Math.round(
+              (conclusio.agree / (conclusio.contradict + conclusio.agree)) *
+                100,
+            )
+      }%)`;
+    } */
+
+    const modelEvaluation = generateRoBERTaEvaluationString(conclusio);
 
     setEvaluation(modelEvaluation);
     setModelAgreements(shuffledAgreements);
@@ -268,7 +447,9 @@ export default function Dashboard(props: DashboardProps) {
         <meta name="description" content="About the app" />
       </Head>
       <main>
-        <Typography variant="h1" data-test-id="dashboard-h1">Check Claim</Typography>
+        <Typography variant="h1" data-test-id="dashboard-h1">
+          Check Claim
+        </Typography>
 
         <div>
           <section>

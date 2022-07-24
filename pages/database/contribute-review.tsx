@@ -74,8 +74,6 @@ export default function ContributeReview(props: Props) {
 
   const [errors, setErrors] = useState<Error[]>([]);
 
-  console.log('selectedClaim', selectedClaim);
-
   const refreshUserProfile = props.refreshUserProfile;
 
   useEffect(() => {
@@ -113,7 +111,6 @@ export default function ContributeReview(props: Props) {
     };
 
     if (!props.author) {
-      console.log('user not yet an author, let me handle that...');
       const { author } = await handleAuthorCreation();
 
       if (!author) {
@@ -155,7 +152,6 @@ export default function ContributeReview(props: Props) {
 
   const handleSourcesCreation = async (reviewId: number) => {
     for (const source of currentSourceList) {
-      console.log('current source', source);
       const requestbody: SourceRequestbody = {
         sourceTitle: source.title,
         sourceUrl: source.url,
@@ -188,7 +184,9 @@ export default function ContributeReview(props: Props) {
       </Head>
 
       <main>
-        <Typography variant="h1" data-test-id="add-review-h1">Add a review to the database</Typography>
+        <Typography variant="h1" data-test-id="add-review-h1">
+          Add a review to the database
+        </Typography>
 
         <Box sx={{ maxWidth: '320px', mb: '30px' }}>
           <FormControl fullWidth>
@@ -254,7 +252,14 @@ export default function ContributeReview(props: Props) {
               }}
             />
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: '20px', flexWrap: "wrap" }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              mb: '20px',
+              flexWrap: 'wrap',
+            }}
+          >
             <Typography>Add source</Typography>
             <IconButton
               sx={{ mb: '5px' }}
@@ -465,7 +470,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const author = await checkIfAuthorExists(user.id);
   if (author) {
-    console.log('user logged in, is author');
     return {
       props: {
         user: user,
@@ -475,7 +479,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       },
     };
   }
-  console.log('user logged in, but not an author');
+
   return {
     props: { user: user, author: null, verdicts: verdicts, claims: claims },
   };

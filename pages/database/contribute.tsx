@@ -1,6 +1,7 @@
 import { AddCircle, Save } from '@mui/icons-material';
 import {
   Alert,
+  Box,
   Button,
   Checkbox,
   Chip,
@@ -18,7 +19,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { Box } from '@mui/system';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import { useEffect, useState } from 'react';
@@ -29,7 +29,17 @@ import {
   getAllVerdicts,
   getUserByValidSessionToken,
 } from '../../util/database/database';
-import { Label, Verdict } from '../../util/types';
+import { handleAuthorCreation } from '../../util/handlers';
+import {
+  ClaimLabelRequestbody,
+  ClaimRequestbody,
+  Label,
+  LabelRequestbody,
+  RatingRequestbody,
+  ReviewRequestbody,
+  SourceRequestbody,
+  Verdict,
+} from '../../util/types';
 
 type Props = {
   refreshUserProfile: () => Promise<void>;
@@ -38,39 +48,165 @@ type Props = {
   labels: Label[];
 };
 
-type ClaimRequestbody = {
-  title: string;
-  description: string;
-  authorId: number | undefined;
+const ratingLabels: { [index: string]: string } = {
+  1: 'Completly untrue',
+  2: 'Low credibility',
+  3: 'Debatable',
+  4: 'Mostly factual',
+  5: 'Factual',
 };
 
-type ReviewRequestbody = {
-  title: string;
-  description: string;
-  authorId: number | undefined;
-  claimId: number;
-  verdictId?: number;
+const handleClaimCreation = async (
+  newClaimTitle: string,
+  newClaimDescription: string,
+  authorId: number,
+) => {
+  const requestbody: ClaimRequestbody = {
+    title: newClaimTitle,
+    description: newClaimDescription,
+    authorId: authorId,
+  };
+
+  const response = await fetch('/api/createClaim', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestbody),
+  });
+  const claim = await response.json();
+  return claim;
 };
 
-type RatingRequestbody = {
-  claimId: number;
-  ratingValue: number | null;
-  authorId: number | undefined;
+const handleCreateLabel = async (
+  dbLabels: Label[],
+  enteredLabels: string[],
+  claimId: number,
+) => {
+  const currentLabels = dbLabels;
+  const existingLabels = new Set();
+  for (const label of enteredLabels) {
+    for (const currentLabel of currentLabels) {
+      if (label === currentLabel.label) {
+        // create only claim_labels entry
+        const requestbody: ClaimLabelRequestbody = {
+          claimId: claimId,
+          labelId: currentLabel.id,
+        };
+        // const response =
+        await fetch('/api/createClaimLabel', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestbody),
+        });
+        existingLabels.add(label);
+        break;
+      }
+    }
+    if (!existingLabels.has(label)) {
+      // create new label and claim_labels entry
+      const requestbodyNewLabel: LabelRequestbody = {
+        newLabel: label,
+      };
+      console.log(requestbodyNewLabel);
+      const responseNewLabel = await fetch('/api/createLabel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestbodyNewLabel),
+      });
+      const newLabel = await responseNewLabel.json();
+      const requestbodyClaimLabel: ClaimLabelRequestbody = {
+        claimId: claimId,
+        labelId: newLabel.label.id,
+      };
+      // const responseClaimLabel =
+      await fetch('/api/createClaimLabel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestbodyClaimLabel),
+      });
+    }
+  }
 };
 
-type SourceRequestbody = {
-  sourceTitle: string;
-  sourceUrl: string;
-  reviewId: number;
+const handleRatingCreation = async (
+  claimId: number,
+  ratingValue: number,
+  authorId: number,
+) => {
+  const requestbody: RatingRequestbody = {
+    claimId: claimId,
+    ratingValue: ratingValue,
+    authorId: authorId,
+  };
+
+  const response = await fetch('/api/createRating', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestbody),
+  });
+  const rating = await response.json();
+  return rating;
 };
 
-type ClaimLabelRequestbody = {
-  claimId: number;
-  labelId: number;
+const handleReviewCreation = async (
+  newReviewTitle: string,
+  newReviewDescription: string,
+  authorId: number,
+  claimId: number,
+  selectedVerdict: number | string,
+) => {
+  const requestbody: ReviewRequestbody = {
+    title: newReviewTitle,
+    description: newReviewDescription,
+    authorId: authorId,
+    claimId: claimId,
+  };
+
+  if (selectedVerdict !== '') {
+    requestbody.verdictId = Number(selectedVerdict);
+  }
+
+  const response = await fetch('/api/createReview', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestbody),
+  });
+  const review = await response.json();
+  return review;
 };
 
-type LabelRequestbody = {
-  newLabel: string;
+const handleSourcesCreation = async (
+  reviewId: number,
+  currentSourceList: { title: string; url: string }[],
+) => {
+  for (const source of currentSourceList) {
+    const requestbody: SourceRequestbody = {
+      sourceTitle: source.title,
+      sourceUrl: source.url,
+      reviewId: reviewId,
+    };
+
+    // const response =
+    await fetch('/api/createSource', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestbody),
+    });
+    // const source = await response.json();
+  }
 };
 
 export default function Contribute(props: Props) {
@@ -107,9 +243,6 @@ export default function Contribute(props: Props) {
 
   const [errors, setErrors] = useState<Error[]>([]);
 
-  console.log('author: ', authorId);
-  console.log('errors', errors);
-
   const refreshUserProfile = props.refreshUserProfile;
 
   useEffect(() => {
@@ -137,25 +270,17 @@ export default function Contribute(props: Props) {
     setSavedLabels([]);
   };
 
-  const ratingLabels: { [index: string]: string } = {
-    1: 'Completly untrue',
-    2: 'Low credibility',
-    3: 'Debatable',
-    4: 'Mostly factual',
-    5: 'Factual',
-  };
-
   function getRatingLabelText(value: number) {
     return `${value} Star${value !== 1 ? 's' : ''}, ${ratingLabels[value]}`;
   }
 
-  const handleAuthorCreation = async () => {
+  /*   const handleAuthorCreation = async () => {
     const response = await fetch('/api/createAuthor');
     const author = await response.json();
     return author;
-  };
+  }; */
 
-  const handleClaimCreation = async () => {
+  /*   const handleClaimCreation = async () => {
     const requestbody: ClaimRequestbody = {
       title: newClaimTitle,
       description: newClaimDescription,
@@ -186,9 +311,9 @@ export default function Contribute(props: Props) {
     });
     const claim = await response.json();
     return claim;
-  };
+  }; */
 
-  const handleReviewCreation = async (claimId: number) => {
+  /*   const handleReviewCreation = async (claimId: number) => {
     const requestbody: ReviewRequestbody = {
       title: newReviewTitle,
       description: newReviewDescription,
@@ -224,9 +349,9 @@ export default function Contribute(props: Props) {
     });
     const review = await response.json();
     return review;
-  };
+  }; */
 
-  const handleRatingCreation = async (claimId: number) => {
+  /*   const handleRatingCreation = async (claimId: number) => {
     const requestbody: RatingRequestbody = {
       claimId: claimId,
       ratingValue: ratingValue,
@@ -257,7 +382,7 @@ export default function Contribute(props: Props) {
     });
     const rating = await response.json();
     return rating;
-  };
+  }; */
 
   const handleSaveLabel = () => {
     const updatedSavedLabels = [...savedLabels, selectedLabel];
@@ -265,9 +390,7 @@ export default function Contribute(props: Props) {
     setSelectedLabel('');
   };
 
-  const handleCreateLabel = async (claimId: number) => {
-    console.log('handleCreateLabel for claimid', claimId);
-
+  /* const handleCreateLabel = async (claimId: number) => {
     const currentLabels = props.labels;
     const existingLabels = new Set();
     for (const label of savedLabels) {
@@ -319,7 +442,7 @@ export default function Contribute(props: Props) {
         });
       }
     }
-  };
+  }; */
 
   const handleSaveSource = () => {
     const updatedSourceList = [
@@ -332,7 +455,7 @@ export default function Contribute(props: Props) {
     setNewSourceInput(false);
   };
 
-  const handleSourcesCreation = async (reviewId: number) => {
+  /* const handleSourcesCreation = async (reviewId: number) => {
     for (const source of currentSourceList) {
       const requestbody: SourceRequestbody = {
         sourceTitle: source.title,
@@ -350,7 +473,7 @@ export default function Contribute(props: Props) {
       });
       // const source = await response.json();
     }
-  };
+  }; */
 
   const handleValidation = () => {
     if (sourceUrl.slice(0, 4) !== 'http') {
@@ -645,12 +768,31 @@ export default function Contribute(props: Props) {
             color="secondary"
             onClick={async () => {
               setErrors([]);
-              const wrappedClaim = await handleClaimCreation().catch(
-                (error) => {
-                  console.log('Error when trying to create new claim');
-                  appendError(error);
-                },
-              );
+
+              let requestAuthorId;
+              if (!authorId) {
+                const { author } = await handleAuthorCreation();
+
+                if (!author) {
+                  console.log(
+                    'An error ocurred while trying to create a new author',
+                  );
+                  return;
+                }
+                setAuthorId(author.id);
+                requestAuthorId = author.id;
+              } else {
+                requestAuthorId = authorId;
+              }
+
+              const wrappedClaim = await handleClaimCreation(
+                newClaimTitle,
+                newClaimDescription,
+                requestAuthorId,
+              ).catch((error) => {
+                console.log('Error when trying to create new claim');
+                appendError(error);
+              });
               if (!wrappedClaim) {
                 setDisplayAlert(true);
                 return;
@@ -658,20 +800,30 @@ export default function Contribute(props: Props) {
               const { claim } = wrappedClaim;
 
               if (savedLabels.length > 0) {
-                handleCreateLabel(claim.id).catch((error) => {
-                  console.log('Error when trying to create new label');
-                  appendError(error);
-                });
+                handleCreateLabel(props.labels, savedLabels, claim.id).catch(
+                  (error) => {
+                    console.log('Error when trying to create new label');
+                    appendError(error);
+                  },
+                );
               }
               if (Number(ratingValue) > 0) {
-                handleRatingCreation(claim.id).catch((error) => {
+                handleRatingCreation(
+                  claim.id,
+                  ratingValue!,
+                  requestAuthorId,
+                ).catch((error) => {
                   console.log('Error when trying to create new rating');
                   appendError(error);
                 });
               }
               if (addReviewCheckbox) {
                 const wrappedReview = await handleReviewCreation(
+                  newReviewTitle,
+                  newReviewDescription,
+                  requestAuthorId,
                   claim.id,
+                  selectedVerdict,
                 ).catch((error) => {
                   console.log('Error when trying to create new review');
                   appendError(error);
@@ -682,10 +834,12 @@ export default function Contribute(props: Props) {
                 }
                 const { review } = wrappedReview;
                 if (currentSourceList.length > 0) {
-                  handleSourcesCreation(review.id).catch((error) => {
-                    console.log('Error when trying to create new sources');
-                    appendError(error);
-                  });
+                  handleSourcesCreation(review.id, currentSourceList).catch(
+                    (error) => {
+                      console.log('Error when trying to create new sources');
+                      appendError(error);
+                    },
+                  );
                 }
               }
               if (errors.length === 0) {

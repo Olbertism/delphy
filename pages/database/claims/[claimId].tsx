@@ -89,8 +89,6 @@ export default function ClaimPage(props: Props) {
   );
   const [userRated, setUserRated] = useState(false);
 
-  console.log('errors', errors);
-
   const refreshUserProfile = props.refreshUserProfile;
 
   useEffect(() => {
@@ -139,7 +137,6 @@ export default function ClaimPage(props: Props) {
     };
 
     if (!props.author) {
-      console.log('user not yet an author, let me handle that...');
       const { author } = await handleAuthorCreation();
 
       if (!author) {
@@ -207,7 +204,6 @@ export default function ClaimPage(props: Props) {
     };
 
     if (!props.author) {
-      console.log('user not yet an author, let me handle that...');
       const { author } = await handleAuthorCreation();
 
       if (!author) {
@@ -262,7 +258,9 @@ export default function ClaimPage(props: Props) {
         <Typography variant="subtitle1">
           Claim #{props.claim.claimId}
         </Typography>
-        <Typography variant="h1" data-test-id="claim-h1">{props.claim.claimTitle}</Typography>
+        <Typography variant="h1" data-test-id="claim-h1">
+          {props.claim.claimTitle}
+        </Typography>
         <Typography variant="h3">Description</Typography>
         <Typography>{props.claim.claimDescription}</Typography>
         <Box sx={{ mb: '30px' }}>
@@ -657,7 +655,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       notFound: true,
     };
   }
-  console.log(user);
+
   const verdicts = await getAllVerdicts();
 
   const author = await checkIfAuthorExists(user.id);

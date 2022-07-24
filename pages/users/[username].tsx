@@ -112,7 +112,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       notFound: true,
     };
   }
-  console.log('targetuser', targetUser);
 
   let targetUserClaims = await getClaimsByUsername(
     context.query.username as string,
@@ -128,7 +127,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const currentUser = await getUserByValidSessionToken(
     context.req.cookies.sessionToken,
   );
-  console.log('currentUser', currentUser);
 
   if (!currentUser) {
     return {

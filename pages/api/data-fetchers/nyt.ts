@@ -14,12 +14,6 @@ export default async function handler(
   const apiBaseUrl =
     'https://api.nytimes.com/svc/search/v2/articlesearch.json?';
 
-  console.log(
-    `${apiBaseUrl}q=${encodeURIComponent(req.query.query)}&api-key=${
-      process.env.NYTAPI
-    }`,
-  );
-
   const data = await fetch(
     `${apiBaseUrl}q=${encodeURIComponent(req.query.query)}&api-key=${
       process.env.NYTAPI

@@ -1,10 +1,10 @@
+import { Box } from '@mui/material';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import { Box } from '@mui/system';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { handleDeleteClaim, handleDeleteReview } from '../../util/handlers';
@@ -24,7 +24,12 @@ export default function DeleteEntryInterface(props) {
 
   return (
     <Box>
-      <Button variant="outlined" color="error" data-test-id='delete-btn' onClick={handleClickOpen}>
+      <Button
+        variant="outlined"
+        color="error"
+        data-test-id="delete-btn"
+        onClick={handleClickOpen}
+      >
         {`Delete ${props.type}`}
       </Button>
       <Dialog
@@ -44,7 +49,7 @@ export default function DeleteEntryInterface(props) {
           <Button
             color="error"
             variant="contained"
-            data-test-id='confirm-btn'
+            data-test-id="confirm-btn"
             onClick={async () => {
               let deletedEntry = null;
               if (props.type === 'claim') {

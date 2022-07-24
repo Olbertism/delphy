@@ -1,11 +1,6 @@
 export default async function handler(req, res) {
   const apiBaseUrl = 'https://newsapi.org/v2/everything?';
 
-  console.log(
-    `${apiBaseUrl}q=${encodeURIComponent(
-      req.query.query,
-    )}&sortBy=relevancy&apiKey=${process.env.NEWSAPI}`,
-  );
   const data = await fetch(
     `${apiBaseUrl}q=${encodeURIComponent(
       req.query.query,
