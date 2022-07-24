@@ -10,6 +10,16 @@ jobs:
       PGDATABASE: test
       PGUSERNAME: test
       PGPASSWORD: test
+      FACTCHECKTOOLAPI: xxx
+      GUARDIANAPI: xxx
+      NEWSAPI: xxx
+      NYTAPI: xxx
+      ROBERTAKEY: xxx
+      ENDPOINT_ID: xxx
+      PROJECT_ID: xxx
+      GOOGLE_APPLICATION_CREDENTIALS: xxx
+      TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
+      TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
 
     steps:
       - name: Start preinstalled PostgreSQL on Ubuntu
