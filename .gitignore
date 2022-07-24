@@ -45,3 +45,5 @@ playwright-report/
 /util/playwright/storage-state/storageState.json
 /util/playwright/storage-state
 /util/playwright/storageState
+
+*.tsbuildinfo
