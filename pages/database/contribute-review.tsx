@@ -26,6 +26,11 @@ import {
   getAllVerdicts,
   getUserByValidSessionToken,
 } from '../../util/database/database';
+import {
+  handleAuthorCreation,
+  handleReviewCreation,
+  handleSourcesCreation,
+} from '../../util/handlers';
 import { Claim, SourceEntry, Verdict } from '../../util/types';
 
 type Props = {
@@ -96,13 +101,13 @@ export default function ContributeReview(props: Props) {
     setSelectedVerdict('');
   };
 
-  const handleAuthorCreation = async () => {
+  /*   const handleAuthorCreation = async () => {
     const response = await fetch('/api/createAuthor');
     const author = await response.json();
     return author;
-  };
+  }; */
 
-  const handleReviewCreation = async (claimId: number) => {
+  /*   const handleReviewCreation = async (claimId: number) => {
     const requestbody: ReviewRequestbody = {
       title: newReviewTitle,
       description: newReviewDescription,
@@ -137,7 +142,7 @@ export default function ContributeReview(props: Props) {
     });
     const review = await response.json();
     return review;
-  };
+  }; */
 
   const handleSaveSource = () => {
     const updatedSourceList = [
@@ -150,7 +155,7 @@ export default function ContributeReview(props: Props) {
     setNewSourceInput(false);
   };
 
-  const handleSourcesCreation = async (reviewId: number) => {
+  /*   const handleSourcesCreation = async (reviewId: number) => {
     for (const source of currentSourceList) {
       const requestbody: SourceRequestbody = {
         sourceTitle: source.title,
@@ -166,7 +171,7 @@ export default function ContributeReview(props: Props) {
         body: JSON.stringify(requestbody),
       });
     }
-  };
+  }; */
 
   const handleValidation = () => {
     if (sourceUrl.slice(0, 4) !== 'http') {
@@ -190,24 +195,6 @@ export default function ContributeReview(props: Props) {
 
         <Box sx={{ maxWidth: '320px', mb: '30px' }}>
           <FormControl fullWidth>
-            {/* <InputLabel id="claim-select-label">Claim</InputLabel>
-            <Select
-              labelId="claim-select-label"
-              id="claim-select"
-              value={selectedClaim}
-              label="Select a claim"
-              onChange={(event) => {
-                setSelectedClaim(Number(event.target.value));
-              }}
-            >
-              {props.claims.map((claim) => {
-                return (
-                  <MenuItem key={claim.title} value={claim.id}>
-                    {claim.title}
-                  </MenuItem>
-                );
-              })}
-            </Select> */}
             <Autocomplete
               disablePortal
               id="claim-combobox"
@@ -374,8 +361,29 @@ export default function ContributeReview(props: Props) {
             color="secondary"
             onClick={async () => {
               setErrors([]);
+
+              let requestAuthorId;
+              if (!authorId) {
+                const { author } = await handleAuthorCreation();
+
+                if (!author) {
+                  console.log(
+                    'An error ocurred while trying to create a new author',
+                  );
+                  return;
+                }
+                setAuthorId(author.id);
+                requestAuthorId = author.id;
+              } else {
+                requestAuthorId = authorId;
+              }
+
               const wrappedReview = await handleReviewCreation(
+                newReviewTitle,
+                newReviewDescription,
+                requestAuthorId,
                 selectedClaim!.id,
+                selectedVerdict,
               ).catch((error) => {
                 console.log('Error when trying to create new review');
                 appendError(error);
@@ -386,11 +394,13 @@ export default function ContributeReview(props: Props) {
               }
               const { review } = wrappedReview;
               if (currentSourceList.length > 0) {
-                handleSourcesCreation(review.id).catch((error) => {
-                  console.log('Error when trying to create new sources');
-                  appendError(error);
-                  setDisplayAlert(true);
-                });
+                handleSourcesCreation(review.id, currentSourceList).catch(
+                  (error) => {
+                    console.log('Error when trying to create new sources');
+                    appendError(error);
+                    setDisplayAlert(true);
+                  },
+                );
               }
               if (errors.length === 0) {
                 clearInputs();

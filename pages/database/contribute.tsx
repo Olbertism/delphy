@@ -209,6 +209,10 @@ const handleSourcesCreation = async (
   }
 };
 
+function getRatingLabelText(value: number) {
+  return `${value} Star${value !== 1 ? 's' : ''}, ${ratingLabels[value]}`;
+}
+
 export default function Contribute(props: Props) {
   const [authorId, setAuthorId] = useState<number | undefined>(
     props.author === null ? undefined : props.author.id,
@@ -270,179 +274,11 @@ export default function Contribute(props: Props) {
     setSavedLabels([]);
   };
 
-  function getRatingLabelText(value: number) {
-    return `${value} Star${value !== 1 ? 's' : ''}, ${ratingLabels[value]}`;
-  }
-
-  /*   const handleAuthorCreation = async () => {
-    const response = await fetch('/api/createAuthor');
-    const author = await response.json();
-    return author;
-  }; */
-
-  /*   const handleClaimCreation = async () => {
-    const requestbody: ClaimRequestbody = {
-      title: newClaimTitle,
-      description: newClaimDescription,
-      authorId: undefined, // value is inserted further below
-    };
-
-    if (!props.author) {
-      console.log('user not yet an author, let me handle that...');
-      const { author } = await handleAuthorCreation();
-
-      if (!author) {
-        console.log('An error ocurred while trying to create a new author');
-        return;
-      }
-
-      requestbody.authorId = author.id;
-      setAuthorId(author.id);
-    } else {
-      requestbody.authorId = authorId;
-    }
-
-    const response = await fetch('/api/createClaim', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestbody),
-    });
-    const claim = await response.json();
-    return claim;
-  }; */
-
-  /*   const handleReviewCreation = async (claimId: number) => {
-    const requestbody: ReviewRequestbody = {
-      title: newReviewTitle,
-      description: newReviewDescription,
-      authorId: undefined, // value is inserted further below
-      claimId: claimId,
-    };
-
-    if (!props.author) {
-      console.log('user not yet an author, let me handle that...');
-      const { author } = await handleAuthorCreation();
-
-      if (!author) {
-        console.log('An error ocurred while trying to create a new author');
-        return;
-      }
-
-      requestbody.authorId = author.id;
-      setAuthorId(author.id);
-    } else {
-      requestbody.authorId = authorId;
-    }
-
-    if (selectedVerdict !== '') {
-      requestbody.verdictId = Number(selectedVerdict);
-    }
-
-    const response = await fetch('/api/createReview', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestbody),
-    });
-    const review = await response.json();
-    return review;
-  }; */
-
-  /*   const handleRatingCreation = async (claimId: number) => {
-    const requestbody: RatingRequestbody = {
-      claimId: claimId,
-      ratingValue: ratingValue,
-      authorId: undefined, // value is inserted further below
-    };
-
-    if (!props.author) {
-      console.log('user not yet an author, let me handle that...');
-      const { author } = await handleAuthorCreation();
-
-      if (!author) {
-        console.log('An error ocurred while trying to create a new author');
-        return;
-      }
-
-      requestbody.authorId = author.id;
-      setAuthorId(author.id);
-    } else {
-      requestbody.authorId = authorId;
-    }
-
-    const response = await fetch('/api/createRating', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestbody),
-    });
-    const rating = await response.json();
-    return rating;
-  }; */
-
   const handleSaveLabel = () => {
     const updatedSavedLabels = [...savedLabels, selectedLabel];
     setSavedLabels(updatedSavedLabels);
     setSelectedLabel('');
   };
-
-  /* const handleCreateLabel = async (claimId: number) => {
-    const currentLabels = props.labels;
-    const existingLabels = new Set();
-    for (const label of savedLabels) {
-      for (const currentLabel of currentLabels) {
-        if (label === currentLabel.label) {
-          // create only claim_labels entry
-          const requestbody: ClaimLabelRequestbody = {
-            claimId: claimId,
-            labelId: currentLabel.id,
-          };
-          // const response =
-          await fetch('/api/createClaimLabel', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestbody),
-          });
-          existingLabels.add(label);
-          break;
-        }
-      }
-      if (!existingLabels.has(label)) {
-        // create new label and claim_labels entry
-        const requestbodyNewLabel: LabelRequestbody = {
-          newLabel: label,
-        };
-        console.log(requestbodyNewLabel);
-        const responseNewLabel = await fetch('/api/createLabel', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestbodyNewLabel),
-        });
-        const newLabel = await responseNewLabel.json();
-        console.log(newLabel);
-        const requestbodyClaimLabel: ClaimLabelRequestbody = {
-          claimId: claimId,
-          labelId: newLabel.label.id,
-        };
-        // const responseClaimLabel =
-        await fetch('/api/createClaimLabel', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestbodyClaimLabel),
-        });
-      }
-    }
-  }; */
 
   const handleSaveSource = () => {
     const updatedSourceList = [
@@ -454,26 +290,6 @@ export default function Contribute(props: Props) {
     setSourceUrl('');
     setNewSourceInput(false);
   };
-
-  /* const handleSourcesCreation = async (reviewId: number) => {
-    for (const source of currentSourceList) {
-      const requestbody: SourceRequestbody = {
-        sourceTitle: source.title,
-        sourceUrl: source.url,
-        reviewId: reviewId,
-      };
-
-      // const response =
-      await fetch('/api/createSource', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestbody),
-      });
-      // const source = await response.json();
-    }
-  }; */
 
   const handleValidation = () => {
     if (sourceUrl.slice(0, 4) !== 'http') {
