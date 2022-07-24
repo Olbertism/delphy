@@ -11,10 +11,6 @@
 
 This is my final project from the UpLeveled Bootcamp class of spring 2022. It is an interactive web app that you can try out with the link in the description. Please make sure you read the disclaimer and do not spam search or evaluation requests.
 
-## Setup
-
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
-
 ## Getting Started
 
 - Clone the repository with `git clone <repo>`
