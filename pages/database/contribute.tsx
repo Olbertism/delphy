@@ -40,8 +40,6 @@ import {
   Label,
   LabelRequestbody,
   RatingRequestbody,
-  ReviewRequestbody,
-  SourceRequestbody,
   Verdict,
 } from '../../util/types';
 
