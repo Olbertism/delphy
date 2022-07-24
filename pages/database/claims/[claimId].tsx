@@ -38,11 +38,14 @@ import {
 } from '../../../util/database/database';
 import formatDate from '../../../util/formatDate';
 import {
+  handleAuthorCreation,
+  handleReviewCreation,
+  handleSourcesCreation,
+} from '../../../util/handlers';
+import {
   Author,
   DatabaseClaim,
   RatingRequestbody,
-  ReviewRequestbody,
-  SourceRequestbody,
   Verdict,
 } from '../../../util/types';
 
@@ -122,49 +125,6 @@ export default function ClaimPage(props: Props) {
     calculateRating();
   }, [ratings]);
 
-  const handleAuthorCreation = async () => {
-    const response = await fetch('/api/createAuthor');
-    const author = await response.json();
-    return author;
-  };
-
-  const handleReviewCreation = async () => {
-    const requestbody: ReviewRequestbody = {
-      title: newReviewTitle,
-      description: newReviewDescription,
-      authorId: undefined, // value is inserted further below
-      claimId: props.claim.claimId,
-    };
-
-    if (!props.author) {
-      const { author } = await handleAuthorCreation();
-
-      if (!author) {
-        console.log('An error ocurred while trying to create a new author');
-        return;
-      }
-
-      requestbody.authorId = author.id;
-      setAuthorId(author.id);
-    } else {
-      requestbody.authorId = authorId;
-    }
-
-    if (selectedVerdict !== '') {
-      requestbody.verdictId = Number(selectedVerdict);
-    }
-
-    const response = await fetch('/api/createReview', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestbody),
-    });
-    const review = await response.json();
-    return review;
-  };
-
   const handleSaveSource = () => {
     const updatedSourceList = [
       ...currentSourceList,
@@ -174,26 +134,6 @@ export default function ClaimPage(props: Props) {
     setSourceTitle('');
     setSourceUrl('');
     setNewSourceInput(false);
-  };
-
-  const handleSourcesCreation = async (reviewId: number) => {
-    for (const source of currentSourceList) {
-      const requestbody: SourceRequestbody = {
-        sourceTitle: source.title,
-        sourceUrl: source.url,
-        reviewId: reviewId,
-      };
-
-      // const response =
-      await fetch('/api/createSource', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestbody),
-      });
-      // const source = await response.json();
-    }
   };
 
   const handleRatingCreation = async (claimId: number, ratingValue: number) => {
@@ -545,12 +485,33 @@ export default function ClaimPage(props: Props) {
             <Button
               onClick={async () => {
                 setErrors([]);
-                const wrappedReview = await handleReviewCreation().catch(
-                  (error) => {
-                    console.log('Error when trying to create new review');
-                    appendError(error);
-                  },
-                );
+
+                let requestAuthorId;
+                if (!authorId) {
+                  const { author } = await handleAuthorCreation();
+
+                  if (!author) {
+                    console.log(
+                      'An error ocurred while trying to create a new author',
+                    );
+                    return;
+                  }
+                  setAuthorId(author.id);
+                  requestAuthorId = author.id;
+                } else {
+                  requestAuthorId = authorId;
+                }
+
+                const wrappedReview = await handleReviewCreation(
+                  newReviewTitle,
+                  newReviewDescription,
+                  requestAuthorId,
+                  props.claim.claimId,
+                  selectedVerdict,
+                ).catch((error) => {
+                  console.log('Error when trying to create new review');
+                  appendError(error);
+                });
                 if (!wrappedReview) {
                   setDisplayAlert(true);
                   return;
@@ -558,11 +519,13 @@ export default function ClaimPage(props: Props) {
                 const { review } = wrappedReview;
 
                 if (currentSourceList.length > 0) {
-                  handleSourcesCreation(review.id).catch((error) => {
-                    console.log('Error when trying to create new sources');
-                    appendError(error);
-                    setDisplayAlert(true);
-                  });
+                  handleSourcesCreation(review.id, currentSourceList).catch(
+                    (error) => {
+                      console.log('Error when trying to create new sources');
+                      appendError(error);
+                      setDisplayAlert(true);
+                    },
+                  );
                 }
                 // TODO: This clause does not trigger if first try resulted in error and second one is successful
                 if (errors.length === 0) {

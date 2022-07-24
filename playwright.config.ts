@@ -15,7 +15,7 @@ const config: PlaywrightTestConfig = {
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? 'list' : 'html',
   use: {
-    headless: false,
+    headless: true,
     viewport: { width: 1280, height: 720 },
     ignoreHTTPSErrors: true,
     trace: 'on-first-retry',

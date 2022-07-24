@@ -40,20 +40,6 @@ type Props = {
   author?: any;
 };
 
-type ReviewRequestbody = {
-  title: string;
-  description: string;
-  authorId: number | undefined;
-  claimId: number;
-  verdictId?: number;
-};
-
-type SourceRequestbody = {
-  sourceTitle: string;
-  sourceUrl: string;
-  reviewId: number;
-};
-
 export default function ContributeReview(props: Props) {
   const [authorId, setAuthorId] = useState<number | undefined>(
     props.author === null ? undefined : props.author.id,
@@ -101,49 +87,6 @@ export default function ContributeReview(props: Props) {
     setSelectedVerdict('');
   };
 
-  /*   const handleAuthorCreation = async () => {
-    const response = await fetch('/api/createAuthor');
-    const author = await response.json();
-    return author;
-  }; */
-
-  /*   const handleReviewCreation = async (claimId: number) => {
-    const requestbody: ReviewRequestbody = {
-      title: newReviewTitle,
-      description: newReviewDescription,
-      authorId: undefined, // value is inserted further below
-      claimId: claimId,
-    };
-
-    if (!props.author) {
-      const { author } = await handleAuthorCreation();
-
-      if (!author) {
-        console.log('An error ocurred while trying to create a new author');
-        return;
-      }
-
-      requestbody.authorId = author.id;
-      setAuthorId(author.id);
-    } else {
-      requestbody.authorId = authorId;
-    }
-
-    if (selectedVerdict !== '') {
-      requestbody.verdictId = selectedVerdict as number;
-    }
-
-    const response = await fetch('/api/createReview', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestbody),
-    });
-    const review = await response.json();
-    return review;
-  }; */
-
   const handleSaveSource = () => {
     const updatedSourceList = [
       ...currentSourceList,
@@ -154,24 +97,6 @@ export default function ContributeReview(props: Props) {
     setSourceUrl('');
     setNewSourceInput(false);
   };
-
-  /*   const handleSourcesCreation = async (reviewId: number) => {
-    for (const source of currentSourceList) {
-      const requestbody: SourceRequestbody = {
-        sourceTitle: source.title,
-        sourceUrl: source.url,
-        reviewId: reviewId,
-      };
-
-      await fetch('/api/createSource', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestbody),
-      });
-    }
-  }; */
 
   const handleValidation = () => {
     if (sourceUrl.slice(0, 4) !== 'http') {

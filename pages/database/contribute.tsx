@@ -29,7 +29,11 @@ import {
   getAllVerdicts,
   getUserByValidSessionToken,
 } from '../../util/database/database';
-import { handleAuthorCreation } from '../../util/handlers';
+import {
+  handleAuthorCreation,
+  handleReviewCreation,
+  handleSourcesCreation,
+} from '../../util/handlers';
 import {
   ClaimLabelRequestbody,
   ClaimRequestbody,
@@ -155,58 +159,6 @@ const handleRatingCreation = async (
   });
   const rating = await response.json();
   return rating;
-};
-
-const handleReviewCreation = async (
-  newReviewTitle: string,
-  newReviewDescription: string,
-  authorId: number,
-  claimId: number,
-  selectedVerdict: number | string,
-) => {
-  const requestbody: ReviewRequestbody = {
-    title: newReviewTitle,
-    description: newReviewDescription,
-    authorId: authorId,
-    claimId: claimId,
-  };
-
-  if (selectedVerdict !== '') {
-    requestbody.verdictId = Number(selectedVerdict);
-  }
-
-  const response = await fetch('/api/createReview', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(requestbody),
-  });
-  const review = await response.json();
-  return review;
-};
-
-const handleSourcesCreation = async (
-  reviewId: number,
-  currentSourceList: { title: string; url: string }[],
-) => {
-  for (const source of currentSourceList) {
-    const requestbody: SourceRequestbody = {
-      sourceTitle: source.title,
-      sourceUrl: source.url,
-      reviewId: reviewId,
-    };
-
-    // const response =
-    await fetch('/api/createSource', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestbody),
-    });
-    // const source = await response.json();
-  }
 };
 
 function getRatingLabelText(value: number) {
