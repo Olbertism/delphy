@@ -40,6 +40,7 @@ type User = {
   id: number;
   username: string;
   roles: string[] | null;
+  authorId: number;
 };
 
 type UserWithPasswordHash = User & {
@@ -132,7 +133,7 @@ export async function getUserByValidSessionToken(token: string) {
   if (!token) return undefined;
   const [user] = await sql<[User | undefined]>`
   SELECT
-  users.id, users.username,
+  users.id, users.username, authors.id AS author_id,
 
   (SELECT array_agg(roles.role)
   FROM roles, user_roles
@@ -142,11 +143,12 @@ export async function getUserByValidSessionToken(token: string) {
     ) AS roles
 
   FROM
-    users, sessions
+    users, sessions, authors
   WHERE
     sessions.token = ${token}
   AND sessions.user_id = users.id
-  AND sessions.expiry_timestamp > now();
+  AND sessions.expiry_timestamp > now()
+  AND users.id = authors.user_id;
   `;
 
   await deleteExpiredSessions();

@@ -28,6 +28,11 @@ export default async function handler(
       return;
     }
 
+    if (user.authorId !== req.body.authorId) {
+      res.status(400).json({ errors: [{ message: 'Access denied' }] });
+      return;
+    }
+
     const rating = await createRating(
       req.body.claimId,
       req.body.ratingValue,
