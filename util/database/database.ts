@@ -143,12 +143,14 @@ export async function getUserByValidSessionToken(token: string) {
     ) AS roles
 
   FROM
-    users, sessions, authors
+    users
+    LEFT JOIN authors
+  	ON authors.user_id = users.id,
+  	sessions
   WHERE
     sessions.token = ${token}
   AND sessions.user_id = users.id
   AND sessions.expiry_timestamp > now()
-  AND users.id = authors.user_id;
   `;
 
   await deleteExpiredSessions();
