@@ -6,10 +6,10 @@ export function createSerializedRegisterSessionTokenCookie(token: string) {
 
   return cookie.serialize('sessionToken', token, {
     maxAge: maxAge, // for new browsers
-    expires: new Date(Date.now() + maxAge * 1000), // for old crap like IE (milliseconds)
+    expires: new Date(Date.now() + maxAge * 1000), // for old browsers (milliseconds)
     httpOnly: true,
     secure: isProduction,
     path: '/',
-    sameSite: 'lax', // to prevent cross site request forgery
+    sameSite: 'lax',
   });
 }

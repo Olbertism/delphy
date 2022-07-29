@@ -48,7 +48,6 @@ export default async function handler(
     console.log('hash created, call createUser...');
     const newUser = await createUser(req.body.username, passwordHash);
 
-    // Session creation to be appended
     const token = crypto.randomBytes(80).toString('base64');
     console.log('token created, call createSession...');
     const session = await createSession(token, newUser.id);
