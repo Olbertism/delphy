@@ -374,6 +374,16 @@ export default function Dashboard(props: DashboardProps) {
 
               <Grid item md={6} />
             </Grid>
+            <Typography sx={{ fontSize: 18, color: 'red' }}>
+              Attention!
+            </Typography>
+            <Typography sx={{ mb: '20px' }}>
+              For the check function below, you need to locally host the model,
+              which you can find in this github repository:{' '}
+              <a href="https://github.com/Olbertism/RoBERTa-torch-hub">
+                https://github.com/Olbertism/RoBERTa-torch-hub
+              </a>
+            </Typography>
             <Grid container spacing={2}>
               <Grid item md={6}>
                 <Box
@@ -385,6 +395,7 @@ export default function Dashboard(props: DashboardProps) {
                   }}
                 >
                   <Typography>Check claim against search results</Typography>
+
                   <Button
                     disabled={
                       (formattedResources.length === 0 ? true : false) ||

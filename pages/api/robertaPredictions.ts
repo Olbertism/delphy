@@ -14,14 +14,15 @@ export default async function handler(
   // dev URL
   // const apiBaseUrl = `http://127.0.0.1:5000/predict`;
 
-  const servicekeybuffer = await readFile('google-credentials.json');
+  // google vertex ai setup
+  /* const servicekeybuffer = await readFile('google-credentials.json');
   const servicekey = JSON.parse(servicekeybuffer.toString());
 
   const client = new JWT({
     email: servicekey.client_email,
     key: servicekey.private_key,
     scopes: ['https://www.googleapis.com/auth/cloud-platform'],
-  });
+  }); */
 
   const parameters = {
     source: {
@@ -44,7 +45,8 @@ export default async function handler(
   // presumed type def: <AIPlatform.protos.google.cloud.aiplatform.v1.IPredictResponse>
   // not found...
 
-  const { data }: any = await client.request({
+  // google vertex ai setup
+  /* const { data }: any = await client.request({
     url:
       'https://europe-west1-aiplatform.googleapis.com/v1/' +
       `projects/${process.env.PROJECT_ID}/locations/europe-west1/endpoints/${process.env.ENDPOINT_ID}` +
@@ -55,7 +57,20 @@ export default async function handler(
       instances: instances,
       parameters,
     },
+  }); */
+
+  const response = await fetch('http://localhost:8080/predict', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      instances: instances,
+      parameters,
+    }),
   });
+
+  const data = await response.json();
 
   const predictions = data.predictions;
 
